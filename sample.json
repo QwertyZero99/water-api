@@ -1,0 +1,37 @@
+
+[
+    {
+        "name": "Hudson River - Albany",
+        "location": { 
+            "lat": 42.6479,
+            "lng": -73.7475
+        },
+
+        "measurements": {
+
+            "ph": {
+                "value":7,
+                "unit":"pH"
+            },
+
+            "dissolved_oxygen":{
+                "value":9,
+                "unit":"mg/L"
+            },
+
+            "turbidity":{
+                "value":2,
+                "unit":"NTU"
+            },
+
+            "nitrate":{
+                "value":0.8,
+                "unit":"mg/L"
+            }
+        },
+
+        "last_updated":"2026-07-20",
+
+        "source":"USGS"
+    }
+]
