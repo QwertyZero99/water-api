@@ -1,6 +1,18 @@
 # water-api
 
+## Overview
+
 <!-- TODO -->
 
-# I'm thinking of using leaflet js for the map
-# Another idea -> Aqua Score. website generates score based on pollution factors such as pH, bacteria levels, temperature, etc. 
+## Features / Ideas
+
+- Interactive map using Leaflet.js
+- Aqua Score water quality rating system based on:
+  - pH
+  - bacteria levels
+  - temperature
+  - pollution factors
+
+## Tech Stack
+
+<!-- TODO -->
