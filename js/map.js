@@ -1,19 +1,22 @@
 import { calculateScore, getColor } from "./score.js";
 
 export async function createMap() {
-  const map = L.map('map').setView([43, -75], 7); // Albany, NY, leaflet map
+  const map = L.map("map").setView([43, -75], 7); // Albany, NY, leaflet map
 
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: '© OpenStreetMap' }).addTo(map);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap",
+  }).addTo(map);
 
-  let response = await fetch("../data/sample.json");
+  const response = await fetch("../data/stations.json");
+  const stations = await response.json();
 
-  let stations = await response.json().catch(async () => await (await fetch('../data/stations.json')).json());
-
-  stations.forEach(station => {
+  stations.forEach((station) => {
     let score = calculateScore(station);
-    let marker = L.circleMarker(
-      [station.location.lat, station.location.lng], { radius: 12, color: getColor(score), fillColor: getColor(score) }
-    );
+    let marker = L.circleMarker([station.location.lat, station.location.lng], {
+      radius: 12,
+      color: getColor(score),
+      fillColor: getColor(score),
+    });
 
     marker.addTo(map);
 
@@ -40,15 +43,7 @@ export async function createMap() {
       const nitrate = document.createElement("p");
       nitrate.textContent = `Nitrate: ${station.measurements.nitrate.value}`;
 
-      stationDiv.append(
-        title,
-        scoreTitle,
-        ph,
-        oxygen,
-        turbidity,
-        nitrate
-      );
+      stationDiv.append(title, scoreTitle, ph, oxygen, turbidity, nitrate);
     });
-  }
-  )
+  });
 }
