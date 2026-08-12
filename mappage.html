@@ -1,33 +1,35 @@
 <!doctype html>
-<html lang="en">
+<html>
   <head>
     <title>AquaNY</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <link rel="stylesheet" href="static/css/style.css" />
+    <link rel="stylesheet" href="static/css/mappage.css" />
   </head>
-  <body>
-    <div class="bgImage"></div>
 
+  <body>
+    <div id="sidebar">
+      <h1>💧 AquaNY</h1>
+
+      <p class="subtitle">Know Your Water</p>
+
+      <div id="station">
+        <h2>Select a location</h2>
+
+        <p>Click a water monitoring station.</p>
+      </div>
+    </div>
     <div class="Home_banner">
       <a href="index.html"> Home </a>
       <a href="mappage.html"> Interactive Map </a>
       <a href="main.html"> Info </a>
     </div>
 
+    <div id="map"></div>
 
-    <div id="sidebar" class="sidebar">
-      <h1>💧 AquaNY</h1>
-      <p class="subtitle">Know Your Water</p>
-      <div id="station">
-        <h2>Select a location</h2>
-        <p>Click a water monitoring station.</p>
-      </div>
-    </div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-    <div id="bgtbox"></div>
-
-    <script type="module" src="main.js"></script>
+    <script type="module" src="js/mappage.js"></script>
   </body>
 </html>

@@ -1,74 +1,117 @@
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-body{
-    display:flex;
-    height:100vh;
+body {
     font-family: Arial, Helvetica, sans-serif;
+    overflow-x: hidden;
 }
 
-#sidebar{
-    width: 350px;
-    padding: 25px;
-    background: white;
-    box-shadow: 2px 0px 15px rgba(0,0,0,.15);
-    z-index:1000;
+
+div.bgImage {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-image: url("images/Niagara.jpg");
+    background-size: cover;
+    background-position: center;
+    z-index: -1;
 }
 
-h1{
-    color:#0077b6;
-    font-size:32px;
-}
 
-.subtitle{
-    color:#555;
-    margin-bottom:30px;
-}
-
-#station{
-    line-height:1.8;
-}
-
-#map{
-    height: 500px !important;
-    width: 50%;
-    border-radius: 20px;
-    margin-left: 200px;
-    margin-top: 100px;
-    margin-bottom: 300px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    font-family: sans-serif;
-
-}
-  div.Home_banner {
+div.Home_banner {
     display: flex;
     flex-direction: row;
-    position: absolute;
+    position: fixed;
     gap: 150px;
-    z-index: 1;
+    z-index: 1100;
     width: 100%;
     height: 60px;
-    background-color: rgb(53, 52, 52);
-    background-position: left;
+    background-color: rgb(13, 34, 95);
     top: 0;
     left: 0;
     justify-content: center;
-  }
-  div.Home_banner a {
+    align-items: center;
+}
+
+div.Home_banner a {
     font-family: Georgia, 'Times New Roman', Times, serif;
     transition: color 0.3s ease-in-out;
-    text-decoration: none;
+    text-decoration: none;  
     color: white;
-    font-size: 30px;
-    margin-left: 10px;
-    margin-top: 10px
+    font-size: 24px;
+}
 
-  }
-  div.Home_banner a:hover {
-    color: rgb(25, 85, 30);
+div.Home_banner a:hover {
+    color: rgb(77, 201, 232);
     transform: scale(1.05);
-  }
+}
+
+
+#sidebar {
+    width: 350px;
+    height: calc(100vh - 60px);
+    position: fixed;
+    top: 60px;
+    left: 0;
+    padding: 25px;
+    background: white;
+    box-shadow: 2px 0px 15px rgba(0,0,0,.15);
+    z-index: 1000;
+    transition: 0.3s ease-in-out;
+    overflow-x: hidden;
+}
+
+
+#sidebar.collapsed {
+    width: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+h1 {
+    color: #0077b6;
+    font-size: 32px;
+    margin-top: 20px;
+}
+
+.subtitle {
+    color: #555;
+    margin-bottom: 30px;
+}
+
+
+#bgtbox {
+    position: relative;
+    margin-left: 350px;
+    margin-top: 60px;  
+    width: calc(100% - 350px);
+    min-height: calc(100vh - 60px);
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 10;
+    transition: 0.3s ease-in-out;
+}
+
+#toggle-btn {
+    position: fixed;
+    top: 75px;
+    left: 365px;
+    z-index: 1200;
+    background-color: #0077b6;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: bold;
+    transition: 0.3s ease-in-out;
+}
+
+#toggle-btn:hover {
+    background-color: rgb(77, 201, 232);
+    color: #111;
+}
