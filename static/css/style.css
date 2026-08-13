@@ -11,15 +11,18 @@ body {
 
 
 div.bgImage {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-image: url("images/Niagara.jpg");
+    display: flex;
+    flex-direction: row;
+    position: absolute;
+    gap: 150px;
+    z-index: 1100;
+    width: 100%;
+    height: 600px;
+    background-image: url("../../images/Niagara.jpg");
     background-size: cover;
     background-position: center;
-    z-index: -1;
+    z-index: 8;
+
 }
 
 
@@ -60,58 +63,121 @@ div.Home_banner a:hover {
     left: 0;
     padding: 25px;
     background: white;
-    box-shadow: 2px 0px 15px rgba(0,0,0,.15);
+    box-shadow: 2px 0 15px rgba(0, 0, 0, 0.15);
     z-index: 1000;
-    transition: 0.3s ease-in-out;
+
+    transition: transform 0.3s ease-in-out;
     overflow-x: hidden;
 }
 
-
+/* Slide sidebar off screen */
 #sidebar.collapsed {
-    width: 0;
-    padding: 0;
-    overflow: hidden;
-}
-
-h1 {
-    color: #0077b6;
-    font-size: 32px;
-    margin-top: 20px;
-}
-
-.subtitle {
-    color: #555;
-    margin-bottom: 30px;
-}
-
-
-#bgtbox {
-    position: relative;
-    margin-left: 350px;
-    margin-top: 60px;  
-    width: calc(100% - 350px);
-    min-height: calc(100vh - 60px);
-    background-color: rgba(0, 0, 0, 0.6);
-    z-index: 10;
-    transition: 0.3s ease-in-out;
+    transform: translateX(-100%);
 }
 
 #toggle-btn {
     position: fixed;
-    top: 75px;
-    left: 365px;
-    z-index: 1200;
+    top: 80px;
+    left: 350px;
+
+    width: 35px;
+    height: 50px;
+
+    border: none;
+    border-radius: 0 6px 6px 0;
+
     background-color: #0077b6;
     color: white;
-    border: none;
-    padding: 8px 12px;
+
+    font-size: 26px;
     cursor: pointer;
-    border-radius: 4px;
-    font-weight: bold;
-    transition: 0.3s ease-in-out;
+
+    z-index: 1200;
+
+    transition:
+        left 0.3s ease-in-out,
+        background-color 0.2s;
 }
 
 #toggle-btn:hover {
     background-color: rgb(77, 201, 232);
     color: #111;
+}
+
+/* Button follows sidebar */
+#toggle-btn.collapsed {
+    left: 0;
+}
+
+#bgtbox {
+    position: relative;
+    margin-left: 0px;
+    margin-top: 60px;
+    width: calc(100%);
+    min-height: calc(600px);
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 10;
+    
+
+
+    transition:
+        margin-left 0.3s ease-in-out,
+        width 0.3s ease-in-out;
+}
+body {
+    margin: 0;
+    background-color: rgb(229, 235, 235);
+    height: 100000px;
+}
+#bgtbox .child{
+    font-size: 100px;
+    color: white;
+    position: absolute;
+    top: 300px;
+    left: 50%;
+
+    opacity: 0;
+    transform: translateX(-50%);
+    
+    transition: 
+        transform 0.7s ease-in-out,
+        opacity 0.7s ease-in-out;
+
+    
+}
+#bgtbox .child.moved {
+    transform: translateX(-50%) translateY(-100px);
+    opacity: 1;
+}
+#bgtbox .child2{
+    font-size: 50px;
+    color: white;
+    position: absolute;
+    top: 500px;
+    left: 50%;
+
+    opacity: 0;
+    transform: translateX(-50%);
+    
+    transition: 
+        transform 2s ease-in-out,
+        opacity 2s ease-in-out;
+}
+#bgtbox .child2.moved {
+    transform: translateX(-50%) translateY(-100px);
+    opacity: 1;
+}
+#bgtbox.expanded {
+    margin-left: 0;
+    width: 100%;
+}
+@keyframes slideInFromBottom {
+  0% {
+    transform: translateY(1000px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }

@@ -1,25 +1,25 @@
+//
 import { createMap } from "./map.js";
 
 createMap();
-
+const bgtbox = document.getElementById("bgtbox");
 const toggleBtn = document.getElementById("toggle-btn");
 const sidebar = document.getElementById("sidebar");
-const bgtbox = document.getElementById("bgtbox");
+toggleBtn.textContent = sidebar.classList.contains("collapsed") ? "›" : "‹";
 
-if (toggleBtn) {
-    toggleBtn.addEventListener("click", () => {
-        sidebar.classList.toggle("collapsed");
-        
-        if (sidebar.classList.contains("collapsed")) {
-            bgtbox.style.marginLeft = "0";
-            bgtbox.style.width = "100%";
-            toggleBtn.style.left = "15px";
-        } else {
-            bgtbox.style.marginLeft = "350px";
-            bgtbox.style.width = "calc(100% - 350px)";
-            toggleBtn.style.left = "365px";
-        }
-    });
-} else {
-    console.error("Toggle button not found!");
-}
+toggleBtn.addEventListener("click", () => {
+    sidebar.classList.toggle("collapsed");
+    toggleBtn.classList.toggle("collapsed");
+
+    if (sidebar.classList.contains("collapsed")) {
+        toggleBtn.textContent = "›";
+    } else {
+        toggleBtn.textContent = "‹";
+    }
+});
+const child = document.querySelector(".child");
+
+child.classList.toggle("moved");
+const child2 = document.querySelector(".child2");
+
+child2.classList.toggle("moved");
