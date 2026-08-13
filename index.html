@@ -1,41 +1,64 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <title>AquaNY</title>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <link rel="stylesheet" href="static/css/style.css" />
-  </head>
-  <body>
-    <div class="bgImage">
+<head>
+  <title>AquaNY</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="static/css/style.css" />
+</head>
 
-    </div>
+<body>
+  <div class="bgImage"></div>
 
-    <div class="Home_banner">
-      <a href="index.html"> Home </a>
-      <a href="mappage.html"> Interactive Map </a>
-      <a href="main.html"> Info </a>
-    </div>
-
-
-<div id="sidebar" class="sidebar collapsed">
+  <div id="sidebar" class="sidebar collapsed">
     <h1>💧 AquaNY</h1>
     <p class="subtitle">Know Your Water</p>
 
-    <div id="station">
-        <h2>Select a location</h2>
-        <p>Click a water monitoring station.</p>
+    <div class="sidebar-nav">
+      <a href="index.html">Home</a>
+      <a href="mappage.html">Interactive Map</a>
+      <a href="main.html">Info</a>
     </div>
-</div>
-<button id="toggle-btn" class = "collapsed">‹</button>
-<div id="bgtbox"> 
-        <h1 class = "child" >AquaNY</h1>
-        <p class = "child2" >Know Your Water</p>
-</div>
-<div id="homepagebg"></div>
-</div>
 
-    <script type="module" src="js/main.js"></script>
-  </body>
+    <div id="station">
+      <h2>Select a location</h2>
+      <p>Click a water monitoring station.</p>
+    </div>
+  </div>
+
+  <button id="toggle-btn" class="collapsed">›</button>
+
+  <div id="bgtbox">
+    <h1 class="child">AquaNY</h1>
+    <p class="child2">Know Your Water</p>
+  </div>
+
+  <div class="page-content">
+
+    <section class="reveal">
+      <h2 class="section-title">Did You Know?</h2>
+      <p class="bodytext">
+        The Safe Drinking Water Act was enacted in 1974. Since then, strict regulations have been put in place to ensure that America’s drinking water remains safe. Since then, while the laws still generally ensure safety, contaminants still may pose major problems for recreational bodies of water and potentially drinking water supplies. 
+
+      </p>
+    </section>
+
+    <section class="reveal">
+      <h2 class="section-title">Explore Water Data</h2>
+      <p class="bodytext">
+      </p>
+    </section>
+
+    <section class="reveal">
+      <h2 class="section-title">Know Your Water</h2>
+      <p class="bodytext">
+        Understand what water quality measurements mean for you.
+      </p>
+    </section>
+
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
 </html>

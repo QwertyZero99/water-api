@@ -1,35 +1,40 @@
 <!doctype html>
 <html>
-  <head>
-    <title>AquaNY</title>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <link rel="stylesheet" href="static/css/mappage.css" />
-  </head>
+<head>
+  <title>AquaNY</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <body>
-    <div id="sidebar">
-      <h1>💧 AquaNY</h1>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="static/css/mappage.css" />
+</head>
 
-      <p class="subtitle">Know Your Water</p>
+<body>
 
-      <div id="station">
-        <h2>Select a location</h2>
+  <div id="sidebar" class="sidebar collapsed">
+    <h1>💧 AquaNY</h1>
+    <p class="subtitle">Know Your Water</p>
 
-        <p>Click a water monitoring station.</p>
-      </div>
-    </div>
-    <div class="Home_banner">
-      <a href="index.html"> Home </a>
-      <a href="mappage.html"> Interactive Map </a>
-      <a href="main.html"> Info </a>
+    <div class="sidebar-nav">
+      <a href="index.html">Home</a>
+      <a href="mappage.html">Interactive Map</a>
+      <a href="main.html">Info</a>
     </div>
 
+    <div id="station">
+      <h2>Select a location</h2>
+      <p>Click a water monitoring station.</p>
+    </div>
+  </div>
+
+  <button id="toggle-btn" class="collapsed">›</button>
+
+  <div class="map-container">
     <div id="map"></div>
+  </div>
 
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script type="module" src="js/mappage.js"></script>
 
-    <script type="module" src="js/mappage.js"></script>
-  </body>
+</body>
 </html>

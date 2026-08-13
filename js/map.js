@@ -2,10 +2,17 @@ import { calculateScore, getColor } from "./score.js";
 
 export async function createMap() {
   const map = L.map("map").setView([43, -75], 7);
+  const nyBorder = [
+    [40.4, -79.8], 
+    [45.1, -71.8]
+  ];
 
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}", {
     attribution: "© OpenStreetMap",
   }).addTo(map);
+  map.on("drag", function () {
+    map.panInsideBounds(nyBorder, { animate: false });
+});
 
   // Station markers currently displayed on the map.
   const markers = new Map();
