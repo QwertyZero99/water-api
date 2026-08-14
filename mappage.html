@@ -3,6 +3,7 @@
 <head>
   <title>AquaNY</title>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="images/favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
@@ -30,11 +31,21 @@
   <button id="toggle-btn" class="collapsed">›</button>
 
   <div class="map-container">
+
+    <div class="reveal">
+      <h1 class="map-title">View Our Map</h1>
+      <p class="map-text">Visualize live water quality data across NY</p>
+    </div>
+
     <div id="map"></div>
+
+    <button id="resetZoom">⟳ Reset View</button>
+
   </div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script type="module" src="js/mappage.js"></script>
+  <script type="module" src="js/sidebar.js"></script>
 
 </body>
 </html>

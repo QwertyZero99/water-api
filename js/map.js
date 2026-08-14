@@ -149,6 +149,7 @@ export async function createMap() {
 
   // Initial load.
   await loadStations();
+  return map;
 }
 
 function getVisibleTiles(bounds, zoom) {
