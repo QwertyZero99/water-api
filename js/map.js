@@ -1,7 +1,7 @@
 import { calculateScore, getColor } from "./score.js";
 
 export async function createMap() {
-  const map = L.map("map").setView([43, -75], 7);
+  const map = L.map("map").setView([43, -76 ], 7);
   const nyBorder = [
     [40.4, -79.8], 
     [45.1, -71.8]
