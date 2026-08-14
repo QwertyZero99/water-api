@@ -5,195 +5,183 @@
 }
 
 body {
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: "Inter", sans-serif;
+
+    background-color: rgb(211, 215, 215);
+
+    color: #222;
+
     overflow-x: hidden;
 }
 
-
-div.bgImage {
-    display: flex;
-    flex-direction: row;
+.bgImage {
     position: absolute;
-    gap: 150px;
-    z-index: 1100;
+
+    top: 0;
+    left: 0;
+
     width: 100%;
     height: 600px;
+
     background-image: url("../../images/Niagara.jpg");
     background-size: cover;
     background-position: center;
+    background-repeat: no-repeat;
+
     z-index: 8;
-
-}
-
-
-.sidebar-nav {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-
-    margin-top: 40px;
-    margin-bottom: 40px;
-}
-
-.sidebar-nav a {
-    font-family: Georgia, "Times New Roman", Times, serif;
-    text-decoration: none;
-    color: rgb(13, 34, 95);
-    font-size: 22px;
-
-    transition:
-        color 0.35s ease,
-        transform 0.35s ease;
-}
-
-.sidebar-nav a:hover {
-    color: rgb(77, 201, 232);
-    transform: translateX(5px);
-}
-
-#sidebar {
-    width: 350px;
-    height: calc(100vh);
-    position: fixed;
-    top: 0px;
-    left: 0;
-    padding: 25px;
-    background: white;
-    box-shadow: 2px 0 15px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
-
-    transition: transform 0.35s ease-in-out;
-    overflow-x: hidden;
-}
-
-/* Slide sidebar off screen */
-#sidebar.collapsed {
-    transform: translateX(-100%);
-}
-
-#toggle-btn {
-    position: fixed;
-    top: 80px;
-    left: 350px;
-
-    width: 35px;
-    height: 50px;
-
-    border: none;
-    border-radius: 0 6px 6px 0;
-
-    background-color: #0077b6;
-    color: white;
-
-    font-size: 26px;
-    cursor: pointer;
-
-    z-index: 1200;
-
-    transition:
-        left 0.35s ease-in-out,
-        background-color 0.2s;
-}
-
-#toggle-btn:hover {
-    background-color: rgb(77, 201, 232);
-    color: #111;
-}
-
-/* Button follows sidebar */
-#toggle-btn.collapsed {
-    left: 0;
 }
 
 #bgtbox {
     position: relative;
-    margin-left: 0px;
-    margin-top: 0px;
-    width: calc(100%);
-    min-height: calc(600px);
+
+    width: 100%;
+    height: 600px;
+
     background-color: rgba(0, 0, 0, 0.6);
+
     z-index: 10;
-    
-
-
-    transition:
-        margin-left 0.3s ease-in-out,
-        width 0.3s ease-in-out;
 }
-body {
-    margin: 0;
-    background-color: rgb(211, 215, 215);
-    height: 100000px;
-}
-#bgtbox .child{
-    font-size: 100px;
-    color: white;
+
+#bgtbox .child {
     position: absolute;
+
     top: 300px;
     left: 50%;
 
+    font-family: "Manrope", sans-serif;
+
+    font-size: 100px;
+    font-weight: 800;
+
+    color: white;
+
     opacity: 0;
+
     transform: translateX(-50%);
-    
-    transition: 
+
+    transition:
         transform 0.7s ease-in-out,
         opacity 0.7s ease-in-out;
-
-    
 }
+
 #bgtbox .child.moved {
     transform: translateX(-50%) translateY(-100px);
+
     opacity: 1;
 }
-#bgtbox .child2{
-    font-size: 50px;
-    color: white;
+
+#bgtbox .child2 {
     position: absolute;
+
     top: 500px;
     left: 50%;
 
+    font-family: "Inter", sans-serif;
+
+    font-size: 42px;
+    font-weight: 400;
+
+    color: white;
+
     opacity: 0;
+
     transform: translateX(-50%);
-    
-    transition: 
+
+    transition:
         transform 2s ease-in-out,
         opacity 2s ease-in-out;
 }
+
 #bgtbox .child2.moved {
     transform: translateX(-50%) translateY(-100px);
-    opacity: 1;
-}
-#bgtbox.expanded {
-    margin-left: 0;
-    width: 100%;
-}
-@keyframes slideInFromBottom {
-  0% {
-    transform: translateY(1000px);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-.page-content {
-    min-height: 2000px;
 
+    opacity: 1;
+}
+
+.page-content {
     display: flex;
     flex-direction: column;
-    justify-content: space-evenly;
 
-    padding: 100px;
+    gap: 250px;
+
+    padding: 180px 8%;
+}
+
+.info-row {
+    display: flex;
+    flex-direction: row;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 80px;
+
+    width: 100%;
+    min-height: 500px;
+}
+
+.info-row.reverse {
+    flex-direction: row-reverse;
+}
+
+.info-text {
+    width: 45%;
+}
+
+.section-title {
+    font-family: "Manrope", sans-serif;
+
+    font-size: 68px;
+    font-weight: 700;
+
+    line-height: 1.1;
+
+    color: rgb(13, 34, 95);
+
+    margin-bottom: 25px;
+}
+
+.bodytext {
+    width: 100%;
+
+    font-family: "Inter", sans-serif;
+
+    font-size: 25px;
+    font-weight: 400;
+
+    line-height: 1.65;
+
+    color: #333;
+}
+
+.info-image {
+    width: 45%;
+    height: 500px;
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    border-radius: 12px;
+
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+#tapWaterImage {
+    background-image: url("../../images/tapwaterim.png");
+}
+
+#waterDataImage {
+    background-image: url("../../images/waterdata.png");
+}
+
+#knowWaterImage {
+    background-image: url("../../images/knowwater.png");
 }
 
 .reveal {
-    display: flex;
-    flex-direction: column;
-
-    gap: 20px;
-
     opacity: 0;
+
     transform: translateY(80px);
 
     transition:
@@ -203,14 +191,46 @@ body {
 
 .reveal.visible {
     opacity: 1;
+
     transform: translateY(0);
 }
 
-.section-title {
-    font-size: 70px;
-}
+@media (max-width: 900px) {
+    .page-content {
+        gap: 150px;
 
-.bodytext {
-    font-size: 30px;
-    width: 50%;
+        padding: 100px 6%;
+    }
+
+    .info-row,
+    .info-row.reverse {
+        flex-direction: column;
+
+        gap: 40px;
+    }
+
+    .info-text {
+        width: 100%;
+    }
+
+    .info-image {
+        width: 100%;
+        height: 400px;
+    }
+
+    .section-title {
+        font-size: 50px;
+    }
+
+    .bodytext {
+        font-size: 21px;
+    }
+
+    #bgtbox .child {
+        font-size: 70px;
+    }
+
+    #bgtbox .child2 {
+        font-size: 32px;
+    }
 }

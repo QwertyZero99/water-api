@@ -1,41 +1,96 @@
 import { createMap } from "./map.js";
 
-const map = await createMap();
+const mapController = await createMap();
 
-const resetButton = document.getElementById("resetZoom");
+const resetButton =
+    document.getElementById("resetZoom");
+
+const button2D =
+    document.getElementById("view2D");
+
+const button3D =
+    document.getElementById("view3D");
+
 if (resetButton) {
-    resetButton.addEventListener("click", function() {
-        map.flyTo([43,-76], 7, { duration: 1.2 });
+
+    resetButton.addEventListener("click", () => {
+
+        mapController.resetView();
+
     });
+
 }
-const child = document.querySelector(".child");
-const child2 = document.querySelector(".child2");
 
-window.addEventListener("load", () => {
+function updateModeButtons(mode) {
 
-    if (child) {
-        child.classList.add("moved");
-    }
+    const is2D = mode === "2d";
 
-    if (child2) {
-        child2.classList.add("moved");
-    }
+    button2D.classList.toggle("active", is2D);
+    button3D.classList.toggle("active", !is2D);
 
-});
-const revealElements = document.querySelectorAll(".reveal");
+    button2D.setAttribute(
+        "aria-pressed",
+        String(is2D)
+    );
 
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
+    button3D.setAttribute(
+        "aria-pressed",
+        String(!is2D)
+    );
 
-        if (entry.isIntersecting) {
-            entry.target.classList.add("visible");
-        }
+}
+
+if (button2D) {
+
+    button2D.addEventListener("click", () => {
+
+        mapController.setViewMode("2d");
+
+        updateModeButtons("2d");
 
     });
-}, {
-    threshold: 0.2
-});
+
+}
+
+if (button3D) {
+
+    button3D.addEventListener("click", () => {
+
+        mapController.setViewMode("3d");
+
+        updateModeButtons("3d");
+
+    });
+
+}
+
+const revealElements =
+    document.querySelectorAll(".reveal");
+
+const observer =
+    new IntersectionObserver(
+        (entries) => {
+
+            entries.forEach((entry) => {
+
+                if (entry.isIntersecting) {
+
+                    entry.target.classList.add("visible");
+
+                    observer.unobserve(entry.target);
+
+                }
+
+            });
+
+        },
+        {
+            threshold: 0.2
+        }
+    );
 
 revealElements.forEach((element) => {
+
     observer.observe(element);
+
 });

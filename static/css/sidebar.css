@@ -1,0 +1,155 @@
+#sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    width: 350px;
+    height: 100vh;
+
+    padding: 25px;
+
+    background-color: rgba(255, 255, 255, 0.904);
+
+    box-shadow: 2px 0 15px rgba(0, 0, 0, 0.15);
+
+    z-index: 1000;
+
+    transition: transform 0.35s ease-in-out;
+
+    overflow-y: auto;
+}
+
+#sidebar.collapsed {
+    transform: translateX(-100%);
+}
+
+#sidebar h1 {
+    font-family: "Manrope", sans-serif;
+
+    color: #0077b6;
+
+    font-size: 32px;
+    font-weight: 800;
+
+    margin-top: 20px;
+}
+
+.subtitle {
+    font-family: "Inter", sans-serif;
+
+    color: #0b0b0b;
+
+    font-size: 16px;
+
+    margin-top: 5px;
+    margin-bottom: 40px;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+
+    gap: 20px;
+
+    margin-top: 40px;
+    margin-bottom: 40px;
+}
+
+.sidebar-nav a {
+    font-family: "Inter", sans-serif;
+
+    text-decoration: none;
+
+    color: rgb(13, 34, 95);
+
+    font-size: 21px;
+    font-weight: 600;
+
+    transition:
+        color 0.35s ease,
+        transform 0.35s ease;
+}
+
+.sidebar-nav a:hover {
+    color: rgb(77, 201, 232);
+
+    transform: translateX(5px);
+}
+
+#station {
+    font-family: "Inter", sans-serif;
+
+    line-height: 1.8;
+}
+
+#station h2 {
+    font-family: "Manrope", sans-serif;
+
+    font-weight: 700;
+
+    color: rgb(13, 34, 95);
+
+    margin-bottom: 10px;
+}
+
+#station h3 {
+    font-family: "Manrope", sans-serif;
+
+    font-weight: 600;
+
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+#toggle-btn {
+    position: fixed;
+
+    top: 80px;
+    left: 350px;
+
+    width: 35px;
+    height: 50px;
+
+    border: none;
+    border-radius: 0 6px 6px 0;
+
+    background-color: #0077b6;
+    color: white;
+
+    font-family: "Inter", sans-serif;
+
+    font-size: 26px;
+
+    cursor: pointer;
+
+    z-index: 1200;
+
+    transition:
+        left 0.35s ease-in-out,
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+#toggle-btn.collapsed {
+    left: 0;
+}
+
+#toggle-btn:hover {
+    background-color: rgb(77, 201, 232);
+
+    color: #111;
+}
+
+@media (max-width: 600px) {
+    #sidebar {
+        width: 300px;
+    }
+
+    #toggle-btn {
+        left: 300px;
+    }
+
+    #toggle-btn.collapsed {
+        left: 0;
+    }
+}

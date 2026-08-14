@@ -3,13 +3,25 @@
 <head>
   <title>AquaNY</title>
   <link rel="icon" type="image/png" href="images/favicon.png">
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
+
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" href="static/css/style.css" />
+  <link rel="stylesheet" href="static/css/sidebar.css" />
 </head>
 
 <body>
+
   <div class="bgImage"></div>
 
   <div id="sidebar" class="sidebar collapsed">
@@ -37,30 +49,60 @@
 
   <div class="page-content">
 
-    <section class="reveal">
-      <h2 class="section-title">Did You Know?</h2>
-      <p class="bodytext">
-        The Safe Drinking Water Act was enacted in 1974. Since then, strict regulations have been put in place to ensure that America’s drinking water remains safe. Since then, while the laws still generally ensure safety, contaminants still may pose major problems for recreational bodies of water and potentially drinking water supplies. 
+    <section class="reveal info-row">
 
-      </p>
+      <div class="info-text">
+        <h2 class="section-title">Did You Know?</h2>
+
+        <p class="bodytext">
+          The Safe Drinking Water Act was enacted in 1974. Since then, strict
+          regulations have been put in place to ensure that America’s drinking
+          water remains safe. While these laws still generally ensure safety,
+          contaminants may still pose major problems for recreational bodies
+          of water and potentially drinking water supplies.
+        </p>
+      </div>
+
+      <div id="tapWaterImage" class="info-image"></div>
+
     </section>
 
-    <section class="reveal">
-      <h2 class="section-title">Explore Water Data</h2>
-      <p class="bodytext">
-      </p>
+    <section class="reveal info-row reverse">
+
+      <div class="info-text">
+        <h2 class="section-title">Explore Water Data</h2>
+
+        <p class="bodytext">
+          Explore water quality information from monitoring stations across
+          New York and visualize current environmental conditions.
+        </p>
+      </div>
+
+      <div id="waterDataImage" class="info-image"></div>
+
     </section>
 
-    <section class="reveal">
-      <h2 class="section-title">Know Your Water</h2>
-      <p>
-        Understand what water quality measurements mean for you.
-      </p>
+    <section class="reveal info-row">
+
+      <div class="info-text">
+        <h2 class="section-title">Know Your Water</h2>
+
+        <p class="bodytext">
+          Understand what water quality measurements mean and learn more about
+          the health of water resources throughout New York.
+        </p>
+      </div>
+
+      <div id="knowWaterImage" class="info-image"></div>
+
     </section>
 
   </div>
+
   <div id="sidePanel"></div>
+
   <script type="module" src="js/main.js"></script>
   <script type="module" src="js/sidebar.js"></script>
+
 </body>
 </html>
