@@ -32,8 +32,8 @@ const metrics = {
 };
 
 /**
-* @returns a float between 0 and 1, representing the score of the station
-*/
+ * @returns a float between 0 and 1, representing the score of the station
+ */
 export function calculateScore(station) {
   const measurements = station.measurements;
 
@@ -41,22 +41,15 @@ export function calculateScore(station) {
     ph: scoreRange(measurements.ph.value, metrics.ph),
     dissolved_oxygen: scoreRange(
       measurements.dissolved_oxygen.value,
-      metrics.dissolved_oxygen
+      metrics.dissolved_oxygen,
     ),
-    turbidity: scoreRange(
-      measurements.turbidity.value,
-      metrics.turbidity
-    ),
-    nitrate: scoreRange(
-      measurements.nitrate.value,
-      metrics.nitrate
-    ),
+    turbidity: scoreRange(measurements.turbidity.value, metrics.turbidity),
+    nitrate: scoreRange(measurements.nitrate.value, metrics.nitrate),
   };
 
   const finalScore = Object.entries(scores).reduce(
-    (total, [key, value]) =>
-      total + value * metrics[key].weight,
-    0
+    (total, [key, value]) => total + value * metrics[key].weight,
+    0,
   );
 
   return finalScore;
@@ -77,18 +70,11 @@ function scoreRange(value, metric) {
   }
 
   // dist from target
-  const distance =
-    value < targetMin
-      ? targetMin - value
-      : value - targetMax;
+  const distance = value < targetMin ? targetMin - value : value - targetMax;
 
-  const maxDistance =
-    value < targetMin
-      ? targetMin - min
-      : max - targetMax;
+  const maxDistance = value < targetMin ? targetMin - min : max - targetMax;
 
   const score = 1 - distance / maxDistance;
 
   return Math.max(0, Math.min(1, score));
 }
-
