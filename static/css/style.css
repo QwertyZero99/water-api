@@ -23,7 +23,7 @@ body {
     width: 100%;
     height: 600px;
 
-    background-image: url("../../images/Niagara.jpg");
+    background-image: url("/images/Niagara.jpg");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -168,15 +168,15 @@ body {
 }
 
 #tapWaterImage {
-    background-image: url("../../images/tapwaterim.png");
+    background-image: url("/images/tapwaterim.png");
 }
 
 #waterDataImage {
-    background-image: url("../../images/waterdata.png");
+    background-image: url("/images/waterdata.png");
 }
 
 #knowWaterImage {
-    background-image: url("../../images/knowwater.png");
+    background-image: url("/images/knowwater.png");
 }
 
 .reveal {
