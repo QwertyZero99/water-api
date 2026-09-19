@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -33,21 +34,57 @@ type USGSResponse struct {
 const (
 	usgsBaseURL = "https://waterservices.usgs.gov/nwis/iv/"
 
-	// USGS recommends not repeatedly fetching the same data more
-	// frequently than hourly.
-	tileCacheDuration = 1 * time.Hour
+	// USGS recommends not repeatedly fetching the same data more frequently than hourly.
+	cacheDuration = 1 * time.Hour
 )
 
 var (
+	cfg        Config
 	httpClient = &http.Client{
 		Timeout: 30 * time.Second,
 	}
 )
 
+type Config struct {
+	Port        string
+	DatabaseURL string
+	APIKey      string
+}
+
+func loadConfig() (Config, error) {
+	cfg := Config{
+		Port:        os.Getenv("PORT"),
+		DatabaseURL: os.Getenv("DATABASE_URL"),
+		APIKey:      os.Getenv("API_KEY"),
+	}
+
+	if cfg.Port == "" {
+		return Config{}, fmt.Errorf("PORT is required")
+	}
+
+	/*
+		if cfg.DatabaseURL == "" {
+			return Config{}, fmt.Errorf("DATABASE_URL is required")
+		}
+	*/
+
+	return cfg, nil
+}
+
 func main() {
+	// Env variables
+	var err error
+	cfg, err = loadConfig()
+	if err != nil {
+		log.Fatalf("unable to load config: %v", err)
+	}
+
 	// Static filesystems
 	fs := http.FileServer(http.Dir("./static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
+
+	imageFs := http.FileServer(http.Dir("./images"))
+	http.Handle("/images/", http.StripPrefix("/images/", imageFs))
 
 	jsFS := http.FileServer(http.Dir("./js"))
 	http.Handle("/js/", http.StripPrefix("/js/", jsFS))
@@ -57,8 +94,8 @@ func main() {
 	http.HandleFunc("/map", mapHandler)
 
 	// Run server
-	fmt.Println("Server running at http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	fmt.Printf("Server running at http://localhost:%s\n", cfg.Port)
+	log.Fatal(http.ListenAndServe(":"+cfg.Port, nil))
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
