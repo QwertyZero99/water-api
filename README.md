@@ -15,6 +15,8 @@ Make sure the following variables are set:
 If you don't know how to set environment variables, use `export VARIABLE=VALUE`, with no spaces between the equals sign and the values
 to each side
 
+For Windows: `$env:VARIABLE = "VALUE"`
+
 ### Execution
 Run the command `go run ./server` in the project root to start the server. Make sure the site works by visiting `localhost:$PORT` in
 your preffered web browser, ensuring that you replace `$PORT` with the port you set earlier in the environment variables.
