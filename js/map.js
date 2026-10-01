@@ -1,8 +1,8 @@
 import { calculateScore, getColor } from "./score.js";
 
 export async function createMap() {
-  const INITIAL_CENTER = [-75, 43];
-  const INITIAL_ZOOM = 7;
+  const INITIAL_CENTER = [-78, 43];
+  const INITIAL_ZOOM = 6;
   const INITIAL_PITCH = 45;
   const INITIAL_BEARING = -8;
 
