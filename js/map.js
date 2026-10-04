@@ -7,6 +7,8 @@ export async function createMap() {
   const INITIAL_BEARING = -8;
 
   let viewMode = "3d";
+  let activePopup = null;
+  let hoveredStationKey = null;
 
   const map = new maplibregl.Map({
     container: "map",
@@ -97,12 +99,9 @@ export async function createMap() {
   map.addControl(
     new maplibregl.NavigationControl({
       showZoom: true,
-
       showCompass: true,
-
       visualizePitch: true,
     }),
-
     "top-left",
   );
 
@@ -111,20 +110,61 @@ export async function createMap() {
   });
 
   const stationStore = new Map();
-
   const stationFeatures = new Map();
 
   const loadedTiles = new Set();
-
   const loadingTiles = new Set();
+
+  const normalStationRadius = [
+    "interpolate",
+    ["linear"],
+    ["zoom"],
+    6,
+    6,
+    9,
+    10,
+    13,
+    14,
+  ];
+
+  const hoverStationRadius = [
+    "interpolate",
+    ["linear"],
+    ["zoom"],
+    6,
+    5,
+    9,
+    8.5,
+    13,
+    12,
+  ];
 
   map.addSource("stations", {
     type: "geojson",
 
     data: {
       type: "FeatureCollection",
-
       features: [],
+    },
+  });
+
+  map.addLayer({
+    id: "station-pulse",
+
+    type: "circle",
+
+    source: "stations",
+
+    paint: {
+      "circle-radius": 9,
+
+      "circle-color": ["get", "color"],
+
+      "circle-opacity": 0.12,
+
+      "circle-blur": 0.4,
+
+      "circle-stroke-width": 0,
     },
   });
 
@@ -136,26 +176,11 @@ export async function createMap() {
     source: "stations",
 
     paint: {
-      "circle-radius": [
-        "interpolate",
-
-        ["linear"],
-
-        ["zoom"],
-
-        6,
-        6,
-
-        9,
-        10,
-
-        13,
-        14,
-      ],
+      "circle-radius": normalStationRadius,
 
       "circle-color": ["get", "color"],
 
-      "circle-opacity": 0.85,
+      "circle-opacity": 0.9,
 
       "circle-stroke-color": "#ffffff",
 
@@ -163,63 +188,209 @@ export async function createMap() {
     },
   });
 
-  map.on("mouseenter", "station-circles", () => {
-    map.getCanvas().style.cursor = "pointer";
-  });
+  function animatePulse(timestamp) {
+    const duration = 2200;
 
-  map.on("mouseleave", "station-circles", () => {
-    map.getCanvas().style.cursor = "";
-  });
+    const phase =
+      (timestamp % duration) / duration;
 
-  map.on("click", "station-circles", (event) => {
-    if (!event.features || event.features.length === 0) {
-      return;
+    const wave =
+      (Math.sin(
+        phase * Math.PI * 2 - Math.PI / 2,
+      ) +
+        1) /
+      2;
+
+    const baseRadius =
+      9 + wave * 7;
+
+    const opacity =
+      0.06 + wave * 0.1;
+
+    if (map.getLayer("station-pulse")) {
+      map.setPaintProperty(
+        "station-pulse",
+        "circle-radius",
+        [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          6,
+          baseRadius,
+          9,
+          baseRadius + 4,
+          13,
+          baseRadius + 8,
+        ],
+      );
+
+      map.setPaintProperty(
+        "station-pulse",
+        "circle-opacity",
+        opacity,
+      );
     }
 
-    const feature = event.features[0];
+    requestAnimationFrame(animatePulse);
+  }
 
-    const id = feature.properties.id;
+  requestAnimationFrame(animatePulse);
 
-    const stored = stationStore.get(id);
+  map.on(
+    "mousemove",
+    "station-circles",
+    (event) => {
+      map.getCanvas().style.cursor =
+        "pointer";
 
-    if (!stored) {
-      return;
-    }
+      if (
+        !event.features ||
+        event.features.length === 0
+      ) {
+        return;
+      }
 
-    showStation(stored.station, stored.score);
-  });
+      const stationKey =
+        event.features[0].properties.stationKey;
+
+      if (
+        hoveredStationKey === stationKey
+      ) {
+        return;
+      }
+
+      hoveredStationKey =
+        stationKey;
+
+      map.setPaintProperty(
+        "station-circles",
+        "circle-radius",
+        [
+          "case",
+
+          [
+            "==",
+            ["get", "stationKey"],
+            hoveredStationKey,
+          ],
+
+          hoverStationRadius,
+
+          normalStationRadius,
+        ],
+      );
+    },
+  );
+
+  map.on(
+    "mouseleave",
+    "station-circles",
+    () => {
+      map.getCanvas().style.cursor =
+        "";
+
+      hoveredStationKey = null;
+
+      map.setPaintProperty(
+        "station-circles",
+        "circle-radius",
+        normalStationRadius,
+      );
+    },
+  );
+
+  map.on(
+    "click",
+    "station-circles",
+    (event) => {
+      if (
+        !event.features ||
+        event.features.length === 0
+      ) {
+        return;
+      }
+
+      const stationKey =
+        event.features[0].properties.stationKey;
+
+      const stored =
+        stationStore.get(
+          stationKey,
+        );
+
+      if (!stored) {
+        return;
+      }
+
+      showStationPopup(
+        event.lngLat,
+        stored.station,
+        stored.score,
+      );
+    },
+  );
 
   async function loadStations() {
-    const zoom = Math.floor(map.getZoom());
+    const zoom =
+      Math.floor(
+        map.getZoom(),
+      );
 
-    const bounds = map.getBounds();
+    const bounds =
+      map.getBounds();
 
-    const tiles = getVisibleTiles(bounds, zoom);
+    const tiles =
+      getVisibleTiles(
+        bounds,
+        zoom,
+      );
 
     const requests = [];
 
     for (const tile of tiles) {
-      const key = `${zoom}/${tile.y}/${tile.x}`;
+      const key =
+        `${zoom}/${tile.y}/${tile.x}`;
 
-      if (loadedTiles.has(key) || loadingTiles.has(key)) {
+      if (
+        loadedTiles.has(key) ||
+        loadingTiles.has(key)
+      ) {
         continue;
       }
 
       loadingTiles.add(key);
 
-      requests.push(loadTile(zoom, tile.x, tile.y, key));
+      requests.push(
+        loadTile(
+          zoom,
+          tile.x,
+          tile.y,
+          key,
+        ),
+      );
     }
 
-    await Promise.all(requests);
+    await Promise.all(
+      requests,
+    );
   }
 
-  async function loadTile(zoom, x, y, key) {
+  async function loadTile(
+    zoom,
+    x,
+    y,
+    key,
+  ) {
     try {
-      const response = await fetch(`/data/${zoom}/${y}/${x}`, {
-        headers: {
-          Accept: "application/json",
-        },
-      });
+      const response =
+        await fetch(
+          `/data/${zoom}/${y}/${x}`,
+          {
+            headers: {
+              Accept: "application/json",
+            },
+          },
+        );
 
       if (!response.ok) {
         throw new Error(
@@ -227,13 +398,24 @@ export async function createMap() {
         );
       }
 
-      const chunk = await response.json();
+      const chunk =
+        await response.json();
 
-      if (!chunk || !Array.isArray(chunk.stations)) {
-        throw new Error("Invalid station response");
+      if (
+        !chunk ||
+        !Array.isArray(
+          chunk.stations,
+        )
+      ) {
+        throw new Error(
+          "Invalid station response",
+        );
       }
 
-      for (const station of chunk.stations) {
+      for (
+        const station
+        of chunk.stations
+      ) {
         addStation(station);
       }
 
@@ -241,55 +423,75 @@ export async function createMap() {
 
       loadedTiles.add(key);
     } catch (err) {
-      console.error(`Failed loading station tile ${key}:`, err);
+      console.error(
+        `Failed loading station tile ${key}:`,
+        err,
+      );
     } finally {
       loadingTiles.delete(key);
     }
   }
 
   function addStation(station) {
-    const id = `${station.lat},${station.lng}`;
+    const stationKey =
+      `${station.lat},${station.lng}`;
 
-    if (stationFeatures.has(id)) {
+    if (
+      stationFeatures.has(
+        stationKey,
+      )
+    ) {
       return;
     }
 
-    const score = calculateScore(station);
+    const score =
+      calculateScore(station);
 
-    const color = getColor(score);
+    const color =
+      getColor(score);
 
-    stationStore.set(id, {
-      station,
-      score,
-    });
-
-    stationFeatures.set(id, {
-      type: "Feature",
-
-      geometry: {
-        type: "Point",
-
-        coordinates: [Number(station.lng), Number(station.lat)],
-      },
-
-      properties: {
-        id,
-
-        color,
-
+    stationStore.set(
+      stationKey,
+      {
+        station,
         score,
-
-        name: station.name ?? "",
-
-        value: station.value ?? "",
-
-        time: station.time ?? "",
       },
-    });
+    );
+
+    stationFeatures.set(
+      stationKey,
+      {
+        type: "Feature",
+
+        geometry: {
+          type: "Point",
+
+          coordinates: [
+            Number(station.lng),
+            Number(station.lat),
+          ],
+        },
+
+        properties: {
+          stationKey,
+          color,
+          score,
+          name:
+            station.name ?? "",
+          value:
+            station.value ?? "",
+          time:
+            station.time ?? "",
+        },
+      },
+    );
   }
 
   function updateStationSource() {
-    const source = map.getSource("stations");
+    const source =
+      map.getSource(
+        "stations",
+      );
 
     if (!source) {
       return;
@@ -298,46 +500,164 @@ export async function createMap() {
     source.setData({
       type: "FeatureCollection",
 
-      features: Array.from(stationFeatures.values()),
+      features:
+        Array.from(
+          stationFeatures.values(),
+        ),
     });
   }
 
-  function showStation(station, score) {
-    const stationDiv = document.getElementById("station");
-
-    if (!stationDiv) {
-      return;
+  function showStationPopup(
+    lngLat,
+    station,
+    score,
+  ) {
+    if (activePopup) {
+      activePopup.remove();
     }
 
-    stationDiv.innerHTML = "";
+    const container =
+      document.createElement(
+        "div",
+      );
 
-    const title = document.createElement("h2");
+    container.className =
+      "station-popup";
 
-    title.textContent = station.name;
+    const title =
+      document.createElement(
+        "h3",
+      );
 
-    const scoreTitle = document.createElement("h3");
+    title.textContent =
+      station.name ||
+      "USGS Station";
 
-    scoreTitle.textContent = `AquaScore: ${Math.round(score * 100)}/100`;
+    container.appendChild(
+      title,
+    );
 
-    const value = document.createElement("p");
+    const scoreText =
+      document.createElement(
+        "p",
+      );
 
-    value.textContent = `Streamflow: ${station.value}`;
+    scoreText.textContent =
+      `AquaScore: ${Math.round(
+        score * 100,
+      )}/100`;
 
-    const updated = document.createElement("p");
+    container.appendChild(
+      scoreText,
+    );
+
+    const heading =
+      document.createElement(
+        "strong",
+      );
+
+    heading.textContent =
+      "Data currently collected";
+
+    container.appendChild(
+      heading,
+    );
+
+    if (
+      station.parameters &&
+      station.parameters.length > 0
+    ) {
+      const list =
+        document.createElement(
+          "ul",
+        );
+
+      for (
+        const parameter
+        of station.parameters
+      ) {
+        const item =
+          document.createElement(
+            "li",
+          );
+
+        let text =
+          parameter.name ||
+          `Parameter ${parameter.code}`;
+
+        if (
+          parameter.value !== undefined &&
+          parameter.value !== null &&
+          parameter.value !== ""
+        ) {
+          text +=
+            `: ${parameter.value}`;
+        }
+
+        if (parameter.unit) {
+          text +=
+            ` ${parameter.unit}`;
+        }
+
+        item.textContent =
+          text;
+
+        list.appendChild(
+          item,
+        );
+      }
+
+      container.appendChild(
+        list,
+      );
+    } else {
+      const none =
+        document.createElement(
+          "p",
+        );
+
+      none.textContent =
+        "No current measurement data available.";
+
+      container.appendChild(
+        none,
+      );
+    }
 
     if (station.time) {
-      updated.textContent = `Updated: ${new Date(
-        station.time,
-      ).toLocaleString()}`;
-    } else {
-      updated.textContent = "Updated: Unknown";
+      const updated =
+        document.createElement(
+          "p",
+        );
+
+      updated.textContent =
+        `Updated: ${new Date(
+          station.time,
+        ).toLocaleString()}`;
+
+      container.appendChild(
+        updated,
+      );
     }
 
-    stationDiv.append(title, scoreTitle, value, updated);
+    activePopup =
+      new maplibregl.Popup({
+        closeButton: true,
+        closeOnClick: true,
+        maxWidth: "350px",
+      })
+        .setLngLat(lngLat)
+        .setDOMContent(
+          container,
+        )
+        .addTo(map);
   }
 
   function setViewMode(mode) {
-    if (mode !== "2d" && mode !== "3d") {
+    if (
+      mode !== "2d" &&
+      mode !== "3d"
+    ) {
       return;
     }
 
@@ -348,15 +668,21 @@ export async function createMap() {
     if (mode === "2d") {
       map.setTerrain(null);
 
-      if (map.getLayer("terrain-hillshade")) {
-        map.setLayoutProperty("terrain-hillshade", "visibility", "none");
+      if (
+        map.getLayer(
+          "terrain-hillshade",
+        )
+      ) {
+        map.setLayoutProperty(
+          "terrain-hillshade",
+          "visibility",
+          "none",
+        );
       }
 
       map.easeTo({
         pitch: 0,
-
         bearing: 0,
-
         duration: 700,
       });
 
@@ -364,19 +690,30 @@ export async function createMap() {
     }
 
     map.setTerrain({
-      source: "terrainSource",
+      source:
+        "terrainSource",
 
       exaggeration: 1.15,
     });
 
-    if (map.getLayer("terrain-hillshade")) {
-      map.setLayoutProperty("terrain-hillshade", "visibility", "visible");
+    if (
+      map.getLayer(
+        "terrain-hillshade",
+      )
+    ) {
+      map.setLayoutProperty(
+        "terrain-hillshade",
+        "visibility",
+        "visible",
+      );
     }
 
     map.easeTo({
-      pitch: INITIAL_PITCH,
+      pitch:
+        INITIAL_PITCH,
 
-      bearing: INITIAL_BEARING,
+      bearing:
+        INITIAL_BEARING,
 
       duration: 700,
     });
@@ -385,55 +722,102 @@ export async function createMap() {
   function resetView() {
     map.stop();
 
-    const is3D = viewMode === "3d";
+    const is3D =
+      viewMode === "3d";
 
     map.easeTo({
-      center: INITIAL_CENTER,
+      center:
+        INITIAL_CENTER,
 
-      zoom: INITIAL_ZOOM,
+      zoom:
+        INITIAL_ZOOM,
 
-      pitch: is3D ? INITIAL_PITCH : 0,
+      pitch:
+        is3D
+          ? INITIAL_PITCH
+          : 0,
 
-      bearing: is3D ? INITIAL_BEARING : 0,
+      bearing:
+        is3D
+          ? INITIAL_BEARING
+          : 0,
 
       duration: 900,
     });
   }
 
-  map.on("moveend", loadStations);
+  map.on(
+    "moveend",
+    loadStations,
+  );
 
   await loadStations();
 
   return {
     map,
-
     resetView,
-
     setViewMode,
   };
 }
 
-function getVisibleTiles(bounds, zoom) {
+function getVisibleTiles(
+  bounds,
+  zoom,
+) {
   const tiles = [];
 
-  const tileCount = Math.pow(2, zoom);
+  const tileCount =
+    Math.pow(2, zoom);
 
-  const north = Math.min(85.05112878, bounds.getNorth());
+  const north =
+    Math.min(
+      85.05112878,
+      bounds.getNorth(),
+    );
 
-  const south = Math.max(-85.05112878, bounds.getSouth());
+  const south =
+    Math.max(
+      -85.05112878,
+      bounds.getSouth(),
+    );
 
-  const west = bounds.getWest();
+  const west =
+    bounds.getWest();
 
-  const east = bounds.getEast();
+  const east =
+    bounds.getEast();
 
-  const northWest = latLngToTile(north, west, zoom);
+  const northWest =
+    latLngToTile(
+      north,
+      west,
+      zoom,
+    );
 
-  const southEast = latLngToTile(south, east, zoom);
+  const southEast =
+    latLngToTile(
+      south,
+      east,
+      zoom,
+    );
 
   if (west <= east) {
-    for (let x = northWest.x; x <= southEast.x; x++) {
-      for (let y = northWest.y; y <= southEast.y; y++) {
-        if (x >= 0 && x < tileCount && y >= 0 && y < tileCount) {
+    for (
+      let x = northWest.x;
+      x <= southEast.x;
+      x++
+    ) {
+      for (
+        let y = northWest.y;
+        y <= southEast.y;
+        y++
+      ) {
+        if (
+          x >= 0 &&
+          x < tileCount &&
+          y >= 0 &&
+          y < tileCount
+        ) {
           tiles.push({
             x,
             y,
@@ -445,13 +829,40 @@ function getVisibleTiles(bounds, zoom) {
     return tiles;
   }
 
-  const firstNorthWest = latLngToTile(north, west, zoom);
+  const firstNorthWest =
+    latLngToTile(
+      north,
+      west,
+      zoom,
+    );
 
-  const firstSouthEast = latLngToTile(south, 180, zoom);
+  const firstSouthEast =
+    latLngToTile(
+      south,
+      180,
+      zoom,
+    );
 
-  for (let x = firstNorthWest.x; x <= firstSouthEast.x; x++) {
-    for (let y = firstNorthWest.y; y <= firstSouthEast.y; y++) {
-      if (x >= 0 && x < tileCount && y >= 0 && y < tileCount) {
+  for (
+    let x =
+      firstNorthWest.x;
+    x <=
+    firstSouthEast.x;
+    x++
+  ) {
+    for (
+      let y =
+        firstNorthWest.y;
+      y <=
+      firstSouthEast.y;
+      y++
+    ) {
+      if (
+        x >= 0 &&
+        x < tileCount &&
+        y >= 0 &&
+        y < tileCount
+      ) {
         tiles.push({
           x,
           y,
@@ -460,13 +871,40 @@ function getVisibleTiles(bounds, zoom) {
     }
   }
 
-  const secondNorthWest = latLngToTile(north, -180, zoom);
+  const secondNorthWest =
+    latLngToTile(
+      north,
+      -180,
+      zoom,
+    );
 
-  const secondSouthEast = latLngToTile(south, east, zoom);
+  const secondSouthEast =
+    latLngToTile(
+      south,
+      east,
+      zoom,
+    );
 
-  for (let x = secondNorthWest.x; x <= secondSouthEast.x; x++) {
-    for (let y = secondNorthWest.y; y <= secondSouthEast.y; y++) {
-      if (x >= 0 && x < tileCount && y >= 0 && y < tileCount) {
+  for (
+    let x =
+      secondNorthWest.x;
+    x <=
+    secondSouthEast.x;
+    x++
+  ) {
+    for (
+      let y =
+        secondNorthWest.y;
+      y <=
+      secondSouthEast.y;
+      y++
+    ) {
+      if (
+        x >= 0 &&
+        x < tileCount &&
+        y >= 0 &&
+        y < tileCount
+      ) {
         tiles.push({
           x,
           y,
@@ -478,30 +916,85 @@ function getVisibleTiles(bounds, zoom) {
   return tiles;
 }
 
-function latLngToTile(lat, lng, zoom) {
-  const tileCount = Math.pow(2, zoom);
+function latLngToTile(
+  lat,
+  lng,
+  zoom,
+) {
+  const tileCount =
+    Math.pow(2, zoom);
 
-  lat = Math.max(-85.05112878, Math.min(85.05112878, lat));
+  lat =
+    Math.max(
+      -85.05112878,
+      Math.min(
+        85.05112878,
+        lat,
+      ),
+    );
 
-  lng = normalizeLongitude(lng);
+  lng =
+    normalizeLongitude(
+      lng,
+    );
 
-  let x = Math.floor(((lng + 180) / 360) * tileCount);
+  let x =
+    Math.floor(
+      ((lng + 180) / 360) *
+        tileCount,
+    );
 
-  const y = Math.floor(
-    ((1 - Math.asinh(Math.tan((lat * Math.PI) / 180)) / Math.PI) / 2) *
-      tileCount,
-  );
+  const y =
+    Math.floor(
+      (
+        (
+          1 -
+          Math.asinh(
+            Math.tan(
+              (lat *
+                Math.PI) /
+                180,
+            ),
+          ) /
+            Math.PI
+        ) /
+        2
+      ) *
+        tileCount,
+    );
 
-  x = Math.max(0, Math.min(tileCount - 1, x));
+  x =
+    Math.max(
+      0,
+      Math.min(
+        tileCount - 1,
+        x,
+      ),
+    );
 
-  const clampedY = Math.max(0, Math.min(tileCount - 1, y));
+  const clampedY =
+    Math.max(
+      0,
+      Math.min(
+        tileCount - 1,
+        y,
+      ),
+    );
 
   return {
     x,
-    y: clampedY,
+    y:
+      clampedY,
   };
 }
 
-function normalizeLongitude(lng) {
-  return ((((lng + 180) % 360) + 360) % 360) - 180;
+function normalizeLongitude(
+  lng,
+) {
+  return (
+    ((((lng + 180) % 360) +
+      360) %
+      360) -
+    180
+  );
 }
