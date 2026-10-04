@@ -487,10 +487,10 @@ func startStationUpdater(
 	}()
 }
 
-// fetchStations gets all stations from the USGS API.
+// fetchStations gets all stationStore from the USGS API.
 //
 // Each page is fetched sequentially. The first page is fetched immediately.
-// After every successful page, the fetched stations are persisted to the
+// After every successful page, the fetched stationStore are persisted to the
 // database. The updater then waits one minute before fetching the next page.
 //
 // The database therefore always contains the most recently completed

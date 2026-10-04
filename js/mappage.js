@@ -17,12 +17,23 @@ if (resetButton) {
 function updateModeButtons(mode) {
   const is2D = mode === "2d";
 
-  button2D.classList.toggle("active", is2D);
-  button3D.classList.toggle("active", !is2D);
+  if (button2D) {
+    button2D.classList.toggle("active", is2D);
 
-  button2D.setAttribute("aria-pressed", String(is2D));
+    button2D.setAttribute(
+      "aria-pressed",
+      String(is2D),
+    );
+  }
 
-  button3D.setAttribute("aria-pressed", String(!is2D));
+  if (button3D) {
+    button3D.classList.toggle("active", !is2D);
+
+    button3D.setAttribute(
+      "aria-pressed",
+      String(!is2D),
+    );
+  }
 }
 
 if (button2D) {

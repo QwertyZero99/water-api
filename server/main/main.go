@@ -12,8 +12,8 @@ const (
 )
 
 var (
-	cfg      Config
-	stations StationStore
+	cfg          Config
+	stationStore StationStore
 )
 
 type Config struct {
@@ -57,10 +57,10 @@ func main() {
 	}
 	defer db.Close()
 
-	stations = *NewStationStore(db)
+	stationStore = *NewStationStore(db)
 
 	startStationUpdater(
-		&stations,
+		&stationStore,
 		stationStoreUpdateInterval,
 	)
 
@@ -76,6 +76,9 @@ func main() {
 	http.Handle("/js/", http.StripPrefix("/js/", jsFS))
 
 	// The station API
+	stationHandlers := NewStationHandlers(&stationStore)
+	http.HandleFunc("/api/stations", stationHandlers.StationsInBoundingBox)
+	http.HandleFunc("/api/stations/", stationHandlers.StationByID)
 
 	// Handlers for page endpoints
 	http.HandleFunc("/", homeHandler)

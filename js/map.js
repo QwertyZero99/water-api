@@ -1,4 +1,4 @@
-import { calculateScore, getColor } from "./score.js";
+const MIN_STATION_ZOOM = 7;
 
 export async function createMap() {
   const INITIAL_CENTER = [-75, 43];
@@ -97,12 +97,9 @@ export async function createMap() {
   map.addControl(
     new maplibregl.NavigationControl({
       showZoom: true,
-
       showCompass: true,
-
       visualizePitch: true,
     }),
-
     "top-left",
   );
 
@@ -110,20 +107,24 @@ export async function createMap() {
     map.once("load", resolve);
   });
 
+  /*
+   * The API returns lightweight station objects:
+   *
+   * {
+   *   "id": "USGS-01350000",
+   *   "location": [-73.123, 42.456]
+   * }
+   *
+   * We keep the API data separately from the GeoJSON features so that
+   * clicking a marker can retrieve the full station from the API.
+   */
   const stationStore = new Map();
-
-  const stationFeatures = new Map();
-
-  const loadedTiles = new Set();
-
-  const loadingTiles = new Set();
 
   map.addSource("stations", {
     type: "geojson",
 
     data: {
       type: "FeatureCollection",
-
       features: [],
     },
   });
@@ -138,22 +139,17 @@ export async function createMap() {
     paint: {
       "circle-radius": [
         "interpolate",
-
         ["linear"],
-
         ["zoom"],
-
         6,
-        6,
-
+        5,
         9,
-        10,
-
+        8,
         13,
-        14,
+        12,
       ],
 
-      "circle-color": ["get", "color"],
+      "circle-color": "#1976d2",
 
       "circle-opacity": 0.85,
 
@@ -171,55 +167,58 @@ export async function createMap() {
     map.getCanvas().style.cursor = "";
   });
 
-  map.on("click", "station-circles", (event) => {
+  map.on("click", "station-circles", async (event) => {
     if (!event.features || event.features.length === 0) {
       return;
     }
 
     const feature = event.features[0];
 
-    const id = feature.properties.id;
+    const id = feature.properties?.id;
 
-    const stored = stationStore.get(id);
-
-    if (!stored) {
+    if (!id) {
       return;
     }
 
-    showStation(stored.station, stored.score);
+    await loadAndShowStation(id);
   });
 
+  /*
+   * Load stations whenever the map stops moving.
+   *
+   * The bbox API does the spatial filtering on the server, so the
+   * browser only receives stations currently visible in the map.
+   */
   async function loadStations() {
-    const zoom = Math.floor(map.getZoom());
+    if (map.getZoom() < MIN_STATION_ZOOM) {
+      clearStations();
+
+      return;
+    }
 
     const bounds = map.getBounds();
 
-    const tiles = getVisibleTiles(bounds, zoom);
+    const west = bounds.getWest();
+    const south = bounds.getSouth();
+    const east = bounds.getEast();
+    const north = bounds.getNorth();
 
-    const requests = [];
+    const bbox = [
+      west,
+      south,
+      east,
+      north,
+    ].join(",");
 
-    for (const tile of tiles) {
-      const key = `${zoom}/${tile.y}/${tile.x}`;
-
-      if (loadedTiles.has(key) || loadingTiles.has(key)) {
-        continue;
-      }
-
-      loadingTiles.add(key);
-
-      requests.push(loadTile(zoom, tile.x, tile.y, key));
-    }
-
-    await Promise.all(requests);
-  }
-
-  async function loadTile(zoom, x, y, key) {
     try {
-      const response = await fetch(`/data/${zoom}/${y}/${x}`, {
-        headers: {
-          Accept: "application/json",
+      const response = await fetch(
+        `/api/stations?bbox=${encodeURIComponent(bbox)}`,
+        {
+          headers: {
+            Accept: "application/json",
+          },
         },
-      });
+      );
 
       if (!response.ok) {
         throw new Error(
@@ -227,68 +226,59 @@ export async function createMap() {
         );
       }
 
-      const chunk = await response.json();
+      const stations = await response.json();
 
-      if (!chunk || !Array.isArray(chunk.stations)) {
+      if (!Array.isArray(stations)) {
         throw new Error("Invalid station response");
       }
 
-      for (const station of chunk.stations) {
-        addStation(station);
+      updateStations(stations);
+    } catch (err) {
+      console.error("Failed loading stations:", err);
+    }
+  }
+
+  function updateStations(stations) {
+    stationStore.clear();
+
+    const features = [];
+
+    for (const station of stations) {
+      if (!station || !station.id) {
+        continue;
       }
 
-      updateStationSource();
+      if (
+        !Array.isArray(station.location) ||
+        station.location.length < 2
+      ) {
+        continue;
+      }
 
-      loadedTiles.add(key);
-    } catch (err) {
-      console.error(`Failed loading station tile ${key}:`, err);
-    } finally {
-      loadingTiles.delete(key);
+      const lng = Number(station.location[0]);
+      const lat = Number(station.location[1]);
+
+      if (!Number.isFinite(lng) || !Number.isFinite(lat)) {
+        continue;
+      }
+
+      stationStore.set(station.id, station);
+
+      features.push({
+        type: "Feature",
+
+        geometry: {
+          type: "Point",
+
+          coordinates: [lng, lat],
+        },
+
+        properties: {
+          id: station.id,
+        },
+      });
     }
-  }
 
-  function addStation(station) {
-    const id = `${station.lat},${station.lng}`;
-
-    if (stationFeatures.has(id)) {
-      return;
-    }
-
-    const score = calculateScore(station);
-
-    const color = getColor(score);
-
-    stationStore.set(id, {
-      station,
-      score,
-    });
-
-    stationFeatures.set(id, {
-      type: "Feature",
-
-      geometry: {
-        type: "Point",
-
-        coordinates: [Number(station.lng), Number(station.lat)],
-      },
-
-      properties: {
-        id,
-
-        color,
-
-        score,
-
-        name: station.name ?? "",
-
-        value: station.value ?? "",
-
-        time: station.time ?? "",
-      },
-    });
-  }
-
-  function updateStationSource() {
     const source = map.getSource("stations");
 
     if (!source) {
@@ -298,11 +288,69 @@ export async function createMap() {
     source.setData({
       type: "FeatureCollection",
 
-      features: Array.from(stationFeatures.values()),
+      features,
     });
   }
 
-  function showStation(station, score) {
+  function clearStations() {
+    stationStore.clear();
+
+    const source = map.getSource("stations");
+
+    if (!source) {
+      return;
+    }
+
+    source.setData({
+      type: "FeatureCollection",
+
+      features: [],
+    });
+  }
+
+  /*
+   * Retrieve the complete station record only after the user clicks
+   * a marker.
+   */
+  async function loadAndShowStation(id) {
+    showStationLoading(id);
+
+    try {
+      const response = await fetch(
+        `/api/stations/${encodeURIComponent(id)}`,
+        {
+          headers: {
+            Accept: "application/json",
+          },
+        },
+      );
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error(`Station "${id}" was not found`);
+        }
+
+        throw new Error(
+          `Server returned ${response.status} ${response.statusText}`,
+        );
+      }
+
+      const station = await response.json();
+
+      showStation(station);
+    } catch (err) {
+      console.error(`Failed loading station "${id}":`, err);
+
+      showStationError(id, err);
+    }
+  }
+
+  /*
+   * The station detail UI is intentionally kept separate from the
+   * API request. More fields can be added here later without
+   * changing the map logic.
+   */
+  function showStation(station) {
     const stationDiv = document.getElementById("station");
 
     if (!stationDiv) {
@@ -311,29 +359,58 @@ export async function createMap() {
 
     stationDiv.innerHTML = "";
 
+    const id = station.ID ?? station.id ?? "Unknown";
+
     const title = document.createElement("h2");
 
-    title.textContent = station.name;
+    title.textContent = id;
 
-    const scoreTitle = document.createElement("h3");
+    stationDiv.append(title);
 
-    scoreTitle.textContent = `AquaScore: ${Math.round(score * 100)}/100`;
+    /*
+     * Add additional station information here later.
+     *
+     * For example:
+     *
+     * const name = document.createElement("p");
+     * name.textContent = station.Name;
+     * stationDiv.append(name);
+     */
+  }
 
-    const value = document.createElement("p");
+  function showStationLoading(id) {
+    const stationDiv = document.getElementById("station");
 
-    value.textContent = `Streamflow: ${station.value}`;
-
-    const updated = document.createElement("p");
-
-    if (station.time) {
-      updated.textContent = `Updated: ${new Date(
-        station.time,
-      ).toLocaleString()}`;
-    } else {
-      updated.textContent = "Updated: Unknown";
+    if (!stationDiv) {
+      return;
     }
 
-    stationDiv.append(title, scoreTitle, value, updated);
+    stationDiv.innerHTML = "";
+
+    const message = document.createElement("p");
+
+    message.textContent = `Loading station ${id}...`;
+
+    stationDiv.append(message);
+  }
+
+  function showStationError(id, error) {
+    const stationDiv = document.getElementById("station");
+
+    if (!stationDiv) {
+      return;
+    }
+
+    stationDiv.innerHTML = "";
+
+    const message = document.createElement("p");
+
+    message.textContent =
+      error instanceof Error
+        ? error.message
+        : `Unable to load station ${id}`;
+
+    stationDiv.append(message);
   }
 
   function setViewMode(mode) {
@@ -349,14 +426,16 @@ export async function createMap() {
       map.setTerrain(null);
 
       if (map.getLayer("terrain-hillshade")) {
-        map.setLayoutProperty("terrain-hillshade", "visibility", "none");
+        map.setLayoutProperty(
+          "terrain-hillshade",
+          "visibility",
+          "none",
+        );
       }
 
       map.easeTo({
         pitch: 0,
-
         bearing: 0,
-
         duration: 700,
       });
 
@@ -365,19 +444,20 @@ export async function createMap() {
 
     map.setTerrain({
       source: "terrainSource",
-
       exaggeration: 1.15,
     });
 
     if (map.getLayer("terrain-hillshade")) {
-      map.setLayoutProperty("terrain-hillshade", "visibility", "visible");
+      map.setLayoutProperty(
+        "terrain-hillshade",
+        "visibility",
+        "visible",
+      );
     }
 
     map.easeTo({
       pitch: INITIAL_PITCH,
-
       bearing: INITIAL_BEARING,
-
       duration: 700,
     });
   }
@@ -406,102 +486,7 @@ export async function createMap() {
 
   return {
     map,
-
     resetView,
-
     setViewMode,
   };
-}
-
-function getVisibleTiles(bounds, zoom) {
-  const tiles = [];
-
-  const tileCount = Math.pow(2, zoom);
-
-  const north = Math.min(85.05112878, bounds.getNorth());
-
-  const south = Math.max(-85.05112878, bounds.getSouth());
-
-  const west = bounds.getWest();
-
-  const east = bounds.getEast();
-
-  const northWest = latLngToTile(north, west, zoom);
-
-  const southEast = latLngToTile(south, east, zoom);
-
-  if (west <= east) {
-    for (let x = northWest.x; x <= southEast.x; x++) {
-      for (let y = northWest.y; y <= southEast.y; y++) {
-        if (x >= 0 && x < tileCount && y >= 0 && y < tileCount) {
-          tiles.push({
-            x,
-            y,
-          });
-        }
-      }
-    }
-
-    return tiles;
-  }
-
-  const firstNorthWest = latLngToTile(north, west, zoom);
-
-  const firstSouthEast = latLngToTile(south, 180, zoom);
-
-  for (let x = firstNorthWest.x; x <= firstSouthEast.x; x++) {
-    for (let y = firstNorthWest.y; y <= firstSouthEast.y; y++) {
-      if (x >= 0 && x < tileCount && y >= 0 && y < tileCount) {
-        tiles.push({
-          x,
-          y,
-        });
-      }
-    }
-  }
-
-  const secondNorthWest = latLngToTile(north, -180, zoom);
-
-  const secondSouthEast = latLngToTile(south, east, zoom);
-
-  for (let x = secondNorthWest.x; x <= secondSouthEast.x; x++) {
-    for (let y = secondNorthWest.y; y <= secondSouthEast.y; y++) {
-      if (x >= 0 && x < tileCount && y >= 0 && y < tileCount) {
-        tiles.push({
-          x,
-          y,
-        });
-      }
-    }
-  }
-
-  return tiles;
-}
-
-function latLngToTile(lat, lng, zoom) {
-  const tileCount = Math.pow(2, zoom);
-
-  lat = Math.max(-85.05112878, Math.min(85.05112878, lat));
-
-  lng = normalizeLongitude(lng);
-
-  let x = Math.floor(((lng + 180) / 360) * tileCount);
-
-  const y = Math.floor(
-    ((1 - Math.asinh(Math.tan((lat * Math.PI) / 180)) / Math.PI) / 2) *
-      tileCount,
-  );
-
-  x = Math.max(0, Math.min(tileCount - 1, x));
-
-  const clampedY = Math.max(0, Math.min(tileCount - 1, y));
-
-  return {
-    x,
-    y: clampedY,
-  };
-}
-
-function normalizeLongitude(lng) {
-  return ((((lng + 180) % 360) + 360) % 360) - 180;
 }
