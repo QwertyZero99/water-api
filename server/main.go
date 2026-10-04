@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
 const (
-	latestURL     = "https://api.waterdata.usgs.gov/ogcapi/v0/collections/latest-continuous/items"
-	parameterURL  = "https://api.waterdata.usgs.gov/ogcapi/v0/collections/parameter-codes/items"
+	latestURL    = "https://api.waterdata.usgs.gov/ogcapi/v0/collections/latest-continuous/items"
+	parameterURL = "https://api.waterdata.usgs.gov/ogcapi/v0/collections/parameter-codes/items"
+
 	cacheDuration = 1 * time.Hour
 )
 
@@ -96,9 +98,38 @@ var (
 	lastCacheTime  time.Time
 )
 
+type Config struct {
+	Port        string
+	DatabaseURL string
+	APIKey      string
+}
+
+func loadConfig() (Config, error) {
+	cfg := Config{
+		Port:        os.Getenv("PORT"),
+		DatabaseURL: os.Getenv("DATABASE_URL"),
+		APIKey:      os.Getenv("API_KEY"),
+	}
+
+	if cfg.Port == "" {
+		return Config{}, fmt.Errorf("PORT is required")
+	}
+
+	/*
+		if cfg.DatabaseURL == "" {
+			return Config{}, fmt.Errorf("DATABASE_URL is required")
+		}
+	*/
+
+	return cfg, nil
+}
+
 func main() {
 	fs := http.FileServer(http.Dir("./static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
+
+	imageFs := http.FileServer(http.Dir("./images"))
+	http.Handle("/images/", http.StripPrefix("/images/", imageFs))
 
 	jsFS := http.FileServer(http.Dir("./js"))
 	http.Handle("/js/", http.StripPrefix("/js/", jsFS))
