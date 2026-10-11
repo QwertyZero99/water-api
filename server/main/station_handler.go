@@ -29,9 +29,13 @@ func NewStationHandlers(store *StationStore) *StationHandlers {
 
 // StationLocationResponse is the minimal representation returned by the
 // bounding-box endpoint.
+
 type StationLocationResponse struct {
-	ID       string    `json:"id"`
-	Location orb.Point `json:"location"`
+	ID           string    `json:"id"`
+	Location     orb.Point `json:"location"`
+	Name         string    `json:"name"`
+	SiteType     string    `json:"siteType"`
+	SiteTypeCode string    `json:"siteTypeCode"`
 }
 
 // StationsInBoundingBox handles:
@@ -73,20 +77,35 @@ func (h *StationHandlers) StationsInBoundingBox(
 
 	rows, err := h.store.db.Query(`
 SELECT
-station->>'ID' AS station_id,
-(station->'Geometry'->>0)::double precision AS longitude,
-(station->'Geometry'->>1)::double precision AS latitude
+    station->>'ID' AS station_id,
+
+    (station->'Geometry'->>0)::double precision
+        AS longitude,
+
+    (station->'Geometry'->>1)::double precision
+        AS latitude,
+
+    COALESCE(station->>'MonitoringLocationName', '')
+        AS station_name,
+
+    COALESCE(station->>'SiteType', '')
+        AS site_type,
+
+    COALESCE(station->>'SiteTypeCode', '')
+        AS site_type_code
+
 FROM stations
+
 WHERE
-station->'Geometry' IS NOT NULL
-AND jsonb_typeof(station->'Geometry') = 'array'
-AND jsonb_array_length(station->'Geometry') >= 2
+    station->'Geometry' IS NOT NULL
+    AND jsonb_typeof(station->'Geometry') = 'array'
+    AND jsonb_array_length(station->'Geometry') >= 2
 
-AND (station->'Geometry'->>0)::double precision
-BETWEEN $1 AND $2
+    AND (station->'Geometry'->>0)::double precision
+        BETWEEN $1 AND $2
 
-AND (station->'Geometry'->>1)::double precision
-BETWEEN $3 AND $4
+    AND (station->'Geometry'->>1)::double precision
+        BETWEEN $3 AND $4
 
 ORDER BY station->>'ID'
 `,
@@ -95,6 +114,7 @@ ORDER BY station->>'ID'
 		bbox.MinLat,
 		bbox.MaxLat,
 	)
+
 	if err != nil {
 		writeJSONError(
 			w,
@@ -115,15 +135,21 @@ ORDER BY station->>'ID'
 
 	for rows.Next() {
 		var (
-			id        string
-			longitude float64
-			latitude  float64
+			id           string
+			longitude    float64
+			latitude     float64
+			name         string
+			siteType     string
+			siteTypeCode string
 		)
 
 		if err := rows.Scan(
 			&id,
 			&longitude,
 			&latitude,
+			&name,
+			&siteType,
+			&siteTypeCode,
 		); err != nil {
 			writeJSONError(
 				w,
@@ -144,6 +170,9 @@ ORDER BY station->>'ID'
 					longitude,
 					latitude,
 				},
+				Name:         name,
+				SiteType:     siteType,
+				SiteTypeCode: siteTypeCode,
 			},
 		)
 	}

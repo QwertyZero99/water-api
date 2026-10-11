@@ -1,4 +1,130 @@
-const MIN_STATION_ZOOM = 7;
+
+function getWaterCategory(siteTypeCode) {
+  const code = String(siteTypeCode ?? "")
+    .trim()
+    .toUpperCase();
+
+  if (code === "GW" || code.startsWith("GW-")) {
+    return "groundwater";
+  }
+
+  if (
+    code === "ST" || code.startsWith("ST-") ||
+    code === "LK" || code.startsWith("LK-") ||
+    code === "ES" || code.startsWith("ES-")
+  ) {
+    return "surface";
+  }
+
+  return "other";
+}
+
+const NY_BBOX = [-79.8, 40.4, -71.8, 45.1];
+
+const NY_BOUNDARY_URL =
+  "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json";
+
+const NEARBY_RADIUS_MILES = 20;
+const MAX_NEARBY_STATIONS = 5;
+
+// --------------------------------------
+// GEOGRAPHIC HELPERS
+// --------------------------------------
+
+function pointInRing(point, ring) {
+  const [x, y] = point;
+  let inside = false;
+
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i];
+    const [xj, yj] = ring[j];
+
+    if (
+      (yi > y) !== (yj > y) &&
+      x < ((xj - xi) * (y - yi)) / (yj - yi) + xi
+    ) {
+      inside = !inside;
+    }
+  }
+
+  return inside;
+}
+
+function pointInPolygon(point, rings) {
+  if (!rings.length || !pointInRing(point, rings[0])) {
+    return false;
+  }
+
+  for (let i = 1; i < rings.length; i++) {
+    if (pointInRing(point, rings[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function pointInGeometry(point, geometry) {
+  if (!geometry) return false;
+
+  if (geometry.type === "Polygon") {
+    return pointInPolygon(point, geometry.coordinates);
+  }
+
+  if (geometry.type === "MultiPolygon") {
+    return geometry.coordinates.some(polygon =>
+      pointInPolygon(point, polygon)
+    );
+  }
+
+  return false;
+}
+
+function distanceMiles(lat1, lng1, lat2, lng2) {
+  const R = 3958.8;
+  const radians = value => value * Math.PI / 180;
+
+  const dLat = radians(lat2 - lat1);
+  const dLng = radians(lng2 - lng1);
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(radians(lat1)) *
+    Math.cos(radians(lat2)) *
+    Math.sin(dLng / 2) ** 2;
+
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(a)));
+}
+
+async function loadNYBoundary() {
+  const response = await fetch(NY_BOUNDARY_URL);
+
+  if (!response.ok) {
+    throw new Error(
+      `NY boundary request failed: HTTP ${response.status}`
+    );
+  }
+
+  const data = await response.json();
+
+  const feature = data.features?.find(feature =>
+    feature.properties?.name === "New York" ||
+    feature.properties?.NAME === "New York"
+  );
+
+  if (
+    !feature?.geometry ||
+    !["Polygon", "MultiPolygon"].includes(feature.geometry.type)
+  ) {
+    throw new Error("New York boundary not found");
+  }
+
+  return feature.geometry;
+}
+
+// --------------------------------------
+// CREATE MAP
+// --------------------------------------
 
 export async function createMap() {
   const INITIAL_CENTER = [-75, 43];
@@ -7,22 +133,23 @@ export async function createMap() {
   const INITIAL_BEARING = -8;
 
   let viewMode = "3d";
+  let activePopup = null;
+  let zipMarker = null;
+
+  let availableStations = [];
+  let nearbyStations = [];
+  let searchVersion = 0;
 
   const map = new maplibregl.Map({
     container: "map",
 
     center: INITIAL_CENTER,
-
     zoom: INITIAL_ZOOM,
-
     pitch: INITIAL_PITCH,
-
     bearing: INITIAL_BEARING,
 
     maxZoom: 18,
-
     maxPitch: 80,
-
     maxBounds: [
       [-79.8, 40.4],
       [-71.8, 45.1],
@@ -36,26 +163,21 @@ export async function createMap() {
       sources: {
         esriTopo: {
           type: "raster",
-
           tiles: [
             "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",
           ],
-
           tileSize: 256,
-
           attribution:
             "Esri, TomTom, Garmin, FAO, NOAA, USGS, OpenStreetMap contributors",
         },
 
         terrainSource: {
           type: "raster-dem",
-
           url: "https://tiles.mapterhorn.com/tilejson.json",
         },
 
         hillshadeSource: {
           type: "raster-dem",
-
           url: "https://tiles.mapterhorn.com/tilejson.json",
         },
       },
@@ -63,23 +185,17 @@ export async function createMap() {
       layers: [
         {
           id: "esri-topographic",
-
           type: "raster",
-
           source: "esriTopo",
         },
 
         {
           id: "terrain-hillshade",
-
           type: "hillshade",
-
           source: "hillshadeSource",
-
           layout: {
             visibility: "visible",
           },
-
           paint: {
             "hillshade-exaggeration": 0.25,
           },
@@ -88,7 +204,6 @@ export async function createMap() {
 
       terrain: {
         source: "terrainSource",
-
         exaggeration: 1.15,
       },
     },
@@ -103,126 +218,347 @@ export async function createMap() {
     "top-left",
   );
 
-  await new Promise((resolve) => {
+  await new Promise(resolve => {
     map.once("load", resolve);
   });
 
-  /*
-   * The API returns lightweight station objects:
-   *
-   * {
-   *   "id": "USGS-01350000",
-   *   "location": [-73.123, 42.456]
-   * }
-   *
-   * We keep the API data separately from the GeoJSON features so that
-   * clicking a marker can retrieve the full station from the API.
-   */
-  const stationStore = new Map();
+  // --------------------------------------
+  // STATION SOURCES
+  // --------------------------------------
+
+  const emptyGeoJSON = () => ({
+    type: "FeatureCollection",
+    features: [],
+  });
 
   map.addSource("stations", {
     type: "geojson",
+    data: emptyGeoJSON(),
+    cluster: true,
+    clusterMaxZoom: 12,
+    clusterRadius: 60,
+  });
 
-    data: {
-      type: "FeatureCollection",
-      features: [],
+  map.addSource("nearby-stations", {
+    type: "geojson",
+    data: emptyGeoJSON(),
+  });
+
+  // --------------------------------------
+  // CLUSTER LAYERS
+  // --------------------------------------
+
+  map.addLayer({
+    id: "station-clusters",
+    type: "circle",
+    source: "stations",
+    filter: ["has", "point_count"],
+
+    paint: {
+      "circle-color": "#1976d2",
+      "circle-opacity": 0.85,
+      "circle-radius": [
+        "step",
+        ["get", "point_count"],
+        18,
+        20, 23,
+        100, 30,
+      ],
+      "circle-stroke-color": "#ffffff",
+      "circle-stroke-width": 2,
     },
   });
 
   map.addLayer({
-    id: "station-circles",
-
-    type: "circle",
-
+    id: "station-cluster-count",
+    type: "symbol",
     source: "stations",
+    filter: ["has", "point_count"],
+
+    layout: {
+      "text-field": ["get", "point_count_abbreviated"],
+      "text-size": 12,
+      "text-allow-overlap": true,
+      "text-ignore-placement": true,
+    },
+
+    paint: {
+      "text-color": "#ffffff",
+    },
+  });
+
+  // --------------------------------------
+  // INDIVIDUAL STATIONS
+  // --------------------------------------
+
+  map.addLayer({
+    id: "station-circles",
+    type: "circle",
+    source: "stations",
+    filter: ["!", ["has", "point_count"]],
 
     paint: {
       "circle-radius": [
         "interpolate",
         ["linear"],
         ["zoom"],
-        6,
-        5,
-        9,
-        8,
-        13,
-        12,
+        6, 5,
+        9, 8,
+        13, 12,
       ],
-
       "circle-color": "#1976d2",
-
       "circle-opacity": 0.85,
-
       "circle-stroke-color": "#ffffff",
-
       "circle-stroke-width": 2,
     },
   });
 
-  map.on("mouseenter", "station-circles", () => {
-    map.getCanvas().style.cursor = "pointer";
-  });
+  // --------------------------------------
+  // NEARBY STATION HIGHLIGHTS
+  // --------------------------------------
 
-  map.on("mouseleave", "station-circles", () => {
-    map.getCanvas().style.cursor = "";
-  });
+  // This layer sits above the regular stations.
+  // It displays the five selected stations in amber.
 
-  map.on("click", "station-circles", async (event) => {
-    if (!event.features || event.features.length === 0) {
-      return;
+
+map.addLayer({
+  id: "nearby-station-highlights",
+  type: "circle",
+  source: "nearby-stations",
+
+  paint: {
+    "circle-radius": 14,
+
+    "circle-color": [
+      "match",
+      ["get", "category"],
+      "groundwater", "#217842",
+      "surface", "#1c7bb9",
+      "#64748b",
+    ],
+
+    "circle-opacity": 0.95,
+
+    "circle-stroke-color": "#ffffff",
+    "circle-stroke-width": 3,
+  },
+});
+
+
+  // --------------------------------------
+  // STATION DETAIL REQUEST
+  // --------------------------------------
+
+  async function fetchStationDetails(id) {
+    const response = await fetch(
+      `/api/stations/${encodeURIComponent(id)}`,
+      {
+        headers: {
+          Accept: "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `Station request failed: HTTP ${response.status}`
+      );
     }
 
-    const feature = event.features[0];
+    return response.json();
+  }
+
+
+function getStationName(station) {
+  const value =
+    station.MonitoringLocationName ??
+    station.monitoring_location_name ??
+    station.monitoringLocationName ??
+    station.Name ??
+    station.name ??
+    station.station_name ??
+    station.StationName;
+
+  return typeof value === "string" && value.trim()
+    ? value.trim()
+    : null;
+}
+
+
+  function getWaterbodyName(station) {
+    const value =
+      station.waterbody_name ??
+      station.waterbodyName ??
+      station.waterBodyName ??
+      station.waterbody ??
+      station.waterBody ??
+      station.properties?.waterbody_name;
+
+    return typeof value === "string" && value.trim()
+      ? value.trim()
+      : null;
+  }
+
+  // --------------------------------------
+  // STATION POPUP
+  // --------------------------------------
+
+  async function showStationPopup(id, coordinates) {
+    if (activePopup) {
+      activePopup.remove();
+    }
+
+    const popup = new maplibregl.Popup({
+      offset: 15,
+      closeButton: true,
+      closeOnClick: false,
+      maxWidth: "300px",
+    })
+      .setLngLat(coordinates)
+      .setText(`Loading station ${id}...`)
+      .addTo(map);
+
+    activePopup = popup;
+
+    try {
+      const details = await fetchStationDetails(id);
+
+      if (activePopup !== popup || !popup.isOpen()) {
+        return;
+      }
+
+      const container = document.createElement("div");
+      container.className = "station-popup";
+
+      const title = document.createElement("h3");
+      title.textContent =
+        getWaterbodyName(details) ??
+        getStationName(details) ??
+        "Water Monitoring Station";
+
+      const stationName = getStationName(details);
+
+      container.append(title);
+
+      if (
+        stationName &&
+        stationName !== title.textContent
+      ) {
+        const subtitle = document.createElement("p");
+        subtitle.textContent = stationName;
+        container.append(subtitle);
+      }
+
+      const stationID = document.createElement("p");
+      stationID.textContent =
+        `Station ID: ${details.ID ?? details.id ?? id}`;
+
+      container.append(stationID);
+
+      popup.setDOMContent(container);
+
+    } catch (error) {
+      console.error("Station popup failed:", error);
+
+      if (activePopup === popup && popup.isOpen()) {
+        popup.setText(
+          "Unable to load station information."
+        );
+      }
+    }
+  }
+
+  // --------------------------------------
+  // MAP CLICK HANDLING
+  // --------------------------------------
+
+  map.on("click", async event => {
+    const features = map.queryRenderedFeatures(
+      event.point,
+      {
+        layers: [
+          "nearby-station-highlights",
+          "station-circles",
+          "station-clusters",
+        ],
+      }
+    );
+
+    const feature = features[0];
+
+    if (!feature) return;
 
     const id = feature.properties?.id;
 
-    if (!id) {
+    // Individual station or highlighted station.
+    if (id) {
+      await showStationPopup(
+        id,
+        feature.geometry.coordinates.slice()
+      );
       return;
     }
 
-    await loadAndShowStation(id);
-  });
+    // Numbered cluster.
+    const clusterId = feature.properties?.cluster_id;
 
-  /*
-   * Load stations whenever the map stops moving.
-   *
-   * The bbox API does the spatial filtering on the server, so the
-   * browser only receives stations currently visible in the map.
-   */
-  async function loadStations() {
-    if (map.getZoom() < MIN_STATION_ZOOM) {
-      clearStations();
-
-      return;
-    }
-
-    const bounds = map.getBounds();
-
-    const west = bounds.getWest();
-    const south = bounds.getSouth();
-    const east = bounds.getEast();
-    const north = bounds.getNorth();
-
-    const bbox = [
-      west,
-      south,
-      east,
-      north,
-    ].join(",");
+    if (clusterId == null) return;
 
     try {
-      const response = await fetch(
-        `/api/stations?bbox=${encodeURIComponent(bbox)}`,
-        {
-          headers: {
-            Accept: "application/json",
-          },
-        },
+      const source = map.getSource("stations");
+
+      const zoom = await source.getClusterExpansionZoom(
+        clusterId
       );
+
+      map.easeTo({
+        center: feature.geometry.coordinates,
+        zoom: Math.min(zoom + 0.3, map.getMaxZoom()),
+        duration: 650,
+      });
+
+    } catch (error) {
+      console.error("Cluster expansion failed:", error);
+    }
+  });
+
+  for (const layerId of [
+    "station-clusters",
+    "station-circles",
+    "nearby-station-highlights",
+  ]) {
+    map.on("mouseenter", layerId, () => {
+      map.getCanvas().style.cursor = "pointer";
+    });
+
+    map.on("mouseleave", layerId, () => {
+      map.getCanvas().style.cursor = "";
+    });
+  }
+
+  // --------------------------------------
+  // LOAD AND FILTER NEW YORK STATIONS
+  // --------------------------------------
+
+  async function loadStations() {
+    const bbox = NY_BBOX.join(",");
+
+    try {
+      const [response, nyBoundary] = await Promise.all([
+        fetch(
+          `/api/stations?bbox=${encodeURIComponent(bbox)}`,
+          {
+            headers: {
+              Accept: "application/json",
+            },
+          }
+        ),
+        loadNYBoundary(),
+      ]);
 
       if (!response.ok) {
         throw new Error(
-          `Server returned ${response.status} ${response.statusText}`,
+          `Station API returned HTTP ${response.status}`
         );
       }
 
@@ -232,194 +568,376 @@ export async function createMap() {
         throw new Error("Invalid station response");
       }
 
-      updateStations(stations);
-    } catch (err) {
-      console.error("Failed loading stations:", err);
+      const features = [];
+
+      let excluded = 0;
+      let invalid = 0;
+
+      for (const station of stations) {
+        if (
+          !station?.id ||
+          !Array.isArray(station.location) ||
+          station.location.length < 2
+        ) {
+          invalid++;
+          continue;
+        }
+
+        const lng = Number(station.location[0]);
+        const lat = Number(station.location[1]);
+
+        if (
+          !Number.isFinite(lng) ||
+          !Number.isFinite(lat)
+        ) {
+          invalid++;
+          continue;
+        }
+
+        if (!pointInGeometry([lng, lat], nyBoundary)) {
+          excluded++;
+          continue;
+        }
+
+
+features.push({
+  type: "Feature",
+
+  geometry: {
+    type: "Point",
+    coordinates: [lng, lat],
+  },
+
+  properties: {
+    id: station.id,
+    name: station.name ?? "",
+    siteType: station.siteType ?? "",
+    siteTypeCode: station.siteTypeCode ?? "",
+    category: getWaterCategory(station.siteTypeCode),
+  },
+});
+
+      }
+
+      availableStations = features;
+
+      map.getSource("stations").setData({
+        type: "FeatureCollection",
+        features,
+      });
+
+      console.log("AquaNY stations loaded");
+      console.log("Total records:", stations.length);
+      console.log("NY stations:", features.length);
+      console.log("Outside NY:", excluded);
+      console.log("Invalid:", invalid);
+
+    } catch (error) {
+      console.error("Failed loading stations:", error);
+      throw error;
     }
   }
 
-  function updateStations(stations) {
-    stationStore.clear();
+  // --------------------------------------
+  // FIND NEARBY STATIONS
+  // --------------------------------------
 
-    const features = [];
+
+async function highlightNearbyStations(lat, lng, version) {
+  const resultsDiv = document.getElementById(
+    "nearbyStationResults"
+  );
+
+  if (resultsDiv) {
+    resultsDiv.textContent =
+      "Finding nearby water monitoring stations...";
+  }
+
+  // Calculate distance for each station.
+  const nearby = availableStations
+    .map(feature => {
+      const [stationLng, stationLat] =
+        feature.geometry.coordinates;
+
+      return {
+        id: feature.properties.id,
+        name: feature.properties.name,
+        siteType: feature.properties.siteType,
+        category: feature.properties.category,
+        feature,
+
+        distance: distanceMiles(
+          lat,
+          lng,
+          stationLat,
+          stationLng
+        ),
+      };
+    })
+    .filter(station =>
+      station.distance <= NEARBY_RADIUS_MILES
+    )
+    .sort((a, b) => a.distance - b.distance);
+
+  if (version !== searchVersion) return;
+
+  // Separate groundwater and surface water.
+  const groundwater = nearby
+    .filter(station => station.category === "groundwater")
+    .slice(0, MAX_NEARBY_STATIONS);
+
+  const surfaceWater = nearby
+    .filter(station => station.category === "surface")
+    .slice(0, MAX_NEARBY_STATIONS);
+
+  // Keep other station types available on the map,
+  // but don't assign them to the wrong category.
+  const selected = [
+    ...surfaceWater,
+    ...groundwater,
+  ];
+
+  nearbyStations = selected;
+
+  // Highlight selected stations on the map.
+  map.getSource("nearby-stations").setData({
+    type: "FeatureCollection",
+    features: selected.map(station => station.feature),
+  });
+
+  if (!resultsDiv) return;
+
+  resultsDiv.replaceChildren();
+
+  const heading = document.createElement("h3");
+  heading.textContent = "Water Monitoring Near You";
+  resultsDiv.append(heading);
+
+  if (selected.length === 0) {
+    const empty = document.createElement("p");
+    empty.textContent =
+      "No groundwater or surface-water monitoring stations " +
+      `found within ${NEARBY_RADIUS_MILES} miles.`;
+
+    resultsDiv.append(empty);
+    return;
+  }
+
+  // Render a separate group for each water category.
+  function renderGroup(title, stations) {
+    const section = document.createElement("section");
+    section.className = "water-category";
+
+    const groupHeading = document.createElement("h4");
+    groupHeading.textContent = `${title} (${stations.length})`;
+
+    section.append(groupHeading);
+
+    if (stations.length === 0) {
+      const message = document.createElement("p");
+      message.className = "water-category-empty";
+      message.textContent =
+        "No nearby monitoring stations found in this category.";
+
+      section.append(message);
+    }
 
     for (const station of stations) {
-      if (!station || !station.id) {
-        continue;
-      }
+      const item = document.createElement("button");
 
-      if (
-        !Array.isArray(station.location) ||
-        station.location.length < 2
-      ) {
-        continue;
-      }
+      item.type = "button";
+      item.className = "nearby-station-result";
 
-      const lng = Number(station.location[0]);
-      const lat = Number(station.location[1]);
+      item.classList.add(
+        station.category === "groundwater"
+          ? "groundwater-result"
+          : "surface-result"
+      );
 
-      if (!Number.isFinite(lng) || !Number.isFinite(lat)) {
-        continue;
-      }
+      const name = document.createElement("strong");
 
-      stationStore.set(station.id, station);
+      name.textContent =
+        station.name || `Monitoring station ${station.id}`;
 
-      features.push({
-        type: "Feature",
+      const type = document.createElement("span");
+      type.textContent =
+        station.siteType || title;
 
-        geometry: {
-          type: "Point",
+      const distance = document.createElement("span");
+      distance.textContent =
+        `${station.distance.toFixed(1)} mi`;
 
-          coordinates: [lng, lat],
-        },
+      item.append(name, type, distance);
 
-        properties: {
-          id: station.id,
-        },
+      item.addEventListener("click", () => {
+        const coordinates =
+          station.feature.geometry.coordinates;
+
+        map.flyTo({
+          center: coordinates,
+          zoom: 13,
+          speed: 1.2,
+        });
+
+        showStationPopup(station.id, coordinates);
       });
+
+      section.append(item);
     }
 
-    const source = map.getSource("stations");
+    resultsDiv.append(section);
+  }
 
-    if (!source) {
+  renderGroup("Surface Water", surfaceWater);
+  renderGroup("Groundwater", groundwater);
+
+  console.log("Nearby surface-water stations:", surfaceWater.length);
+  console.log("Nearby groundwater stations:", groundwater.length);
+}
+
+
+  // --------------------------------------
+  // ZIP CODE SEARCH
+  // --------------------------------------
+
+  const zipForm = document.getElementById(
+    "zipSearchForm"
+  );
+
+  const zipInput = document.getElementById(
+    "zipInput"
+  );
+
+  const zipStatus = document.getElementById(
+    "zipSearchStatus"
+  );
+
+  const zipButton = document.getElementById(
+    "zipSearchButton"
+  );
+
+  async function searchZipCode(zip) {
+    const version = ++searchVersion;
+
+    if (!/^\d{5}$/.test(zip)) {
+      zipStatus.textContent =
+        "Please enter a valid 5-digit ZIP code.";
       return;
     }
 
-    source.setData({
-      type: "FeatureCollection",
-
-      features,
-    });
-  }
-
-  function clearStations() {
-    stationStore.clear();
-
-    const source = map.getSource("stations");
-
-    if (!source) {
-      return;
-    }
-
-    source.setData({
-      type: "FeatureCollection",
-
-      features: [],
-    });
-  }
-
-  /*
-   * Retrieve the complete station record only after the user clicks
-   * a marker.
-   */
-  async function loadAndShowStation(id) {
-    showStationLoading(id);
+    zipButton.disabled = true;
+    zipStatus.textContent = "Finding your location...";
 
     try {
       const response = await fetch(
-        `/api/stations/${encodeURIComponent(id)}`,
-        {
-          headers: {
-            Accept: "application/json",
-          },
-        },
+        `https://api.zippopotam.us/us/${zip}`
       );
 
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error(`Station "${id}" was not found`);
-        }
+      if (response.status === 404) {
+        throw new Error("ZIP code not found.");
+      }
 
+      if (!response.ok) {
         throw new Error(
-          `Server returned ${response.status} ${response.statusText}`,
+          "ZIP lookup is temporarily unavailable."
         );
       }
 
-      const station = await response.json();
+      const data = await response.json();
 
-      showStation(station);
-    } catch (err) {
-      console.error(`Failed loading station "${id}":`, err);
+      if (version !== searchVersion) return;
 
-      showStationError(id, err);
+      const place = data.places?.find(
+        place =>
+          place["state abbreviation"] === "NY"
+      );
+
+      if (!place) {
+        throw new Error(
+          "Please enter a New York State ZIP code."
+        );
+      }
+
+      const lng = Number(place.longitude);
+      const lat = Number(place.latitude);
+
+      if (
+        !Number.isFinite(lng) ||
+        !Number.isFinite(lat)
+      ) {
+        throw new Error("Unable to locate this ZIP.");
+      }
+
+      // Update ZIP location marker.
+      if (zipMarker) {
+        zipMarker.remove();
+      }
+
+      zipMarker = new maplibregl.Marker({
+        color: "#ef4444",
+      })
+        .setLngLat([lng, lat])
+        .setPopup(
+          new maplibregl.Popup({ offset: 20 })
+            .setText(
+              `${place["place name"]}, NY ${zip}`
+            )
+        )
+        .addTo(map);
+
+      map.flyTo({
+        center: [lng, lat],
+        zoom: 11,
+        speed: 1.2,
+        curve: 1.2,
+      });
+
+      zipStatus.textContent =
+        `Showing monitoring stations near ${place["place name"]}, NY ${zip}`;
+
+      // Highlight closest stations and list them.
+      await highlightNearbyStations(
+        lat,
+        lng,
+        version
+      );
+
+    } catch (error) {
+      if (version === searchVersion) {
+        zipStatus.textContent =
+          error.message ?? "Unable to search ZIP.";
+
+        console.error("ZIP search failed:", error);
+      }
+
+    } finally {
+      if (version === searchVersion) {
+        zipButton.disabled = false;
+      }
     }
   }
 
-  /*
-   * The station detail UI is intentionally kept separate from the
-   * API request. More fields can be added here later without
-   * changing the map logic.
-   */
-  function showStation(station) {
-    const stationDiv = document.getElementById("station");
+  if (zipForm && zipInput && zipStatus && zipButton) {
+    zipInput.addEventListener("input", () => {
+      zipInput.value = zipInput.value
+        .replace(/\D/g, "")
+        .slice(0, 5);
+    });
 
-    if (!stationDiv) {
-      return;
-    }
-
-    stationDiv.innerHTML = "";
-
-    const id = station.ID ?? station.id ?? "Unknown";
-
-    const title = document.createElement("h2");
-
-    title.textContent = id;
-
-    stationDiv.append(title);
-
-    /*
-     * Add additional station information here later.
-     *
-     * For example:
-     *
-     * const name = document.createElement("p");
-     * name.textContent = station.Name;
-     * stationDiv.append(name);
-     */
+    zipForm.addEventListener("submit", event => {
+      event.preventDefault();
+      searchZipCode(zipInput.value.trim());
+    });
   }
 
-  function showStationLoading(id) {
-    const stationDiv = document.getElementById("station");
-
-    if (!stationDiv) {
-      return;
-    }
-
-    stationDiv.innerHTML = "";
-
-    const message = document.createElement("p");
-
-    message.textContent = `Loading station ${id}...`;
-
-    stationDiv.append(message);
-  }
-
-  function showStationError(id, error) {
-    const stationDiv = document.getElementById("station");
-
-    if (!stationDiv) {
-      return;
-    }
-
-    stationDiv.innerHTML = "";
-
-    const message = document.createElement("p");
-
-    message.textContent =
-      error instanceof Error
-        ? error.message
-        : `Unable to load station ${id}`;
-
-    stationDiv.append(message);
-  }
+  // --------------------------------------
+  // 2D / 3D VIEW SWITCHING
+  // --------------------------------------
 
   function setViewMode(mode) {
-    if (mode !== "2d" && mode !== "3d") {
-      return;
-    }
+    if (mode !== "2d" && mode !== "3d") return;
 
     viewMode = mode;
-
     map.stop();
 
     if (mode === "2d") {
@@ -429,7 +947,7 @@ export async function createMap() {
         map.setLayoutProperty(
           "terrain-hillshade",
           "visibility",
-          "none",
+          "none"
         );
       }
 
@@ -451,7 +969,7 @@ export async function createMap() {
       map.setLayoutProperty(
         "terrain-hillshade",
         "visibility",
-        "visible",
+        "visible"
       );
     }
 
@@ -462,6 +980,10 @@ export async function createMap() {
     });
   }
 
+  // --------------------------------------
+  // RESET VIEW
+  // --------------------------------------
+
   function resetView() {
     map.stop();
 
@@ -469,20 +991,29 @@ export async function createMap() {
 
     map.easeTo({
       center: INITIAL_CENTER,
-
       zoom: INITIAL_ZOOM,
-
       pitch: is3D ? INITIAL_PITCH : 0,
-
       bearing: is3D ? INITIAL_BEARING : 0,
-
       duration: 900,
     });
   }
 
-  map.on("moveend", loadStations);
+  // --------------------------------------
+  // INITIALIZE
+  // --------------------------------------
 
-  await loadStations();
+  try {
+    await loadStations();
+  } catch (error) {
+    const status = document.getElementById(
+      "zipSearchStatus"
+    );
+
+    if (status) {
+      status.textContent =
+        "Monitoring stations could not be loaded.";
+    }
+  }
 
   return {
     map,

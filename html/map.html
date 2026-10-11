@@ -1,13 +1,16 @@
+
 <!doctype html>
 <html lang="en">
+
 <head>
-  <title>AquaNY</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="icon" type="image/png" href="images/favicon.png">
+  <title>AquaNY | Explore Water Near You</title>
 
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="/images/favicon.png">
 
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
@@ -16,61 +19,141 @@
     rel="stylesheet"
   >
 
+  <!-- MapLibre -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css"
   >
 
+  <!-- Site Styles -->
   <link rel="stylesheet" href="/static/css/sidebar.css">
   <link rel="stylesheet" href="/static/css/mappage.css">
 </head>
 
 <body>
- 
+
+  <!-- =====================================
+       SIDEBAR
+  ====================================== -->
+
   <div id="sidebar" class="sidebar collapsed">
 
     <h1>💧 AquaNY</h1>
 
-    <p class="subtitle">
-      Know Your Water
-    </p>
+    <p class="subtitle">Know Your Water</p>
 
     <div class="sidebar-nav">
       <a href="/">Home</a>
-      <a href="map.html">Interactive Map</a>
+      <a href="/map">Interactive Map</a>
       <a href="/">Info</a>
     </div>
 
     <div id="station">
       <h2>Select a location</h2>
-      <p>Click a water monitoring station.</p>
+      <p>Click a water monitoring station to explore its information.</p>
     </div>
 
   </div>
 
-  <button id="toggle-btn" class="collapsed">›</button>
+  <button
+    id="toggle-btn"
+    class="collapsed"
+    type="button"
+    aria-label="Toggle sidebar"
+  >
+    ›
+  </button>
+
+
+  <!-- =====================================
+       MAIN PAGE
+  ====================================== -->
 
   <main class="map-page">
 
-    <div class="map-intro reveal">
+    <!-- LEFT COLUMN -->
+    <section class="map-intro reveal">
 
       <h1 class="map-title">
-        View Our Map
+        Explore Water Near You
       </h1>
 
       <p class="map-text">
-        Visualize live water quality data across New York.
+        Discover groundwater and surface-water monitoring
+        stations near your New York ZIP code.
       </p>
 
       <p class="map-hint">
-        Switch between a traditional 2D map and an interactive 3D terrain view.
+        Search by location to explore nearby rivers,
+        lakes, streams, and groundwater monitoring wells.
       </p>
 
-    </div>
+
+      <!-- ZIP CODE SEARCH -->
+
+      <div class="zip-search">
+
+        <form
+          id="zipSearchForm"
+          class="zip-search-form"
+        >
+
+          <input
+            type="text"
+            id="zipInput"
+            name="zip"
+            placeholder="Enter New York ZIP code"
+            inputmode="numeric"
+            pattern="[0-9]{5}"
+            maxlength="5"
+            autocomplete="postal-code"
+            aria-label="New York ZIP code"
+            required
+          >
+
+          <button
+            id="zipSearchButton"
+            type="submit"
+          >
+            Search
+          </button>
+
+        </form>
+
+        <!-- Search feedback -->
+
+        <p
+          id="zipSearchStatus"
+          role="status"
+          aria-live="polite"
+        ></p>
+
+
+        <!-- Nearby station results -->
+
+        <div
+          id="nearbyStationResults"
+          aria-label="Nearby water monitoring stations"
+        ></div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================
+         RIGHT COLUMN: INTERACTIVE MAP
+    ====================================== -->
 
     <div class="map-wrapper">
 
-      <div id="map"></div>
+      <div
+        id="map"
+        aria-label="Interactive map of New York water monitoring stations"
+      ></div>
+
+
+      <!-- MAP CONTROLS -->
 
       <div class="map-controls">
 
@@ -96,7 +179,11 @@
 
         </div>
 
-        <button id="resetZoom" type="button">
+        <button
+          id="resetZoom"
+          type="button"
+          aria-label="Reset map view"
+        >
           ↻ Reset
         </button>
 

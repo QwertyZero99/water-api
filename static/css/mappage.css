@@ -1,297 +1,584 @@
+
+/* ==========================================
+   GLOBAL STYLES
+========================================== */
+
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 html,
 body {
-    min-height: 100%;
+  min-height: 100%;
 }
 
 body {
-    font-family: "Inter", sans-serif;
-
-    min-height: 100vh;
-
-    background-color: rgb(243, 249, 249);
-
-    color: #222;
-
-    overflow-x: hidden;
+  font-family: "Inter", sans-serif;
+  min-height: 100vh;
+  background-color: rgb(243, 249, 249);
+  color: #222;
+  overflow-x: hidden;
 }
+
+
+/* ==========================================
+   MAIN PAGE LAYOUT
+========================================== */
 
 .map-page {
-    width: 100%;
-    min-height: 100vh;
+  width: 100%;
+  min-height: 100vh;
 
-    display: flex;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 
-    align-items: center;
-    justify-content: space-between;
-
-    gap: 6%;
-
-    padding: 6vh 3% 6vh 5%;
+  gap: 6%;
+  padding: 6vh 3% 6vh 5%;
 }
 
+
+/* ==========================================
+   LEFT COLUMN / INTRODUCTION
+========================================== */
+
 .map-intro {
-    width: 34%;
-    max-width: 520px;
+  width: 34%;
+  max-width: 520px;
 
-    display: flex;
-    flex-direction: column;
-
-    gap: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .map-title {
-    font-family: "Manrope", sans-serif;
-
-    font-size: clamp(60px, 5vw, 82px);
-    font-weight: 800;
-
-    line-height: 1.05;
-
-    color: rgb(13, 34, 95);
+  font-family: "Manrope", sans-serif;
+  font-size: clamp(48px, 4.5vw, 76px);
+  font-weight: 800;
+  line-height: 1.05;
+  color: rgb(13, 34, 95);
 }
 
 .map-text {
-    max-width: 430px;
-
-    font-size: 24px;
-
-    line-height: 1.55;
-
-    color: #444;
+  max-width: 430px;
+  font-size: 21px;
+  line-height: 1.55;
+  color: #444;
 }
 
 .map-hint {
-    max-width: 390px;
-
-    font-size: 14px;
-    font-weight: 500;
-
-    line-height: 1.5;
-
-    color: #747b82;
+  max-width: 390px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #747b82;
 }
 
-.map-wrapper {
-    position: relative;
 
-    width: 58%;
-    height: 84vh;
+/* ==========================================
+   ZIP CODE SEARCH
+========================================== */
+
+.zip-search {
+  width: 100%;
+  margin-top: 8px;
+  font-family: "Inter", sans-serif;
+}
+
+.zip-search-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+#zipInput {
+  flex: 1;
+  min-width: 0;
+
+  padding: 13px 16px;
+
+  background: #ffffff;
+  border: 1px solid #d6e1eb;
+  border-radius: 10px;
+
+  font-family: inherit;
+  font-size: 14px;
+  color: #18314a;
+  outline: none;
+
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+#zipInput:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.12);
+}
+
+#zipSearchButton {
+  padding: 13px 20px;
+
+  background: #1976d2;
+  color: #ffffff;
+
+  border: none;
+  border-radius: 10px;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s,
+    transform 0.2s;
+}
+
+#zipSearchButton:hover {
+  background: #1565c0;
+}
+
+#zipSearchButton:active {
+  transform: scale(0.97);
+}
+
+#zipSearchButton:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+#zipSearchStatus {
+  margin-top: 10px;
+  min-height: 18px;
+
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+
+/* ==========================================
+   NEARBY STATION RESULTS
+========================================== */
+
+#nearbyStationResults {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  width: 100%;
+  max-height: 360px;
+
+  margin-top: 14px;
+  padding: 2px 5px 4px 0;
+
+  overflow-y: auto;
+}
+
+#nearbyStationResults:empty {
+  display: none;
+}
+
+#nearbyStationResults h3 {
+  font-family: "Manrope", sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: #142f46;
+}
+
+
+/* ==========================================
+   WATER CATEGORY SECTIONS
+========================================== */
+
+.water-category {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.water-category h4 {
+  margin: 4px 0;
+
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.water-category-empty {
+  margin: 4px 0 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #8191a1;
+}
+
+
+/* ==========================================
+   STATION RESULT CARDS
+========================================== */
+
+.nearby-station-result {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+
+  width: 100%;
+  padding: 12px 14px;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #94a3b8;
+  border-radius: 10px;
+
+  font-family: "Inter", sans-serif;
+  text-align: left;
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
+}
+
+.nearby-station-result:hover {
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
+
+.nearby-station-result:focus-visible {
+  outline: 2px solid #1976d2;
+  outline-offset: 2px;
+}
+
+.nearby-station-result strong {
+  display: block;
+
+  color: #1e293b;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.nearby-station-result span {
+  display: block;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #64748b;
+}
+
+
+/* Surface water */
+
+.nearby-station-result.surface-result {
+  border-left-color: #1c7bb9;
+}
+
+.nearby-station-result.surface-result:hover {
+  background: #f0fdfa;
+  border-color: #1c7bb9;
+}
+
+
+/* Groundwater */
+
+.nearby-station-result.groundwater-result {
+  border-left-color: #217842;
+}
+
+.nearby-station-result.groundwater-result:hover {
+  background: #fff8eb;
+  border-color: #217842;
+}
+
+
+/* ==========================================
+   MAP CONTAINER
+========================================== */
+
+.map-wrapper {
+  position: relative;
+
+  width: 58%;
+  height: 84vh;
+  min-height: 500px;
 }
 
 #map {
-    width: 100%;
-    height: 100%;
+  width: 100%;
+  height: 100%;
 
-    border-radius: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
 
-    border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
 
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-
-    overflow: hidden;
+  overflow: hidden;
 }
 
+
+/* ==========================================
+   MAP CONTROLS
+========================================== */
+
 .map-controls {
-    position: absolute;
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 10;
 
-    top: 15px;
-    right: 15px;
-
-    z-index: 10;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .view-switch {
-    display: flex;
+  display: flex;
 
-    background-color: rgba(255, 255, 255, 0.96);
+  background-color: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 7px;
 
-    border: 1px solid rgba(0, 0, 0, 0.12);
+  overflow: hidden;
 
-    border-radius: 7px;
-
-    overflow: hidden;
-
-    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.22);
 }
 
 .view-button {
-    padding: 8px 14px;
+  padding: 8px 14px;
 
-    border: none;
+  border: none;
+  background-color: transparent;
+  color: #444;
 
-    background-color: transparent;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
 
-    color: #444;
+  cursor: pointer;
 
-    font-family: "Inter", sans-serif;
-
-    font-size: 13px;
-    font-weight: 600;
-
-    cursor: pointer;
-
-    transition:
-        background-color 0.2s ease,
-        color 0.2s ease;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
 .view-button:hover {
-    background-color: #eef2f4;
+  background-color: #eef2f4;
 }
 
 .view-button.active {
-    background-color: rgb(13, 34, 95);
-
-    color: white;
+  background-color: rgb(13, 34, 95);
+  color: #ffffff;
 }
 
 #resetZoom {
-    padding: 8px 13px;
+  padding: 8px 13px;
 
-    background-color: rgba(255, 255, 255, 0.96);
+  background-color: rgba(255, 255, 255, 0.96);
+  color: #333;
 
-    color: #333;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 7px;
 
-    border: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.22);
 
-    border-radius: 7px;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
 
-    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.22);
+  cursor: pointer;
 
-    font-family: "Inter", sans-serif;
-
-    font-size: 13px;
-    font-weight: 600;
-
-    cursor: pointer;
-
-    transition:
-        background-color 0.2s ease,
-        color 0.2s ease,
-        transform 0.2s ease;
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    transform 0.2s;
 }
 
 #resetZoom:hover {
-    background-color: white;
-
-    color: rgb(13, 34, 95);
-
-    transform: translateY(-1px);
+  background-color: #ffffff;
+  color: rgb(13, 34, 95);
+  transform: translateY(-1px);
 }
 
-.reveal {
-    opacity: 0;
 
-    transform: translateY(60px);
-
-    transition:
-        opacity 0.8s ease,
-        transform 0.8s ease;
-}
-
-.reveal.visible {
-    opacity: 1;
-
-    transform: translateY(0);
-}
+/* ==========================================
+   MAPLIBRE STYLING
+========================================== */
 
 .maplibregl-ctrl-group {
-    border-radius: 7px;
+  border-radius: 7px;
 }
 
 .maplibregl-ctrl button {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .maplibregl-ctrl-attrib {
-    font-family: "Inter", sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .maplibregl-popup-content {
-    font-family: "Inter", sans-serif;
+  padding: 16px;
+  border-radius: 12px;
+
+  font-family: "Inter", sans-serif;
+
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
+
+.station-popup {
+  min-width: 170px;
+  padding: 4px;
+}
+
+.station-popup h3 {
+  margin-bottom: 9px;
+
+  color: #1976d2;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.station-popup p {
+  margin: 5px 0;
+
+  color: #56697b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+
+/* ==========================================
+   SCROLL REVEAL ANIMATIONS
+========================================== */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(60px);
+
+  transition:
+    opacity 0.8s ease,
+    transform 0.8s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+/* ==========================================
+   TABLET LAYOUT
+========================================== */
 
 @media (max-width: 1100px) {
+  .map-page {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 
-    .map-page {
-        flex-direction: column;
+    gap: 40px;
+    padding: 80px 5%;
+  }
 
-        justify-content: center;
-        align-items: center;
+  .map-intro {
+    width: 100%;
+    max-width: 800px;
 
-        gap: 50px;
+    text-align: center;
+    align-items: center;
+  }
 
-        padding: 80px 5%;
-    }
+  .map-title {
+    font-size: clamp(48px, 8vw, 70px);
+  }
 
-    .map-intro {
-        width: 90%;
-        max-width: 800px;
+  .map-text {
+    font-size: 21px;
+  }
 
-        text-align: center;
+  .zip-search {
+    max-width: 560px;
+    text-align: left;
+  }
 
-        align-items: center;
-    }
-
-    .map-title {
-        font-size: clamp(50px, 8vw, 70px);
-    }
-
-    .map-text {
-        font-size: 22px;
-    }
-
-    .map-wrapper {
-        width: 90%;
-        height: 72vh;
-    }
+  .map-wrapper {
+    width: 100%;
+    height: 72vh;
+    min-height: 450px;
+  }
 }
 
+
+/* ==========================================
+   MOBILE LAYOUT
+========================================== */
+
 @media (max-width: 600px) {
+  .map-page {
+    padding: 70px 20px 40px;
+    gap: 30px;
+  }
 
-    .map-page {
-        padding: 70px 20px 40px;
-    }
+  .map-intro {
+    width: 100%;
+    gap: 18px;
+  }
 
-    .map-intro {
-        width: 100%;
-    }
+  .map-title {
+    font-size: 42px;
+  }
 
-    .map-title {
-        font-size: 48px;
-    }
+  .map-text {
+    font-size: 18px;
+  }
 
-    .map-text {
-        font-size: 19px;
-    }
+  .map-hint {
+    font-size: 13px;
+  }
 
-    .map-wrapper {
-        width: 100%;
-        height: 65vh;
-    }
+  .zip-search {
+    width: 100%;
+    max-width: 100%;
+  }
 
-    .map-controls {
-        top: 12px;
-        right: 12px;
-    }
+  #zipInput {
+    padding: 12px;
+  }
 
-    .view-button {
-        padding: 7px 11px;
-    }
+  #zipSearchButton {
+    padding: 12px 15px;
+  }
 
-    #resetZoom {
-        padding: 7px 10px;
-    }
+  #nearbyStationResults {
+    max-height: 280px;
+  }
+
+  .map-wrapper {
+    width: 100%;
+    height: 65vh;
+    min-height: 350px;
+  }
+
+  .map-controls {
+    top: 12px;
+    right: 12px;
+    gap: 5px;
+  }
+
+  .view-button {
+    padding: 7px 11px;
+  }
+
+  #resetZoom {
+    padding: 7px 10px;
+  }
 }

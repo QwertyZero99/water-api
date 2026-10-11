@@ -55,6 +55,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to initialize station database: %v", err)
 	}
+	log.Println("Successfully connected to the database!")
 	defer db.Close()
 
 	stationStore = *NewStationStore(db)
@@ -66,13 +67,13 @@ func main() {
 
 	/* HANDLERS */
 	// Static filesystems
-	fs := http.FileServer(http.Dir("./static"))
+	fs := http.FileServer(http.Dir("../static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	imageFs := http.FileServer(http.Dir("./images"))
+	imageFs := http.FileServer(http.Dir("../images"))
 	http.Handle("/images/", http.StripPrefix("/images/", imageFs))
 
-	jsFS := http.FileServer(http.Dir("./js"))
+	jsFS := http.FileServer(http.Dir("../js"))
 	http.Handle("/js/", http.StripPrefix("/js/", jsFS))
 
 	// The station API
@@ -92,10 +93,10 @@ func main() {
 
 // homeHandler handles the homepage
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "html/index.html")
+	http.ServeFile(w, r, "../html/index.html")
 }
 
 // mapHandler handles the map page
 func mapHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "html/map.html")
+	http.ServeFile(w, r, "../html/map.html")
 }
