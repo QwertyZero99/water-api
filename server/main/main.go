@@ -75,7 +75,15 @@ func main() {
 
 	jsFS := http.FileServer(http.Dir("../js"))
 	http.Handle("/js/", http.StripPrefix("/js/", jsFS))
+	http.HandleFunc(
+		"GET /api/waterbodies/search",
+		WaterbodySearch,
+	)
 
+	http.HandleFunc(
+		"GET /api/waterbodies/{id}",
+		WaterbodyByID,
+	)
 	// The station API
 	stationHandlers := NewStationHandlers(&stationStore)
 	http.HandleFunc("/api/stations", stationHandlers.StationsInBoundingBox)

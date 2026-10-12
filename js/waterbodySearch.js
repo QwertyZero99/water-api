@@ -1,91 +1,87 @@
-const SAMPLE_URL = "/static/data/waterbodies-sample.geojson";
+// AquaNY waterbody search.
+// Uses the Go/PostgreSQL API instead of the sample GeoJSON.
+
 const SOURCE = "selected-waterbody";
 
-let samplePromise;
+const SEARCH_ENDPOINT = "/api/waterbodies/search";
+const DETAIL_ENDPOINT = "/api/waterbodies";
 
-function loadSamples() {
-  if (!samplePromise) {
-    samplePromise = fetch(SAMPLE_URL)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`Sample GeoJSON: HTTP ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(data => {
-        if (
-          data.type !== "FeatureCollection" ||
-          !Array.isArray(data.features)
-        ) {
-          throw new Error("Invalid waterbody sample");
-        }
-        return data.features;
-      })
-      .catch(error => {
-        samplePromise = undefined;
-        throw error;
-      });
+// ==========================================
+// API REQUESTS
+// ==========================================
+
+async function readJSON(url) {
+  const response = await fetch(url, {
+    headers: {
+      Accept: "application/json"
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`${url}: HTTP ${response.status}`);
   }
 
-  return samplePromise;
+  return response.json();
 }
 
-// Later, this will call /api/waterbodies/search?q=...
 async function searchWaterbodies(query) {
-  const features = await loadSamples();
-  const term = query.trim().toLowerCase();
-
-  if (!term) return [];
-
-  return features.filter(feature =>
-    String(feature.properties?.name ?? "")
-      .toLowerCase()
-      .includes(term)
+  return readJSON(
+    `${SEARCH_ENDPOINT}?q=${encodeURIComponent(query)}`
   );
 }
 
-// Later, this will call /api/waterbodies/{id}
 async function getWaterbody(id) {
-  const features = await loadSamples();
-
-  return features.find(
-    feature => feature.properties?.id === id
-  ) ?? null;
+  return readJSON(
+    `${DETAIL_ENDPOINT}/${encodeURIComponent(id)}`
+  );
 }
 
-// Calculate geographic bounds without external libraries.
-function geometryBounds(geometry) {
-  const bounds = [
+// ==========================================
+// GEOGRAPHIC HELPERS
+// ==========================================
+
+function boundsOf(geometry) {
+  const result = [
     [Infinity, Infinity],
     [-Infinity, -Infinity]
   ];
 
-  function walk(node) {
-    if (!Array.isArray(node)) return;
+  function visit(value) {
+    if (!Array.isArray(value)) return;
 
     if (
-      typeof node[0] === "number" &&
-      typeof node[1] === "number"
+      typeof value[0] === "number" &&
+      typeof value[1] === "number"
     ) {
-      const [lng, lat] = node;
+      const [x, y] = value;
 
-      if (Number.isFinite(lng) && Number.isFinite(lat)) {
-        bounds[0][0] = Math.min(bounds[0][0], lng);
-        bounds[0][1] = Math.min(bounds[0][1], lat);
-        bounds[1][0] = Math.max(bounds[1][0], lng);
-        bounds[1][1] = Math.max(bounds[1][1], lat);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) {
+        return;
       }
+
+      result[0][0] = Math.min(result[0][0], x);
+      result[0][1] = Math.min(result[0][1], y);
+
+      result[1][0] = Math.max(result[1][0], x);
+      result[1][1] = Math.max(result[1][1], y);
+
     } else {
-      node.forEach(walk);
+      value.forEach(visit);
     }
   }
 
-  walk(geometry?.coordinates);
+  visit(geometry?.coordinates);
 
-  return Number.isFinite(bounds[0][0]) ? bounds : null;
+  return Number.isFinite(result[0][0])
+    ? result
+    : null;
 }
 
-function createTextElement(tag, value, className) {
+// ==========================================
+// DOM HELPERS
+// ==========================================
+
+function node(tag, value, className) {
   const element = document.createElement(tag);
 
   element.textContent =
@@ -100,90 +96,126 @@ function createTextElement(tag, value, className) {
   return element;
 }
 
-// MapLibre layers used to highlight the selected waterbody.
-function addWaterbodyLayers(map) {
+function emptyCollection() {
+  return {
+    type: "FeatureCollection",
+    features: []
+  };
+}
+
+// ==========================================
+// MAPLIBRE WATERBODY LAYERS
+// ==========================================
+
+function ensureWaterbodyLayers(map) {
   if (!map.getSource(SOURCE)) {
     map.addSource(SOURCE, {
       type: "geojson",
-      data: {
-        type: "FeatureCollection",
-        features: []
-      }
+      data: emptyCollection()
     });
   }
 
+  // Fill lakes and estuaries.
   if (!map.getLayer("waterbody-fill")) {
-    map.addLayer({
-      id: "waterbody-fill",
-      type: "fill",
-      source: SOURCE,
-      filter: [
-        "==",
-        ["geometry-type"],
-        "Polygon"
-      ],
-      paint: {
-        "fill-color": "#14a6c5",
-        "fill-opacity": 0.35
-      }
-    });
+    map.addLayer(
+      {
+        id: "waterbody-fill",
+        type: "fill",
+        source: SOURCE,
+
+        filter: [
+          "==",
+          ["geometry-type"],
+          "Polygon"
+        ],
+
+        paint: {
+          "fill-color": "#14a6c5",
+          "fill-opacity": 0.35
+        }
+      },
+
+      map.getLayer("station-clusters")
+        ? "station-clusters"
+        : undefined
+    );
   }
 
+  // Outline selected waterbodies.
+  // Also highlights river and stream lines.
   if (!map.getLayer("waterbody-boundary")) {
-    map.addLayer({
-      id: "waterbody-boundary",
-      type: "line",
-      source: SOURCE,
-      paint: {
-        "line-color": "#087b9f",
-        "line-width": 3,
-        "line-opacity": 0.95
-      }
-    });
+    map.addLayer(
+      {
+        id: "waterbody-boundary",
+        type: "line",
+        source: SOURCE,
+
+        paint: {
+          "line-color": "#087b9f",
+          "line-width": 4,
+          "line-opacity": 0.95
+        }
+      },
+
+      map.getLayer("station-clusters")
+        ? "station-clusters"
+        : undefined
+    );
   }
 }
+
+// ==========================================
+// INITIALIZE WATERBODY SEARCH
+// ==========================================
 
 export function initWaterbodySearch(map) {
   const intro = document.querySelector(".map-intro");
 
   if (!intro) {
-    console.warn("Waterbody search: .map-intro not found");
+    console.warn(
+      "Waterbody search: .map-intro missing"
+    );
     return;
   }
 
-  addWaterbodyLayers(map);
+  ensureWaterbodyLayers(map);
 
-  // Search panel.
+  // ========================================
+  // CREATE SEARCH INTERFACE
+  // ========================================
+
   const root = document.createElement("section");
   root.className = "waterbody-search";
 
   root.append(
-    createTextElement("h3", "Find a waterbody")
+    node("h3", "Find a waterbody")
   );
 
   root.append(
-    createTextElement(
+    node(
       "p",
-      "Search sample New York rivers, lakes, and estuaries."
+      "Search New York rivers, lakes, and estuaries."
     )
   );
 
-  const label = createTextElement(
+  const label = node(
     "label",
     "Waterbody name",
     "waterbody-search-label"
   );
+
   label.htmlFor = "waterbodyQuery";
 
   const input = document.createElement("input");
+
   input.id = "waterbodyQuery";
   input.type = "search";
   input.placeholder = "e.g. Hudson River";
   input.autocomplete = "off";
 
-  const status = createTextElement(
+  const status = node(
     "p",
-    "Start typing to search.",
+    "Type at least two letters to search.",
     "waterbody-status"
   );
 
@@ -197,85 +229,150 @@ export function initWaterbodySearch(map) {
   detail.className = "waterbody-detail";
   detail.hidden = true;
 
-  root.append(label, input, status, results, detail);
+  root.append(
+    label,
+    input,
+    status,
+    results,
+    detail
+  );
 
-  // Insert before existing ZIP-code search.
-  const zipSearch = intro.querySelector(".zip-search");
+  // Insert above the existing ZIP search.
+  const zip = intro.querySelector(".zip-search");
 
-  if (zipSearch) {
-    intro.insertBefore(root, zipSearch);
+  if (zip) {
+    intro.insertBefore(root, zip);
   } else {
     intro.append(root);
   }
 
-  let searchSerial = 0;
-  let detailSerial = 0;
+  let searchVersion = 0;
+  let detailVersion = 0;
   let debounce;
 
-  function clearSelection() {
-    detailSerial++;
+  // ========================================
+  // CLEAR SELECTED WATERBODY
+  // ========================================
 
-    map.getSource(SOURCE).setData({
-      type: "FeatureCollection",
-      features: []
-    });
+  function clearHighlight() {
+    detailVersion++;
+
+    map.getSource(SOURCE)?.setData(
+      emptyCollection()
+    );
 
     detail.hidden = true;
     detail.replaceChildren();
   }
 
+  // ========================================
+  // SELECT AND DISPLAY A WATERBODY
+  // ========================================
+
   async function choose(id) {
-    const serial = ++detailSerial;
+    const version = ++detailVersion;
 
     detail.hidden = false;
+
     detail.replaceChildren(
-      createTextElement(
-        "p",
-        "Loading waterbody details…"
-      )
+      node("p", "Loading waterbody…")
     );
 
     try {
       const feature = await getWaterbody(id);
 
-      if (serial !== detailSerial) return;
-
-      if (!feature?.geometry) {
-        throw new Error("Waterbody geometry unavailable");
+      if (version !== detailVersion) {
+        return;
       }
 
-      // Highlight selected waterbody.
+      if (
+        feature?.type !== "Feature" ||
+        !feature.geometry
+      ) {
+        throw new Error(
+          "Invalid waterbody geometry"
+        );
+      }
+
+      // Highlight the selected waterbody.
       map.getSource(SOURCE).setData({
         type: "FeatureCollection",
         features: [feature]
       });
 
-      // Zoom to its geographic bounds.
-      const bounds = geometryBounds(feature.geometry);
+      // Find geographic bounds.
+      const bounds = boundsOf(feature.geometry);
 
       if (bounds) {
-        map.fitBounds(bounds, {
-          padding: 65,
-          maxZoom: 12,
-          duration: 850
-        });
+        const [sw, ne] = bounds;
+
+        const eps = 0.004;
+
+        // Expand near-zero-width geometries
+        // to prevent fitBounds issues.
+        map.fitBounds(
+          [
+            [
+              sw[0] === ne[0]
+                ? sw[0] - eps
+                : sw[0],
+
+              sw[1] === ne[1]
+                ? sw[1] - eps
+                : sw[1]
+            ],
+
+            [
+              sw[0] === ne[0]
+                ? ne[0] + eps
+                : ne[0],
+
+              ne[1] === sw[1]
+                ? ne[1] + eps
+                : ne[1]
+            ]
+          ],
+
+          {
+            padding: 65,
+            maxZoom: 12,
+            duration: 850
+          }
+        );
       }
 
-      const p = feature.properties ?? {};
+      // ====================================
+      // DISPLAY WATERBODY INFORMATION
+      // ====================================
 
-      detail.replaceChildren();
-      detail.append(createTextElement("h4", p.name));
+      const p = feature.properties || {};
+
+      detail.replaceChildren(
+        node("h4", p.name)
+      );
 
       const fields = [
+        ["Type", p.type],
+
         ["Assessment", p.assessment],
+
         ["Last assessed", p.year],
+
         [
           "Water quality class",
-          p.class ? String(p.class).toUpperCase() : null
+          p.class
+            ? String(p.class).toUpperCase()
+            : null
         ],
+
         ["Segment ID", p.segmentId],
+
         ["Basin", p.basin],
-        ["Segment description", p.description]
+
+        [
+          "Segment description",
+          p.description
+        ]
       ];
 
       for (const [key, value] of fields) {
@@ -283,31 +380,30 @@ export function initWaterbodySearch(map) {
         line.className = "waterbody-detail-row";
 
         line.append(
-          createTextElement("span", key),
-          createTextElement("strong", value)
+          node("span", key),
+          node("strong", value)
         );
 
         detail.append(line);
       }
 
+      // Explain historical assessment data.
       detail.append(
-        createTextElement(
+        node(
           "p",
-          "Assessment status is historical, not a real-time safety rating. Nearby USGS stations are not yet verified as monitoring this exact segment.",
+          "Official assessment information is not a real-time safety rating. Nearby USGS monitoring stations have not yet been verified as belonging to this exact segment.",
           "waterbody-detail-note"
         )
       );
 
-      // Official factsheet link.
+      // Link to the official factsheet.
       if (
         typeof p.factsheet === "string" &&
-        p.factsheet.startsWith(
-          "https://extapps.dec.ny.gov/"
-        )
+        /^https:\/\//i.test(p.factsheet)
       ) {
-        const link = createTextElement(
+        const link = node(
           "a",
-          "View NYS DEC factsheet ↗"
+          "View official factsheet ↗"
         );
 
         link.href = p.factsheet;
@@ -317,113 +413,152 @@ export function initWaterbodySearch(map) {
         detail.append(link);
       }
 
-      const clear = createTextElement(
+      // Clear highlight button.
+      const clear = node(
         "button",
         "Clear highlight",
         "waterbody-clear"
       );
 
       clear.type = "button";
-      clear.addEventListener("click", clearSelection);
+
+      clear.addEventListener(
+        "click",
+        clearHighlight
+      );
 
       detail.append(clear);
 
     } catch (error) {
-      if (serial !== detailSerial) return;
+      if (version !== detailVersion) {
+        return;
+      }
 
-      console.error("Waterbody detail failed:", error);
+      console.error(
+        "Waterbody details failed:",
+        error
+      );
 
       detail.replaceChildren(
-        createTextElement(
+        node(
           "p",
-          "Unable to load this waterbody."
+          "Could not load this waterbody. Please try again."
         )
       );
     }
   }
 
+  // ========================================
+  // RUN WATERBODY SEARCH
+  // ========================================
+
   async function runSearch() {
-    const serial = ++searchSerial;
+    const version = ++searchVersion;
+
     const query = input.value.trim();
 
     results.replaceChildren();
 
-    if (!query) {
-      status.textContent = "Start typing to search.";
+    if (query.length < 2) {
+      status.textContent =
+        "Type at least two letters to search.";
+
       return;
     }
 
-    status.textContent = "Searching waterbodies…";
+    status.textContent =
+      "Searching waterbodies…";
 
     try {
-      const matches = await searchWaterbodies(query);
+      const matches = await searchWaterbodies(
+        query
+      );
 
-      if (serial !== searchSerial) return;
-
-      status.textContent =
-        `${matches.length} matching sample segment` +
-        (matches.length === 1 ? "" : "s");
-
-      if (!matches.length) {
-        results.append(
-          createTextElement(
-            "p",
-            "No matches in this prototype sample."
-          )
-        );
+      if (version !== searchVersion) {
         return;
       }
 
-      for (const feature of matches.slice(0, 12)) {
-        const p = feature.properties;
+      if (!Array.isArray(matches)) {
+        throw new Error(
+          "Invalid search response"
+        );
+      }
 
-        const button = document.createElement("button");
+      status.textContent =
+        `${matches.length} matching segment` +
+        `${matches.length === 1 ? "" : "s"}` +
+        `${matches.length === 40 ? " (showing first 40)" : ""}`;
+
+      if (matches.length === 0) {
+        results.append(
+          node(
+            "p",
+            "No matching assessed waterbodies were found."
+          )
+        );
+
+        return;
+      }
+
+      // Create a button for each result.
+      for (const p of matches) {
+        const button = document.createElement(
+          "button"
+        );
+
         button.type = "button";
         button.className = "waterbody-result";
 
         button.append(
-          createTextElement("strong", p.name)
+          node("strong", p.name)
         );
 
         button.append(
-          createTextElement(
+          node(
             "span",
-            `${p.type} · ${p.segmentId ?? "No segment ID"} · ${p.assessment ?? "Unassessed"}`
+            `${p.type || "Waterbody"} · ` +
+            `${p.segmentId || "No segment ID"} · ` +
+            `${p.assessment || "Not assessed"}`
           )
         );
 
-        button.addEventListener("click", () => {
-          void choose(p.id);
-        });
+        button.addEventListener(
+          "click",
+          () => void choose(p.id)
+        );
 
         results.append(button);
       }
 
-      if (matches.length > 12) {
-        results.append(
-          createTextElement(
-            "p",
-            "Showing first 12 matches. Refine your search."
-          )
-        );
+    } catch (error) {
+      if (version !== searchVersion) {
+        return;
       }
 
-    } catch (error) {
-      if (serial !== searchSerial) return;
-
-      console.error("Waterbody search failed:", error);
+      console.error(
+        "Waterbody search failed:",
+        error
+      );
 
       status.textContent =
-        "Unable to load sample data. Check the sample file path.";
+        "Search unavailable. Check the Go server and database.";
     }
   }
 
+  // ========================================
+  // SEARCH INPUT LISTENER
+  // ========================================
+
   input.addEventListener("input", () => {
-    searchSerial++;
+    // Prevent previous searches from
+    // overwriting newer results.
+    ++searchVersion;
+
     clearTimeout(debounce);
 
-    debounce = setTimeout(() => {
-      void runSearch();
-    }, 220);
+    debounce = setTimeout(
+      () => void runSearch(),
+      250
+    );
   });
 }

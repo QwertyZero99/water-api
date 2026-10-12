@@ -623,8 +623,6 @@ body {
 }
 
 
-/* Measurement units */
-
 .measurement-row .measurement-unit {
   color: #5b849d;
 
@@ -643,11 +641,6 @@ body {
   font-size: 10px;
   line-height: 1.4;
 }
-
-
-/* ==========================================
-   EMPTY / ERROR STATES
-========================================== */
 
 .station-measurements:has(.measurement-empty) {
   display: block;
