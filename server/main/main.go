@@ -79,6 +79,14 @@ func main() {
 	// The station API
 	stationHandlers := NewStationHandlers(&stationStore)
 	http.HandleFunc("/api/stations", stationHandlers.StationsInBoundingBox)
+	http.HandleFunc(
+		"GET /api/stations/availability",
+		MeasurementAvailability,
+	)
+	http.HandleFunc(
+		"GET /api/stations/{id}/measurements",
+		stationHandlers.StationMeasurements,
+	)
 	http.HandleFunc("/api/stations/", stationHandlers.StationByID)
 
 	// Handlers for page endpoints
@@ -87,7 +95,6 @@ func main() {
 
 	// Run server
 	fmt.Printf("Server running at http://localhost:%s\n", cfg.Port)
-	fmt.Printf("API Key: %s\n", cfg.APIKey)
 	log.Fatal(http.ListenAndServe(":"+cfg.Port, nil))
 }
 

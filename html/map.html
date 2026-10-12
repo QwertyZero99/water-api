@@ -64,7 +64,6 @@
     ›
   </button>
 
-
   <!-- =====================================
        MAIN PAGE
   ====================================== -->
@@ -197,6 +196,13 @@
 
   <script type="module" src="/js/sidebar.js"></script>
   <script type="module" src="/js/mappage.js"></script>
+  <script>
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.querySelector(".map-intro")?.classList.add("visible");
+    });
+  });
+</script>
 
 </body>
 </html>
