@@ -1142,5 +1142,291 @@ body {
     padding: 14px;
   }
 }
+/* ==========================================
+   PAST INCIDENTS
+========================================== */
+
+.waterbody-incidents {
+  margin-top: 20px;
+  padding-top: 18px;
+
+  border-top: 1px solid #e2e8f0;
+
+  font-family: "Inter", sans-serif;
+  text-align: left;
+}
+
+.waterbody-incidents-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  margin-bottom: 9px;
+}
+
+.waterbody-incidents-header h5 {
+  margin: 0;
+
+  font-family: "Manrope", sans-serif;
+  font-size: 16px;
+  font-weight: 750;
+  line-height: 1.4;
+
+  color: #142f46;
+}
+
+.waterbody-incidents-badge {
+  flex-shrink: 0;
+
+  padding: 5px 9px;
+
+  background: #edf5fa;
+  border: 1px solid #d9eaf5;
+  border-radius: 999px;
+
+  color: #356987;
+  font-size: 10px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.waterbody-incidents-description {
+  margin: 0 0 8px;
+
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.waterbody-incidents-coverage {
+  margin: 0 0 14px;
+
+  color: #8090a0;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.waterbody-incidents-list {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+
+  max-height: 420px;
+  padding-right: 5px;
+
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.waterbody-incidents-count {
+  margin: 0 0 2px;
+
+  color: #526779;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ==========================================
+   INDIVIDUAL INCIDENT CARDS
+========================================== */
+
+.waterbody-incident-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  padding: 14px;
+
+  background: #f8fbfd;
+  border: 1px solid #dfeaf1;
+  border-left: 3px solid #1976d2;
+  border-radius: 11px;
+
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
+}
+
+.waterbody-incident-card:hover {
+  background: #f1f8fc;
+  border-color: #c9e0ef;
+  border-left-color: #1976d2;
+  transform: translateY(-1px);
+}
+
+.waterbody-incident-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.waterbody-incident-card h6 {
+  margin: 0;
+
+  color: #18314a;
+  font-family: "Manrope", sans-serif;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.waterbody-incident-date {
+  color: #8090a0;
+  font-size: 10px;
+  font-weight: 550;
+}
+
+.waterbody-incident-beach {
+  margin: 0;
+
+  color: #356987;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.waterbody-incident-reason {
+  margin: 0;
+
+  color: #526779;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.waterbody-incident-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  padding-top: 9px;
+
+  border-top: 1px solid #e4edf3;
+}
+
+.waterbody-incident-status {
+  display: inline-block;
+  padding: 4px 8px;
+
+  background: #eef4f8;
+  border: 1px solid #dce8ef;
+  border-radius: 6px;
+
+  color: #45647a;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.waterbody-incident-source {
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+/* ==========================================
+   LOADING / EMPTY / ERROR STATES
+========================================== */
+
+.waterbody-incidents-loading,
+.waterbody-incidents-empty,
+.waterbody-incidents-error {
+  padding: 14px;
+
+  background: #f8fafc;
+  border: 1px solid #e9eef3;
+  border-radius: 10px;
+
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.waterbody-incidents-error {
+  background: #fff7f4;
+  border-color: #f3e1dc;
+  color: #936457;
+}
+
+.waterbody-incidents-note {
+  padding: 10px 0 2px;
+
+  color: #8796a5;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media (max-width: 600px) {
+  .waterbody-incidents {
+    margin-top: 16px;
+    padding-top: 15px;
+  }
+  
+
+  .waterbody-incidents-header {
+    flex-wrap: wrap;
+  }
+
+  .waterbody-incident-card {
+    padding: 12px;
+  }
+
+  .waterbody-incidents-list {
+    max-height: 340px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .waterbody-incident-card {
+    transition: none;
+  }
+
+  .waterbody-incident-card:hover {
+    transform: none;
+  }
+}
+
+/* ==========================================
+   GROUPED WATERBODY ASSESSMENTS
+========================================== */
+
+.waterbody-group-segments {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 14px 0 20px;
+}
+
+.waterbody-group-segment {
+  padding: 13px 14px;
+  background: #f8fbfd;
+  border: 1px solid #dfeaf1;
+  border-left: 3px solid #1976d2;
+  border-radius: 11px;
+}
+
+.waterbody-group-segment h5 {
+  margin: 0 0 10px;
+  color: #142f46;
+  font-family: "Manrope", sans-serif;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+.waterbody-group-segment .waterbody-detail-row {
+  margin: 6px 0;
+}
+
+.waterbody-group-segment .waterbody-detail-row:last-child {
+  margin-bottom: 0;
+}
+
 
 
