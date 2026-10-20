@@ -1427,6 +1427,249 @@ body {
 .waterbody-group-segment .waterbody-detail-row:last-child {
   margin-bottom: 0;
 }
+/* Keep expanded waterbody profiles from pushing the map down */
+
+.waterbody-detail {
+    max-height: 420px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+}
+
+/* Prevent long search result lists from expanding the page */
+
+.waterbody-results {
+    max-height: 240px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+}
+
+/* Hide the detail panel completely when no waterbody is selected */
+
+.waterbody-detail[hidden] {
+    display: none !important;
+}
+/* Prevent the waterbody search from growing when a result is selected */
+
+.waterbody-search {
+    height: 420px;
+    max-height: 420px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    overscroll-behavior: contain;
+}
+
+/* Let the full profile scroll within the fixed search panel */
+
+.waterbody-detail {
+    max-height: none;
+    overflow: visible;
+}
+
+/* Keep search results contained */
+
+.waterbody-results {
+    max-height: 180px;
+    overflow-y: auto;
+}
+
+/* Preserve proper visibility when no profile is selected */
+
+.waterbody-detail[hidden] {
+    display: none !important;
+}
+
+/* ========================================
+   AquaNY — PFAS monitoring
+   ======================================== */
+
+.waterbody-pfas {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #d8e4e9;
+}
+
+.waterbody-pfas-heading,
+.waterbody-pfas-site-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.waterbody-pfas-heading h5,
+.waterbody-pfas-site-heading h6 {
+  margin: 0;
+}
+
+.waterbody-pfas-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #a65c06;
+  background: #fff2d7;
+  border-radius: 20px;
+  padding: 4px 9px;
+}
+
+.waterbody-pfas-description,
+.waterbody-pfas-note,
+.waterbody-pfas-table-note {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.waterbody-pfas-summary {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 10px 0;
+}
+
+.waterbody-pfas-list {
+  display: grid;
+  gap: 10px;
+}
+
+.waterbody-pfas-site {
+  padding: 12px;
+  border: 1px solid #dde6eb;
+  border-radius: 10px;
+  background: #fff;
+  min-width: 0;
+}
+
+.waterbody-pfas-site-heading h6 {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.waterbody-pfas-site-count,
+.waterbody-pfas-site-date {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.waterbody-pfas-key-results {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.waterbody-pfas-key-result {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 9px;
+  background: #f7fafc;
+  border: 1px solid #e5edf1;
+  border-radius: 7px;
+  font-size: 12px;
+}
+
+.waterbody-pfas-key-result strong {
+  color: #244d61;
+}
+
+.waterbody-pfas-key-result span {
+  font-weight: 600;
+}
+
+.waterbody-pfas-key-result small {
+  color: #64748b;
+}
+
+.waterbody-pfas-locate {
+  background: #fff7e9;
+  color: #925406;
+  border: 1px solid #ebca90;
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 7px 10px;
+  font-size: 12px;
+}
+
+.waterbody-pfas-locate:hover {
+  background: #ffedcc;
+}
+
+.waterbody-pfas-measurements {
+  margin-top: 12px;
+  min-width: 0;
+}
+
+.waterbody-pfas-measurements summary {
+  cursor: pointer;
+  color: #087b9f;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 0;
+}
+
+.waterbody-pfas-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  margin-top: 9px;
+}
+
+.waterbody-pfas-table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 440px;
+  font-size: 11px;
+}
+
+.waterbody-pfas-table th,
+.waterbody-pfas-table td {
+  padding: 7px;
+  text-align: left;
+  border-bottom: 1px solid #e9eef2;
+  vertical-align: top;
+}
+
+.waterbody-pfas-table th {
+  background: #f4f8fa;
+  color: #334155;
+  font-weight: 600;
+}
+
+.waterbody-pfas-nondetect {
+  color: #64748b;
+}
+
+.waterbody-pfas-popup {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.waterbody-pfas-popup p {
+  margin: 3px 0;
+}
+
+/* Preserve the fixed search-panel height. */
+.waterbody-search {
+  height: 420px;
+  max-height: 420px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  overscroll-behavior: contain;
+}
+
+.waterbody-detail {
+  max-height: none;
+  overflow: visible;
+}
+
+.waterbody-detail[hidden] {
+  display: none !important;
+}
+
 
 
 
