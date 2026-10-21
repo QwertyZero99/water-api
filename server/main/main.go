@@ -97,6 +97,7 @@ func main() {
 		"GET /api/stations/availability",
 		MeasurementAvailability,
 	)
+
 	http.HandleFunc(
 		"GET /api/stations/{id}/measurements",
 		stationHandlers.StationMeasurements,
