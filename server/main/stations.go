@@ -411,10 +411,11 @@ func initStationDatabase() (*sql.DB, error) {
 
 func postgresConnectionString() string {
 	password := cfg.DataBasePassword
+	user := cfg.DataBaseUsername
 
 	return fmt.Sprintf(
-		"postgres://postgres:%s@localhost:5432/postgres?sslmode=disable",
-		url.QueryEscape(password),
+		"postgres://%s:%s@localhost:5432/postgres?sslmode=disable",
+		url.QueryEscape(user), url.QueryEscape(password),
 	)
 }
 
