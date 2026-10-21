@@ -1673,3 +1673,37 @@ body {
 
 
 
+
+
+/* ===== Layer 1 waterbody current conditions ===== */
+/* Current conditions: fits inside the existing 420px scrolling search panel. */
+.wb-conditions { margin: 14px 0 18px; padding: 14px 0 16px; border-top: 1px solid #dce7ed; border-bottom: 1px solid #dce7ed; text-align: left; font-family: Inter, sans-serif; }
+.wb-conditions-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.wb-conditions-heading h5 { margin: 0; color: #142f46; font: 750 15px/1.4 Manrope, sans-serif; }
+.wb-conditions-badge { padding: 4px 7px; border-radius: 7px; color: #176186; background: #e9f5fb; font-size: 10px; font-weight: 650; }
+.wb-conditions-summary, .wb-conditions-message, .wb-condition-disclaimer { margin: 7px 0 10px; color: #64748b; font-size: 11px; line-height: 1.55; }
+.wb-condition-station { margin: 10px 0; padding: 11px; border: 1px solid #e2e8f0; border-radius: 10px; background: #fbfdff; }
+.wb-condition-station-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 7px; margin-bottom: 9px; }
+.wb-condition-station-heading h6 { margin: 0; color: #1e293b; font-size: 12px; font-weight: 700; line-height: 1.45; overflow-wrap: anywhere; }
+.wb-condition-locate { flex-shrink: 0; background: white; color: #176c95; border: 1px solid #bad8e9; border-radius: 7px; padding: 5px 7px; cursor: pointer; font-size: 11px; }
+.wb-condition-locate:hover { background: #e9f5fb; }
+.wb-condition-metrics { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 6px; }
+.wb-condition-metric { min-width: 0; padding: 8px 7px; border-radius: 8px; border: 1px solid #e2edf4; background: #f0f8fc; display: flex; flex-direction: column; gap: 5px; }
+.wb-condition-label { color: #526779; font-size: 10px; font-weight: 650; line-height: 1.35; }
+.wb-condition-value { color: #146c9c; font-size: 18px; font-weight: 750; overflow-wrap: anywhere; }
+.wb-condition-value small { color: #527e97; font-size: 10px; font-weight: 500; }
+.wb-condition-missing { color: #8b98a7; font-size: 11px; font-weight: 600; }
+.wb-condition-time, .wb-condition-approval { color: #718096; font-size: 9px; line-height: 1.4; }
+.wb-condition-source { margin: 9px 0 0; color: #64748b; font-size: 10px; overflow-wrap: anywhere; }
+@media (max-width: 430px) { .wb-condition-metrics { grid-template-columns: 1fr; } }
+
+/* Layer 1 historical observations, separated from current measurements */
+.wb-history { margin-top: 13px; border-top: 1px solid #dce7ed; padding-top: 12px; }
+.wb-history-summary { cursor: pointer; font-size: 12px; font-weight: 700; color: #17678c; }
+.wb-history-notice { margin: 10px 0; font-size: 11px; color: #6b4e26; line-height: 1.5; }
+.wb-history-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.wb-history-record { min-width: 0; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 9px; padding: 10px; display: flex; flex-direction: column; gap: 3px; }
+.wb-history-record strong { font-size: 11px; color: #18314a; }
+.wb-history-record span { font-size: 15px; font-weight: 700; color: #526779; }
+.wb-history-record small, .wb-history-record time { font-size: 10px; color: #66788a; overflow-wrap: anywhere; }
+@media (max-width: 450px) { .wb-history-list { grid-template-columns: 1fr; } }
