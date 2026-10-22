@@ -1,0 +1,46 @@
+NYS_WATER.csv 
+
+Water system levels of Arsenic (1005), Atrazine (2050), Di(2-Ethylhexyl) Phthalate (DEHP) (2039), 1,4-Dioxane (2049), Haloacetic acids (HAA5) (2456), Tetrachloroethylene (PCE) (2987), Trichloroethylene (TCE) (2984), Trihalomethanes (TTHM) (2950) and Uranium (4006) are in micrograms per liter (mcg/L).
+Water system levels of Nitrate (1040) are in milligrams per liter (mg/L).
+Water system levels of Combined Radium 226 & 228 (4010) are in picoCuries per liter (pCi/L).
+Water system levels of Perfluorooctanoic acid (PFOA) (2806) and Perfluorooctane sulfonic acid (PFOS) (2805) are in nanograms per liter (ng/L). 
+
+Data fields:
+
+Variable               Description
+-----------            -------------
+ContaminantCode	       Code of the analyte. 1005 is Arsenic, 2050 is Atrazine, 2039 is DEHP, 2049 is 1,4-Dioxane, 2456 is HAA5, 1040 is Nitrate, 2987 is PCE, 2806 is PFOA, 2805 is PFOS, 2984 is TCE, 2950 is TTHM, 4010 is Radium, and 4006 is Uranium
+
+FIPS	               FIPS code (State+county) of the primary county served by the public water supply system
+
+Max	               Maximum concenteration of the analyte during the summary time period, ND is non-detect
+
+Mean	               Average (mean) concentration of the analyte during the summary time period, ND is non-detect
+
+NumNonDetects	       The number of samples that were non-detections for summary level data
+
+NumSamples	       The number of samples that were used in calculating the mean/max for a given analyte during a quarter or year
+
+PWSIDNumber	       Unique Identifier of Public Water Supply System
+
+PWSName	               Name of Public Water Supply System
+
+Population	       Estimated population served by the public water supply system
+
+SummaryTimePeriod      Period of time, Year (YYYY) or Year-Quarter (YYYY-Q)
+
+contaminantname	       Chemical name of the analyte
+
+county	               Name of the primary county served by the public water supply system
+
+range_of_max	       Range of the maxiumum concentration, to use when plotting data, from prior CDC EPHT website
+
+range_of_mean	       Range of the average concentration, to use when plotting data, from prior CDC EPHT website
+
+
+----------------------------------------------------------------------------------------------------------
+
+Original data was obtained from the Safe Drinking Water Information System (SDWIS), Suffolk County Department of Health Services, and Suffolk County Water Authority.
+
+Drinking Water data were provided by the New York State Department of Health Bureau of Water Supply Protection. 
+For more information about drinking water data please visit https://www.health.ny.gov/environmental/water/drinking/ 

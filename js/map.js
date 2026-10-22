@@ -1130,87 +1130,24 @@ function createViewControls(map) {
   return { setViewMode, resetView };
 }
 
-function createMeasurementFilter(
-  map,
-  getAllStations,
-  onFiltered
-) {
-  const wrapper = document.querySelector(".map-wrapper");
 
-  if (!wrapper) {
-    return { apply: async () => {} };
-  }
-
-  const panel = document.createElement("div");
-  panel.className = "measurement-filter";
-
-  panel.innerHTML = `
-    <div class="measurement-filter-title">
-      Measurement Filters
-    </div>
-
-    <label>
-      Measurement coverage
-
-      <select id="measurementCoverage">
-        <option value="latest">
-          Latest continuous
-        </option>
-
-        <option value="any">
-          Any available (historical)
-        </option>
-      </select>
-    </label>
-
-    <label>
-      Measurement recency
-
-      <select id="measurementRecency">
-        <option value="all">Any time</option>
-        <option value="24h">Past 24 hours</option>
-        <option value="7d">Past 7 days</option>
-      </select>
-    </label>
-
-    <p
-      class="measurement-filter-status"
-      role="status"
-      aria-live="polite"
-    >
-      Loading availability...
-    </p>
-  `;
-
-  wrapper.append(panel);
-
-  const coverage = panel.querySelector(
-    "#measurementCoverage"
-  );
-
-  const recency = panel.querySelector(
-    "#measurementRecency"
-  );
-
-  const status = panel.querySelector(
-    ".measurement-filter-status"
-  );
+function createMeasurementFilter(map, getAllStations, onFiltered) {
+  // Preserve the original default station filters.
+  // No visible measurement filter panel is needed.
+  const coverage = "latest";
+  const recency = "all";
 
   let requestVersion = 0;
 
   async function apply() {
     const version = ++requestVersion;
 
-    coverage.disabled = true;
-    recency.disabled = true;
-
-    status.textContent = "Finding measured stations...";
-    activeMeasurementCoverage = coverage.value;
+    activeMeasurementCoverage = coverage;
 
     try {
       const params = new URLSearchParams({
-        coverage: coverage.value,
-        recency: recency.value,
+        coverage,
+        recency
       });
 
       const response = await fetchJSON(
@@ -1220,70 +1157,42 @@ function createMeasurementFilter(
       if (version !== requestVersion) return;
 
       if (!Array.isArray(response.stationIds)) {
-        throw new Error(
-          "Invalid availability response"
-        );
+        throw new Error("Invalid availability response");
       }
 
       const matching = new Set(
         response.stationIds.map(String)
       );
 
-      const stations = getAllStations().filter(
-        feature =>
-          matching.has(
-            String(feature.properties.id)
-          )
+      const stations = getAllStations().filter(feature =>
+        matching.has(String(feature.properties.id))
       );
 
-      map.getSource("stations").setData({
-        type: "FeatureCollection",
-        features: stations,
-      });
+      const source = map.getSource("stations");
+
+      if (source) {
+        source.setData({
+          type: "FeatureCollection",
+          features: stations
+        });
+      }
 
       onFiltered(stations);
 
-      status.textContent =
-        `${stations.length.toLocaleString()} stations shown`;
-
-      if (
-        coverage.value === "any" &&
-        recency.value !== "all"
-      ) {
-        status.textContent +=
-          " · Historical dates may lag";
-      }
+      console.log(
+        `${stations.length.toLocaleString()} stations shown`
+      );
 
     } catch (error) {
       if (version !== requestVersion) return;
 
-      console.error(
-        "Availability filter failed:",
-        error
-      );
-
-      status.textContent =
-        "Couldn't update availability. Try again.";
-
-    } finally {
-      if (version === requestVersion) {
-        coverage.disabled = false;
-        recency.disabled = false;
-      }
+      console.error("Availability filter failed:", error);
     }
   }
 
-  coverage.addEventListener(
-    "change",
-    () => void apply()
-  );
-
-  recency.addEventListener(
-    "change",
-    () => void apply()
-  );
   return { apply };
 }
+
 export async function createMap() {
   const map = createBaseMap();
 

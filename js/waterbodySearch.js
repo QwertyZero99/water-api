@@ -1,5 +1,6 @@
+import { appendWaterbodyEPAPFAS } from "./waterbodyEPAPFAS.js";
 import { appendWaterbodyConditions } from "./waterbodyConditions.js";
-
+import { initDrinkingWater } from "./drinkingWater.js";
 
 
 /*
@@ -1621,7 +1622,7 @@ export function initWaterbodySearch(map) {
   if (zip) intro.insertBefore(root, zip);
 
   else intro.append(root);
-
+  initDrinkingWater(intro, root);
 
 
   let searchVersion = 0;
@@ -1931,6 +1932,7 @@ export function initWaterbodySearch(map) {
       // interfere with the assessment profile.
 
       appendPFAS(id, version);
+      appendWaterbodyEPAPFAS(detail, id, conditionsController.signal);
 
 
 
