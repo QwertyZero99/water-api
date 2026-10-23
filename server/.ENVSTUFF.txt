@@ -1,0 +1,9 @@
+paste this and rename as needed:
+
+$env:API_KEY="key"; 
+$env:DATABASE_PORT="5432"; 
+$env:PORT="8080"; 
+$env:DATABASE_PASSWORD="password"; 
+
+
+

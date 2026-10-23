@@ -28,6 +28,7 @@
   <!-- Site Styles -->
   <link rel="stylesheet" href="/static/css/sidebar.css">
   <link rel="stylesheet" href="/static/css/mappage.css">
+  <link rel="stylesheet" href="/static/css/drinking-water.css">
 </head>
 
 <body>
@@ -90,52 +91,7 @@
 
       <!-- ZIP CODE SEARCH -->
 
-      <div class="zip-search">
-
-        <form
-          id="zipSearchForm"
-          class="zip-search-form"
-        >
-
-          <input
-            type="text"
-            id="zipInput"
-            name="zip"
-            placeholder="Enter New York ZIP code"
-            inputmode="numeric"
-            pattern="[0-9]{5}"
-            maxlength="5"
-            autocomplete="postal-code"
-            aria-label="New York ZIP code"
-            required
-          >
-
-          <button
-            id="zipSearchButton"
-            type="submit"
-          >
-            Search
-          </button>
-
-        </form>
-
-        <!-- Search feedback -->
-
-        <p
-          id="zipSearchStatus"
-          role="status"
-          aria-live="polite"
-        ></p>
-
-
-        <!-- Nearby station results -->
-
-        <div
-          id="nearbyStationResults"
-          aria-label="Nearby water monitoring stations"
-        ></div>
-
-      </div>
+    
 
     </section>
 

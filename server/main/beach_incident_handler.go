@@ -63,7 +63,7 @@ func WaterbodyPastIncidents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var waterbody string
-	err := stationStore.db.QueryRowContext(r.Context(), `SELECT name FROM waterbodies WHERE feature_id=$1`, id).Scan(&waterbody)
+	err := stationStore.db.QueryRowContext(r.Context(), `SELECT name FROM waterbodies_v2 WHERE id = $1`, id).Scan(&waterbody)
 	if err == sql.ErrNoRows {
 		http.Error(w, "waterbody not found", 404)
 		return

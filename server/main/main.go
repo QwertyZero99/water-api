@@ -90,6 +90,28 @@ func main() {
 		"GET /api/waterbodies/{id}",
 		WaterbodyByID,
 	)
+	drinking := NewDrinkingWaterHandler(db)
+
+	http.HandleFunc(
+		"GET /api/drinking-water/search",
+		drinking.Search,
+	)
+
+	http.HandleFunc(
+		"GET /api/drinking-water/systems/{id}",
+		drinking.System,
+	)
+
+	http.HandleFunc(
+		"GET /api/drinking-water/systems/{id}/contaminants",
+		drinking.Contaminants,
+	)
+	pfasHandler := NewPFASHandler(db)
+
+	http.HandleFunc(
+		"GET /api/waterbodies/{id}/pfas",
+		pfasHandler.WaterbodyPFAS,
+	)
 	// The station API
 	stationHandlers := NewStationHandlers(&stationStore)
 	http.HandleFunc("/api/stations", stationHandlers.StationsInBoundingBox)
@@ -97,25 +119,18 @@ func main() {
 		"GET /api/stations/availability",
 		MeasurementAvailability,
 	)
+
 	http.HandleFunc(
 		"GET /api/stations/{id}/measurements",
 		stationHandlers.StationMeasurements,
 	)
 	http.HandleFunc(
-		"GET /api/waterbody-groups/{id}/incidents",
-		WaterbodyGroupIncidents,
+		"GET /api/waterbodies/{id}/conditions",
+		WaterbodyConditions,
 	)
 	http.HandleFunc("/api/stations/", stationHandlers.StationByID)
-	http.HandleFunc("GET /api/waterbodies/{id}/incidents", WaterbodyPastIncidents)
-	http.HandleFunc(
-		"GET /api/waterbody-groups/search",
-		WaterbodyGroupSearch,
-	)
 
-	http.HandleFunc(
-		"GET /api/waterbody-groups/{id}",
-		WaterbodyGroupByID,
-	)
+	http.HandleFunc("GET /api/waterbodies/{id}/epa-pfas", WaterbodyEPAPFAS)
 
 	// Handlers for page endpoints
 	http.HandleFunc("/", homeHandler)

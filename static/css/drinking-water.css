@@ -1,0 +1,11 @@
+.dw-toggle{display:flex;gap:6px;margin:10px 0}.dw-tab{flex:1;padding:9px 6px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;cursor:pointer;font:inherit}.dw-tab-active{background:#eaf6fa;border-color:#168bad;font-weight:700}.dw-panel{height:420px;max-height:420px;overflow-y:auto;box-sizing:border-box;padding:8px 0;overscroll-behavior:contain}.dw-panel[hidden]{display:none!important}.dw-panel input{box-sizing:border-box;width:100%;padding:9px;margin:8px 0 12px;border-radius:7px;border:1px solid #bccad3}.dw-match{display:block;width:100%;text-align:left;padding:9px;margin:5px 0;background:#f7fafc;border:1px solid #dbe4e8;border-radius:7px;cursor:pointer}.dw-detail{margin-top:12px}.dw-pfas-card{padding:12px;margin:8px 0;border-radius:8px;border:1px solid #d9e3e8;background:#f7fbfd}.dw-pfas-card>*{display:block;margin:3px 0}.dw-value{font-size:1.1rem;font-weight:600}.dw-subtext,.dw-note{font-size:.85rem;color:#536270}.dw-records{width:100%;font-size:.78rem;border-collapse:collapse;margin:8px 0}.dw-records td,.dw-records th{padding:4px;border-bottom:1px solid #e2e8f0;text-align:left}.dw-detail details{margin-top:14px}.dw-detail summary{cursor:pointer;font-weight:600}
+.waterbody-search[hidden]{display:none!important}
+
+/* Summary cards: four fixed priority analytes, followed by detected extras. */
+.dw-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0 14px}
+.dw-card-grid .dw-pfas-card{margin:0;min-width:0;overflow-wrap:anywhere}
+.dw-section-heading{font-size:1rem;margin:16px 0 4px}
+.dw-card-grid .dw-value{font-size:.98rem}
+.dw-detected-card{border-left:3px solid #168bad}
+.dw-detail details{overflow-x:auto}
+@media(max-width:420px){.dw-card-grid{grid-template-columns:1fr}}
