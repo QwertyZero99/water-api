@@ -28,6 +28,10 @@ var conditionParameters = map[string]string{
 	"00300": "Dissolved oxygen",
 	"63680": "Turbidity",
 	"00076": "Turbidity",
+	"00060": "Streamflow",
+	"00065": "Gage height",
+	"00095": "Specific conductance",
+	"00400": "pH",
 }
 
 type conditionStation struct {
