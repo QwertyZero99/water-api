@@ -3,12 +3,27 @@
  * This module is independent of the station-map implementation.
  */
 
+
 const MEASURES = [
-  { code: '00010', label: 'Temperature', fallbackUnit: '°C' },
+  { code: '00010', label: 'Water temperature', fallbackUnit: '°C' },
   { code: '00300', label: 'Dissolved oxygen', fallbackUnit: 'mg/L' },
   { code: '63680', label: 'Turbidity', fallbackUnit: '' },
+  { code: '00060', label: 'Streamflow', fallbackUnit: 'ft³/s' },
+  { code: '00065', label: 'Gage height', fallbackUnit: 'ft' },
+  { code: '00095', label: 'Specific conductance', fallbackUnit: 'µS/cm' },
+  { code: '00400', label: 'pH', fallbackUnit: '' },
 ];
+
 const TURBIDITY_CODES = new Set(['63680', '00076']);
+
+function matchesMeasure(measure, reading) {
+  if (measure.code === '63680') {
+    return TURBIDITY_CODES.has(reading.parameterCode);
+  }
+
+  return reading.parameterCode === measure.code;
+}
+
 
 function elt(tag, text, className) {
   const node = document.createElement(tag);
@@ -31,36 +46,64 @@ function isValidReading(reading) {
     reading.value !== '' && Number.isFinite(Number(reading.value));
 }
 
+
 function metricCard(measure, readings) {
   const matching = readings
-    .filter((reading) => measure.code === '63680'
-      ? TURBIDITY_CODES.has(reading.parameterCode)
-      : reading.parameterCode === measure.code)
-    .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+    .filter((reading) => matchesMeasure(measure, reading))
+    .filter(isValidReading)
+    .sort(
+      (a, b) =>
+        new Date(b.time).getTime() -
+        new Date(a.time).getTime()
+    );
+
   const reading = matching[0];
+
+  // Do not create empty cards.
+  if (!reading) return null;
+
   const card = elt('div', null, 'wb-condition-metric');
-  card.append(elt('span', measure.label, 'wb-condition-label'));
 
-  if (!reading) {
-    card.append(elt('strong', 'Not available', 'wb-condition-missing'));
-    return card;
-  }
+  card.append(
+    elt('span', measure.label, 'wb-condition-label')
+  );
 
-  const value = Number(reading.value).toLocaleString('en-US', { maximumFractionDigits: 2 });
+  const value = Number(reading.value).toLocaleString('en-US', {
+    maximumFractionDigits: 3,
+  });
+
   const unit = reading.unit || measure.fallbackUnit;
+
   const output = elt('strong', null, 'wb-condition-value');
   output.append(elt('span', value));
-  if (unit) output.append(elt('small', ` ${unit}`));
+
+  if (unit) {
+    output.append(elt('small', ` ${unit}`));
+  }
+
   card.append(output);
 
-  const timestamp = elt('time', formatTime(reading.time), 'wb-condition-time');
-  if (reading.time) timestamp.dateTime = reading.time;
-  card.append(timestamp);
-  if (reading.approvalStatus) {
-    card.append(elt('small', reading.approvalStatus, 'wb-condition-approval'));
+  const timestamp = elt(
+    'time',
+    formatTime(reading.time),
+    'wb-condition-time'
+  );
+
+  if (reading.time) {
+    timestamp.dateTime = reading.time;
   }
+
+  card.append(timestamp);
+
+  if (reading.approvalStatus) {
+    card.append(
+      elt('small', reading.approvalStatus, 'wb-condition-approval')
+    );
+  }
+
   return card;
 }
+
 
 function renderHistory(body, data) {
   const history = (Array.isArray(data.historicalReadings) ? data.historicalReadings : [])
@@ -118,7 +161,7 @@ function renderConditions(section, data, map) {
 
   if (!readings.length) {
     content.append(elt('p',
-      `No qualifying temperature, dissolved oxygen, or turbidity measurements were found in the past ${windowHours} hours at matched stations. This does not mean the waterbody has no monitoring data.`,
+      `No recent measurements of the supported USGS parameters were found at matched monitoring stations within the past ${windowHours} hours. Other observations may exist.`,
       'wb-conditions-message'));
   } else {
     const stationIDs = new Set(readings.map((reading) => reading.stationId));
@@ -162,11 +205,24 @@ function renderConditions(section, data, map) {
       }
       stationCard.append(heading);
 
+      
       const metrics = elt('div', null, 'wb-condition-metrics');
-      for (const measure of MEASURES) metrics.append(metricCard(measure, stationReadings));
+
+      for (const measure of MEASURES) {
+        const card = metricCard(measure, stationReadings);
+
+        if (card) {
+          metrics.append(card);
+        }
+      }
+
+      if (metrics.childElementCount === 0) {
+        continue;
+      }
+
       stationCard.append(metrics);
-      stationCard.append(elt('p', `Source: USGS · ${station.id}`, 'wb-condition-source'));
       content.append(stationCard);
+
     }
 
     content.append(elt('p',
