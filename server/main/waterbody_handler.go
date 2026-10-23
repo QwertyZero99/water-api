@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -29,21 +30,32 @@ type WaterbodyDetail struct {
 // Search ordinary waterbodies and manually defined display groups.
 func WaterbodySearch(w http.ResponseWriter, r *http.Request) {
 	if stationStore.db == nil {
-		writeJSONError(w, http.StatusServiceUnavailable,
-			errors.New("database not ready"))
+		err := errors.New("database not ready")
+		log.Printf(
+			"ERROR WaterbodySearch: database unavailable: %v method=%s path=%s",
+			err, r.Method, r.URL.Path,
+		)
+
+		writeJSONError(w, http.StatusServiceUnavailable, err)
 		return
 	}
 
 	q := strings.TrimSpace(r.URL.Query().Get("q"))
 
 	if len(q) < 2 {
+		// Empty or short searches are expected; no error to log.
 		writeJSON(w, http.StatusOK, []WaterbodySearchItem{})
 		return
 	}
 
 	if len(q) > 120 {
-		writeJSONError(w, http.StatusBadRequest,
-			errors.New("query too long"))
+		err := errors.New("query too long")
+		log.Printf(
+			"WARN WaterbodySearch: invalid search query: %v query_length=%d method=%s path=%s",
+			err, len(q), r.Method, r.URL.Path,
+		)
+
+		writeJSONError(w, http.StatusBadRequest, err)
 		return
 	}
 
@@ -99,11 +111,23 @@ func WaterbodySearch(w http.ResponseWriter, r *http.Request) {
 	`, q)
 
 	if err != nil {
+		log.Printf(
+			"ERROR WaterbodySearch: database query failed: %v query_length=%d method=%s path=%s",
+			err, len(q), r.Method, r.URL.Path,
+		)
+
 		writeJSONError(w, http.StatusInternalServerError,
 			fmt.Errorf("waterbody search: %w", err))
 		return
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			log.Printf(
+				"ERROR WaterbodySearch: failed to close database rows: %v path=%s",
+				err, r.URL.Path,
+			)
+		}
+	}()
 
 	results := make([]WaterbodySearchItem, 0)
 
@@ -117,7 +141,13 @@ func WaterbodySearch(w http.ResponseWriter, r *http.Request) {
 			&item.Grouped,
 			&item.SegmentCount,
 		); err != nil {
-			writeJSONError(w, http.StatusInternalServerError, err)
+			log.Printf(
+				"ERROR WaterbodySearch: failed to scan database row: %v path=%s",
+				err, r.URL.Path,
+			)
+
+			writeJSONError(w, http.StatusInternalServerError,
+				fmt.Errorf("waterbody search row scan: %w", err))
 			return
 		}
 
@@ -125,7 +155,13 @@ func WaterbodySearch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := rows.Err(); err != nil {
-		writeJSONError(w, http.StatusInternalServerError, err)
+		log.Printf(
+			"ERROR WaterbodySearch: database row iteration failed: %v path=%s",
+			err, r.URL.Path,
+		)
+
+		writeJSONError(w, http.StatusInternalServerError,
+			fmt.Errorf("waterbody search row iteration: %w", err))
 		return
 	}
 
@@ -135,16 +171,26 @@ func WaterbodySearch(w http.ResponseWriter, r *http.Request) {
 // Return either a display group or an ordinary waterbody.
 func WaterbodyByID(w http.ResponseWriter, r *http.Request) {
 	if stationStore.db == nil {
-		writeJSONError(w, http.StatusServiceUnavailable,
-			errors.New("database not ready"))
+		err := errors.New("database not ready")
+		log.Printf(
+			"ERROR WaterbodyByID: database unavailable: %v method=%s path=%s",
+			err, r.Method, r.URL.Path,
+		)
+
+		writeJSONError(w, http.StatusServiceUnavailable, err)
 		return
 	}
 
 	id := strings.TrimSpace(r.PathValue("id"))
 
 	if id == "" || len(id) > 120 {
-		writeJSONError(w, http.StatusBadRequest,
-			errors.New("invalid waterbody ID"))
+		err := errors.New("invalid waterbody ID")
+		log.Printf(
+			"WARN WaterbodyByID: invalid waterbody ID: %v id_length=%d method=%s path=%s",
+			err, len(id), r.Method, r.URL.Path,
+		)
+
+		writeJSONError(w, http.StatusBadRequest, err)
 		return
 	}
 
@@ -193,6 +239,11 @@ func WaterbodyByID(w http.ResponseWriter, r *http.Request) {
 		)
 
 		if err != nil {
+			log.Printf(
+				"ERROR WaterbodyByID: failed to load display group details: %v group_id=%q path=%s",
+				err, id, r.URL.Path,
+			)
+
 			writeJSONError(w, http.StatusInternalServerError,
 				fmt.Errorf("waterbody group detail: %w", err))
 			return
@@ -203,6 +254,11 @@ func WaterbodyByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !errors.Is(err, sql.ErrNoRows) {
+		log.Printf(
+			"ERROR WaterbodyByID: display group lookup failed: %v id=%q path=%s",
+			err, id, r.URL.Path,
+		)
+
 		writeJSONError(w, http.StatusInternalServerError,
 			fmt.Errorf("waterbody group lookup: %w", err))
 		return
@@ -225,12 +281,22 @@ func WaterbodyByID(w http.ResponseWriter, r *http.Request) {
 	)
 
 	if errors.Is(err, sql.ErrNoRows) {
+		log.Printf(
+			"INFO WaterbodyByID: waterbody not found id=%q path=%s",
+			id, r.URL.Path,
+		)
+
 		writeJSONError(w, http.StatusNotFound,
 			errors.New("waterbody not found"))
 		return
 	}
 
 	if err != nil {
+		log.Printf(
+			"ERROR WaterbodyByID: waterbody database lookup failed: %v id=%q path=%s",
+			err, id, r.URL.Path,
+		)
+
 		writeJSONError(w, http.StatusInternalServerError,
 			fmt.Errorf("waterbody detail: %w", err))
 		return
