@@ -20,7 +20,9 @@ type Config struct {
 	Port             string
 	APIKey           string
 	DataBasePort     string
+	DataBaseUsername string
 	DataBasePassword string
+	UpdateStationsFlag string
 }
 
 // loadConfig loads the configuration from environment variables
@@ -29,7 +31,9 @@ func loadConfig() (Config, error) {
 		Port:             os.Getenv("PORT"),
 		APIKey:           os.Getenv("API_KEY"),
 		DataBasePort:     os.Getenv("DATABASE_PORT"),
+		DataBaseUsername: os.Getenv("DATABASE_USERNAME"),
 		DataBasePassword: os.Getenv("DATABASE_PASSWORD"),
+		UpdateStationsFlag: os.Getenv("UPDATE_STATIONS"),
 	}
 
 	if cfg.Port == "" {
@@ -60,10 +64,12 @@ func main() {
 
 	stationStore = *NewStationStore(db)
 
-	startStationUpdater(
-		&stationStore,
-		stationStoreUpdateInterval,
-	)
+	if cfg.UpdateStationsFlag == "YES" {
+		startStationUpdater(
+			&stationStore,
+			stationStoreUpdateInterval,
+		)
+	}
 
 	/* HANDLERS */
 	// Static filesystems
