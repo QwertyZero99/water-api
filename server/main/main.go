@@ -101,7 +101,21 @@ func main() {
 		"GET /api/stations/{id}/measurements",
 		stationHandlers.StationMeasurements,
 	)
+	http.HandleFunc(
+		"GET /api/waterbody-groups/{id}/incidents",
+		WaterbodyGroupIncidents,
+	)
 	http.HandleFunc("/api/stations/", stationHandlers.StationByID)
+	http.HandleFunc("GET /api/waterbodies/{id}/incidents", WaterbodyPastIncidents)
+	http.HandleFunc(
+		"GET /api/waterbody-groups/search",
+		WaterbodyGroupSearch,
+	)
+
+	http.HandleFunc(
+		"GET /api/waterbody-groups/{id}",
+		WaterbodyGroupByID,
+	)
 
 	// Handlers for page endpoints
 	http.HandleFunc("/", homeHandler)

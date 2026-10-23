@@ -26,14 +26,34 @@ func WaterbodySearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	rows, err := stationStore.db.QueryContext(r.Context(), `
-  SELECT feature_id, segment_id, name, waterbody_type, description, basin,
-         classification, assessment, assessed_year
-  FROM waterbodies
-  WHERE name ILIKE '%' || $1 || '%'
-  ORDER BY CASE WHEN lower(name)=lower($1) THEN 0
-                WHEN lower(name) LIKE lower($1) || '%' THEN 1 ELSE 2 END,
-           name, segment_id, feature_id
-  LIMIT 40`, q)
+    SELECT
+        w.feature_id,
+        w.segment_id,
+        w.name,
+        w.waterbody_type,
+        w.description,
+        w.basin,
+        w.classification,
+        w.assessment,
+        w.assessed_year
+    FROM waterbodies w
+    WHERE w.name ILIKE '%' || $1 || '%'
+      AND NOT EXISTS (
+          SELECT 1
+          FROM waterbody_group_members m
+          WHERE m.feature_id = w.feature_id
+      )
+    ORDER BY
+        CASE
+            WHEN lower(w.name) = lower($1) THEN 0
+            WHEN lower(w.name) LIKE lower($1) || '%' THEN 1
+            ELSE 2
+        END,
+        w.name,
+        w.segment_id,
+        w.feature_id
+    LIMIT 40
+`, q)
 	if err != nil {
 		writeJSONError(w, 500, fmt.Errorf("waterbody search: %w", err))
 		return
