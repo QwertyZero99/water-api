@@ -69,7 +69,7 @@ func dsn() string {
 	if port == "" {
 		port = "5432"
 	}
-	return fmt.Sprintf("postgres://postgres:%s@localhost:%s/postgres?sslmode=disable", pwd, port)
+	return fmt.Sprintf("postgres://waterapi:%s@localhost:%s/postgres?sslmode=disable", pwd, port)
 }
 
 // parseFeatureCollection uses streaming tokens so the 479MB stream file never

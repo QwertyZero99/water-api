@@ -44,7 +44,7 @@ def num(v):
         return None
 
 def main():
-    path = Path(sys.argv[1] if len(sys.argv) > 1 else 'data/drinking_water/nys_drinking_water_contaminants.csv')
+    path = Path(sys.argv[1] if len(sys.argv) > 1 else '../../data/drinking_water/nys_drinking_water_contaminants.csv')
     if not path.is_file():
         sys.exit(f'CSV not found: {path.resolve()}')
     dsn = os.environ.get('DATABASE_URL')
