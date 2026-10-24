@@ -166,15 +166,18 @@ func main() {
 
 // homeHandler handles the homepage
 func homeHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("Served /")
 	http.ServeFile(w, r, "../html/index.html")
 }
 
 // mapHandler handles the map page
 func mapHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("Served /map")
 	http.ServeFile(w, r, "../html/map.html")
 }
 
-// mapHandler handles the map page
+// infoHandler handles the info page
 func infoHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("Served /info")
 	http.ServeFile(w, r, "../html/info.html")
 }

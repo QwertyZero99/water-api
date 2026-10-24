@@ -14,7 +14,7 @@ import (
 )
 
 // Nearby search uses the stored DEC GeoJSON coordinates. Distances are approximate
-// straight-line miles from the ZIP centroid to the waterbody, not road distances.
+// straight-line miles from the ZIP centroid to the waterbody.
 type nearbyItem struct {
 	ID            string  `json:"id"`
 	Name          string  `json:"name"`
