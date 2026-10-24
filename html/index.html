@@ -24,24 +24,24 @@
 
   <div class="bgImage"></div>
 
-  <div id="sidebar" class="sidebar collapsed">
-    <h1>💧 AquaNY</h1>
-    <p class="subtitle">Know Your Water</p>
 
-    <div class="sidebar-nav">
-      <a href="/">Home</a>
-      <a href="/map">Interactive Map</a>
-      <!--TODO fix this link or get rid of it-->
-      <a href="/info">Info</a>
-    </div>
+<nav class="aquany-navigation" aria-label="Main navigation">
+  <button
+    id="aquany-menu-button"
+    class="aquany-menu-button"
+    type="button"
+    aria-label="Open navigation menu"
+    aria-controls="aquany-dropdown"
+    aria-expanded="false"
+  >☰</button>
 
-    <div id="station">
-      <h2>Select a location</h2>
-      <p>Click a water monitoring station.</p>
-    </div>
+  <div id="aquany-dropdown" class="aquany-dropdown" hidden>
+    <a href="/">Home</a>
+    <a href="/map">Interactive Map</a>
+    <a href="/info">Info</a>
   </div>
+</nav>
 
-  <button id="toggle-btn" class="collapsed">›</button>
 
   <div id="bgtbox">
     <h1 class="child">AquaNY</h1>
