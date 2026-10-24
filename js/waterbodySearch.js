@@ -1627,7 +1627,7 @@ export function initWaterbodySearch(map) {
   const zipBox = document.createElement('div');
   zipBox.className = 'waterbody-zip-search';
   zipBox.innerHTML = `
-    <label for="aquanyZip">Find nearby water by ZIP code</label>
+    <label for="aquanyZip">Find waterbodies near a ZIP code</label>
     <div class="waterbody-zip-controls">
       <input id="aquanyZip" type="text" inputmode="numeric" maxlength="5"
              autocomplete="postal-code" placeholder="e.g. 12054" />
@@ -1643,6 +1643,12 @@ export function initWaterbodySearch(map) {
       <div class="waterbody-zip-results"></div>
     </details>`;
   root.insertBefore(zipBox, label);
+  const searchDivider = document.createElement("div");
+  searchDivider.className = "waterbody-search-divider";
+  searchDivider.textContent = "OR";
+  root.insertBefore(searchDivider, label);
+
+label.textContent = "Search by waterbody name";
   const zipInput = zipBox.querySelector('#aquanyZip');
   const zipRadius = zipBox.querySelector('#aquanyRadius');
   const zipButton = zipBox.querySelector('.waterbody-zip-button');
@@ -2164,11 +2170,25 @@ export function initWaterbodySearch(map) {
 
 
 
-        button.addEventListener("click", () =>
+        button.addEventListener("click", async () => {
+          // Load the selected waterbody's information.
+          await chooseWaterbody(item.id);
 
-          void chooseWaterbody(item.id)
+          // Scroll inside the search panel to the details.
+          if (detail.hidden) return;
 
-        );
+          requestAnimationFrame(() => {
+            const panelTop = root.getBoundingClientRect().top;
+            const detailTop = detail.getBoundingClientRect().top;
+
+            root.scrollTo({
+              top: root.scrollTop + detailTop - panelTop - 16,
+              behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+                ? "instant"
+                : "smooth"
+            });
+          });
+        });
 
 
 

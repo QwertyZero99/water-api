@@ -1875,3 +1875,30 @@ a.aquany-reading-link:focus-visible { outline: 2px solid #168bad; outline-offset
   .waterbody-search .waterbody-zip-controls select,
   .waterbody-search .waterbody-zip-controls button { flex: 1 1 0; }
 }
+/* Divider between the two waterbody search methods */
+.waterbody-search-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 8px 0 22px;
+  color: #8193a3;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.waterbody-search-divider::before,
+.waterbody-search-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #dce7ed;
+}
+
+.waterbody-search .waterbody-zip-search {
+  margin-bottom: 8px;
+}
+
+.waterbody-search .waterbody-search-label {
+  margin-bottom: 10px;
+}
