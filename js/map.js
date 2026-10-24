@@ -560,7 +560,13 @@ async function loadPopupMeasurements(id, container) {
           ? `Observed ${date.toLocaleString()}`
           : "Observation time unavailable";
 
-      row.append(label, value, timestamp);
+      // Hint link at the bottom of each measurement
+      const hintLink = document.createElement("a");
+      hintLink.href = `/info#${encodeURIComponent(String(measurement.id ?? ""))}`;
+      hintLink.textContent = "More information";
+      hintLink.className = "measurement-hint";
+
+      row.append(label, value, timestamp, hintLink);
       fragment.append(row);
     }
 
