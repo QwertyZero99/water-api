@@ -1,3 +1,4 @@
+
 package main
 
 import (
@@ -5,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"math"
 	"net/http"
@@ -18,7 +18,22 @@ import (
 const (
 	nearbyCellMiles = 5.0
 	nearbyMaxItems  = 25
-	nearbyEarthMi   = 3958.7613
+
+	// Fixed grid spacing. The longitude cell size is conservative for
+	// the supported New York latitude range.
+	nearbyLatStep = nearbyCellMiles / 69.0
+	nearbyLonStep = nearbyCellMiles / (69.172 * 0.69)
+
+	nearbyMaxCellSpan = 1000
+
+	// A result is returned with one decimal place. Include a margin
+	// when pruning against the rounded heap distance.
+	nearbyRoundingMargin = 0.051
+)
+
+var (
+	errNearbyDBUnavailable = errors.New("database unavailable")
+	errNearbyNoGeometry    = errors.New("no waterbody geometry available")
 )
 
 type nearbyItem struct {
@@ -37,10 +52,12 @@ type nearbyPoint struct {
 
 type nearbyPath struct {
 	Points []nearbyPoint
+
 	MinLon float64
 	MaxLon float64
 	MinLat float64
 	MaxLat float64
+
 	Closed bool
 }
 
@@ -54,12 +71,14 @@ type nearbyGeometry struct {
 	Type         string
 	Grouped      bool
 	SegmentCount int
-	Paths        []nearbyPath
-	Polygons     []nearbyPolygon
-	MinLon       float64
-	MaxLon       float64
-	MinLat       float64
-	MaxLat       float64
+
+	Paths    []nearbyPath
+	Polygons []nearbyPolygon
+
+	MinLon float64
+	MaxLon float64
+	MinLat float64
+	MaxLat float64
 }
 
 type nearbyCell struct {
@@ -70,6 +89,10 @@ type nearbyCell struct {
 type nearbySpatialIndex struct {
 	Items []nearbyGeometry
 	Cells map[nearbyCell][]int
+
+	// Very large geometries are checked separately instead of
+	// generating an excessive number of grid references.
+	Oversized []int
 }
 
 var nearbyCache struct {
@@ -87,8 +110,10 @@ type rawSegment struct {
 }
 
 func validCoordinate(lon, lat float64) bool {
-	return !math.IsNaN(lon) && !math.IsNaN(lat) &&
-		!math.IsInf(lon, 0) && !math.IsInf(lat, 0) &&
+	return !math.IsNaN(lon) &&
+		!math.IsNaN(lat) &&
+		!math.IsInf(lon, 0) &&
+		!math.IsInf(lat, 0) &&
 		lon >= -180 && lon <= 180 &&
 		lat >= -90 && lat <= 90
 }
@@ -101,8 +126,8 @@ func makeNearbyPath(coords []any) (nearbyPath, bool) {
 		MaxLat: math.Inf(-1),
 	}
 
-	for _, v := range coords {
-		pair, ok := v.([]any)
+	for _, value := range coords {
+		pair, ok := value.([]any)
 		if !ok || len(pair) < 2 {
 			continue
 		}
@@ -113,7 +138,9 @@ func makeNearbyPath(coords []any) (nearbyPath, bool) {
 			continue
 		}
 
-		path.Points = append(path.Points, nearbyPoint{Lon: lon, Lat: lat})
+		point := nearbyPoint{Lon: lon, Lat: lat}
+		path.Points = append(path.Points, point)
+
 		path.MinLon = math.Min(path.MinLon, lon)
 		path.MaxLon = math.Max(path.MaxLon, lon)
 		path.MinLat = math.Min(path.MinLat, lat)
@@ -123,24 +150,22 @@ func makeNearbyPath(coords []any) (nearbyPath, bool) {
 	if len(path.Points) == 0 {
 		return nearbyPath{}, false
 	}
+
 	path.Closed = len(path.Points) >= 4 &&
 		path.Points[0] == path.Points[len(path.Points)-1]
+
 	return path, true
 }
 
-// Decode paths without connecting independent MultiPoint coordinates.
-func decodeGeometry(raw json.RawMessage, item *nearbyGeometry) {
-	var g rawGeometry
-	if err := json.Unmarshal(raw, &g); err != nil {
-		return
-	}
-
+// decodeGeometryValue receives a complete GeoJSON geometry object.
+// MultiPoint coordinates remain independent points.
+func decodeGeometryValue(g rawGeometry, item *nearbyGeometry) {
 	switch g.Type {
 	case "Point":
 		var coords []any
 		if json.Unmarshal(g.Coordinates, &coords) == nil {
-			if p, ok := makeNearbyPath([]any{coords}); ok {
-				item.Paths = append(item.Paths, p)
+			if path, ok := makeNearbyPath([]any{coords}); ok {
+				item.Paths = append(item.Paths, path)
 			}
 		}
 
@@ -148,8 +173,8 @@ func decodeGeometry(raw json.RawMessage, item *nearbyGeometry) {
 		var coords [][]any
 		if json.Unmarshal(g.Coordinates, &coords) == nil {
 			for _, coord := range coords {
-				if p, ok := makeNearbyPath([]any{coord}); ok {
-					item.Paths = append(item.Paths, p)
+				if path, ok := makeNearbyPath([]any{coord}); ok {
+					item.Paths = append(item.Paths, path)
 				}
 			}
 		}
@@ -157,8 +182,8 @@ func decodeGeometry(raw json.RawMessage, item *nearbyGeometry) {
 	case "LineString":
 		var coords []any
 		if json.Unmarshal(g.Coordinates, &coords) == nil {
-			if p, ok := makeNearbyPath(coords); ok {
-				item.Paths = append(item.Paths, p)
+			if path, ok := makeNearbyPath(coords); ok {
+				item.Paths = append(item.Paths, path)
 			}
 		}
 
@@ -166,93 +191,103 @@ func decodeGeometry(raw json.RawMessage, item *nearbyGeometry) {
 		var lines [][]any
 		if json.Unmarshal(g.Coordinates, &lines) == nil {
 			for _, line := range lines {
-				if p, ok := makeNearbyPath(line); ok {
-					item.Paths = append(item.Paths, p)
+				if path, ok := makeNearbyPath(line); ok {
+					item.Paths = append(item.Paths, path)
 				}
 			}
 		}
 
 	case "Polygon":
 		var rings [][]any
-		if json.Unmarshal(g.Coordinates, &rings) == nil {
-			poly := nearbyPolygon{}
-			for _, ring := range rings {
-				if p, ok := makeNearbyPath(ring); ok {
-					poly.Rings = append(poly.Rings, p)
-					item.Paths = append(item.Paths, p)
-				}
+		if json.Unmarshal(g.Coordinates, &rings) != nil {
+			return
+		}
+
+		polygon := nearbyPolygon{}
+		for _, ring := range rings {
+			if path, ok := makeNearbyPath(ring); ok {
+				polygon.Rings = append(polygon.Rings, path)
+				item.Paths = append(item.Paths, path)
 			}
-			if len(poly.Rings) > 0 {
-				item.Polygons = append(item.Polygons, poly)
-			}
+		}
+
+		if len(polygon.Rings) > 0 {
+			item.Polygons = append(item.Polygons, polygon)
 		}
 
 	case "MultiPolygon":
 		var polygons [][][]any
-		if json.Unmarshal(g.Coordinates, &polygons) == nil {
-			for _, rings := range polygons {
-				poly := nearbyPolygon{}
-				for _, ring := range rings {
-					if p, ok := makeNearbyPath(ring); ok {
-						poly.Rings = append(poly.Rings, p)
-						item.Paths = append(item.Paths, p)
-					}
+		if json.Unmarshal(g.Coordinates, &polygons) != nil {
+			return
+		}
+
+		for _, rings := range polygons {
+			polygon := nearbyPolygon{}
+
+			for _, ring := range rings {
+				if path, ok := makeNearbyPath(ring); ok {
+					polygon.Rings = append(polygon.Rings, path)
+					item.Paths = append(item.Paths, path)
 				}
-				if len(poly.Rings) > 0 {
-					item.Polygons = append(item.Polygons, poly)
-				}
+			}
+
+			if len(polygon.Rings) > 0 {
+				item.Polygons = append(item.Polygons, polygon)
 			}
 		}
 	}
 }
 
-func initGeometryBounds(item *nearbyGeometry) {
-	item.MinLon, item.MinLat = math.Inf(1), math.Inf(1)
-	item.MaxLon, item.MaxLat = math.Inf(-1), math.Inf(-1)
-
-	for _, p := range item.Paths {
-		item.MinLon = math.Min(item.MinLon, p.MinLon)
-		item.MaxLon = math.Max(item.MaxLon, p.MaxLon)
-		item.MinLat = math.Min(item.MinLat, p.MinLat)
-		item.MaxLat = math.Max(item.MaxLat, p.MaxLat)
+// Retained for callers that have an encoded, complete geometry object.
+func decodeGeometry(raw json.RawMessage, item *nearbyGeometry) {
+	var g rawGeometry
+	if json.Unmarshal(raw, &g) == nil {
+		decodeGeometryValue(g, item)
 	}
 }
 
-func cellFor(lat, lon float64) nearbyCell {
-	// A latitude/longitude grid with approximately 5-mile spacing.
-	// Longitude cells are narrower in New York; this remains a conservative
-	// candidate index because each geometry is inserted into every covered cell.
-	latStep := nearbyCellMiles / 69.0
-	lonStep := nearbyCellMiles / (69.172 * math.Cos(lat*math.Pi/180))
-	if lonStep < 0.01 {
-		lonStep = 0.01
+func initGeometryBounds(item *nearbyGeometry) bool {
+	item.MinLon = math.Inf(1)
+	item.MaxLon = math.Inf(-1)
+	item.MinLat = math.Inf(1)
+	item.MaxLat = math.Inf(-1)
+
+	for _, path := range item.Paths {
+		item.MinLon = math.Min(item.MinLon, path.MinLon)
+		item.MaxLon = math.Max(item.MaxLon, path.MaxLon)
+		item.MinLat = math.Min(item.MinLat, path.MinLat)
+		item.MaxLat = math.Max(item.MaxLat, path.MaxLat)
 	}
+
+	return len(item.Paths) > 0
+}
+
+func cellFor(lat, lon float64) nearbyCell {
 	return nearbyCell{
-		X: int(math.Floor(lon / lonStep)),
-		Y: int(math.Floor(lat / latStep)),
+		X: int(math.Floor(lon / nearbyLonStep)),
+		Y: int(math.Floor(lat / nearbyLatStep)),
 	}
 }
 
 func buildNearbyIndex(items []nearbyGeometry) *nearbySpatialIndex {
 	idx := &nearbySpatialIndex{
-		Items: items,
-		Cells: make(map[nearbyCell][]int),
+		Items: make([]nearbyGeometry, len(items)),
+		Cells: make(map[nearbyCell][]int, len(items)*2),
 	}
 
-	// Use a fixed longitude grid sized for New York rather than changing cell
-	// width by latitude. This keeps query and insertion keys consistent.
-	lonStep := nearbyCellMiles / (69.172 * math.Cos(43*math.Pi/180))
-	latStep := nearbyCellMiles / 69.0
+	copy(idx.Items, items)
 
 	for i := range idx.Items {
 		g := &idx.Items[i]
-		minX := int(math.Floor(g.MinLon / lonStep))
-		maxX := int(math.Floor(g.MaxLon / lonStep))
-		minY := int(math.Floor(g.MinLat / latStep))
-		maxY := int(math.Floor(g.MaxLat / latStep))
 
-		// Avoid exploding the index for exceptionally large geometries.
-		if maxX-minX > 1000 || maxY-minY > 1000 {
+		minX := int(math.Floor(g.MinLon / nearbyLonStep))
+		maxX := int(math.Floor(g.MaxLon / nearbyLonStep))
+		minY := int(math.Floor(g.MinLat / nearbyLatStep))
+		maxY := int(math.Floor(g.MaxLat / nearbyLatStep))
+
+		if maxX-minX > nearbyMaxCellSpan ||
+			maxY-minY > nearbyMaxCellSpan {
+			idx.Oversized = append(idx.Oversized, i)
 			continue
 		}
 
@@ -271,6 +306,7 @@ func loadNearbyIndex(ctx context.Context) (*nearbySpatialIndex, error) {
 	nearbyCache.RLock()
 	idx := nearbyCache.index
 	nearbyCache.RUnlock()
+
 	if idx != nil {
 		return idx, nil
 	}
@@ -281,8 +317,9 @@ func loadNearbyIndex(ctx context.Context) (*nearbySpatialIndex, error) {
 	if nearbyCache.index != nil {
 		return nearbyCache.index, nil
 	}
+
 	if stationStore.db == nil {
-		return nil, errors.New("database unavailable")
+		return nil, errNearbyDBUnavailable
 	}
 
 	rows, err := stationStore.db.QueryContext(ctx, `
@@ -294,11 +331,23 @@ func loadNearbyIndex(ctx context.Context) (*nearbySpatialIndex, error) {
 	defer rows.Close()
 
 	items := make([]nearbyGeometry, 0, 5000)
+
 	for rows.Next() {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
+
 		var item nearbyGeometry
 		var raw []byte
-		if err := rows.Scan(&item.ID, &item.Name, &item.Type,
-			&item.Grouped, &item.SegmentCount, &raw); err != nil {
+
+		if err := rows.Scan(
+			&item.ID,
+			&item.Name,
+			&item.Type,
+			&item.Grouped,
+			&item.SegmentCount,
+			&raw,
+		); err != nil {
 			return nil, err
 		}
 
@@ -307,27 +356,35 @@ func loadNearbyIndex(ctx context.Context) (*nearbySpatialIndex, error) {
 			continue
 		}
 
-		for _, seg := range segments {
-			decodeGeometry(seg.Geometry.Coordinates, &item)
+		for _, segment := range segments {
+			// Pass the complete geometry, including its "type".
+			decodeGeometryValue(segment.Geometry, &item)
 		}
-		if len(item.Paths) == 0 {
+
+		if !initGeometryBounds(&item) {
 			continue
 		}
 
-		initGeometryBounds(&item)
 		items = append(items, item)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
+
 	if len(items) == 0 {
-		return nil, errors.New("no waterbody geometry available")
+		return nil, errNearbyNoGeometry
 	}
 
-	nearbyCache.index = buildNearbyIndex(items)
-	return nearbyCache.index, nil
+	// The index is published only after it is fully built.
+	built := buildNearbyIndex(items)
+	nearbyCache.index = built
+
+	return built, nil
 }
 
+// Local planar distance in miles. Suitable as an approximation for
+// short distances in New York; see deployment notes below.
 func distanceToPathMiles(lat, lon float64, path nearbyPath) float64 {
 	if len(path.Points) == 0 {
 		return math.Inf(1)
@@ -335,28 +392,42 @@ func distanceToPathMiles(lat, lon float64, path nearbyPath) float64 {
 
 	scaleX := 69.172 * math.Cos(lat*math.Pi/180)
 	scaleY := 69.0
-	nearest := math.Inf(1)
 
-	var lastX, lastY float64
-	for i, p := range path.Points {
-		x := (p.Lon - lon) * scaleX
-		y := (p.Lat - lat) * scaleY
+	bestSquared := math.Inf(1)
+	lastX, lastY := 0.0, 0.0
 
-		nearest = math.Min(nearest, math.Hypot(x, y))
+	for i, point := range path.Points {
+		x := (point.Lon - lon) * scaleX
+		y := (point.Lat - lat) * scaleY
+
+		d2 := x*x + y*y
+		if d2 < bestSquared {
+			bestSquared = d2
+		}
 
 		if i > 0 {
-			dx, dy := x-lastX, y-lastY
+			dx := x - lastX
+			dy := y - lastY
 			den := dx*dx + dy*dy
+
 			if den > 0 {
-				t := math.Max(0, math.Min(1,
-					-(lastX*dx+lastY*dy)/den))
-				nearest = math.Min(nearest,
-					math.Hypot(lastX+t*dx, lastY+t*dy))
+				t := -(lastX*dx + lastY*dy) / den
+				t = math.Max(0, math.Min(1, t))
+
+				px := lastX + t*dx
+				py := lastY + t*dy
+
+				d2 = px*px + py*py
+				if d2 < bestSquared {
+					bestSquared = d2
+				}
 			}
 		}
+
 		lastX, lastY = x, y
 	}
-	return nearest
+
+	return math.Sqrt(bestSquared)
 }
 
 func pointInRing(lat, lon float64, ring nearbyPath) bool {
@@ -366,66 +437,123 @@ func pointInRing(lat, lon float64, ring nearbyPath) bool {
 
 	inside := false
 	j := len(ring.Points) - 1
-	for i, p := range ring.Points {
+
+	for i, point := range ring.Points {
 		prev := ring.Points[j]
-		if (p.Lat > lat) != (prev.Lat > lat) &&
-			lon < (prev.Lon-p.Lon)*(lat-p.Lat)/(prev.Lat-p.Lat)+p.Lon {
-			inside = !inside
+
+		if (point.Lat > lat) != (prev.Lat > lat) {
+			crossingLon := (prev.Lon-point.Lon)*
+				(lat-point.Lat)/(prev.Lat-point.Lat) + point.Lon
+
+			if lon < crossingLon {
+				inside = !inside
+			}
 		}
+
 		j = i
 	}
+
 	return inside
 }
 
-func pointInPolygon(lat, lon float64, poly nearbyPolygon) bool {
-	if len(poly.Rings) == 0 || !pointInRing(lat, lon, poly.Rings[0]) {
+func pointInPolygon(lat, lon float64, polygon nearbyPolygon) bool {
+	if len(polygon.Rings) == 0 {
 		return false
 	}
-	for _, hole := range poly.Rings[1:] {
+
+	outer := polygon.Rings[0]
+	if lon < outer.MinLon || lon > outer.MaxLon ||
+		lat < outer.MinLat || lat > outer.MaxLat {
+		return false
+	}
+
+	if !pointInRing(lat, lon, outer) {
+		return false
+	}
+
+	// Subsequent rings represent holes.
+	for _, hole := range polygon.Rings[1:] {
+		if lon < hole.MinLon || lon > hole.MaxLon ||
+			lat < hole.MinLat || lat > hole.MaxLat {
+			continue
+		}
+
 		if pointInRing(lat, lon, hole) {
 			return false
 		}
 	}
+
 	return true
 }
 
-func geometryDistance(lat, lon float64, g *nearbyGeometry) float64 {
-	// A bounding-box lower bound avoids expensive path scans for distant items.
+// Lower bound to the bounding box in the same local planar metric used
+// by the final path-distance calculation.
+func geometryLowerBoundMiles(lat, lon float64, g *nearbyGeometry) float64 {
+	scaleX := 69.172 * math.Cos(lat*math.Pi/180)
+
 	dx := 0.0
 	if lon < g.MinLon {
-		dx = (g.MinLon - lon) * 69.172 * math.Cos(lat*math.Pi/180)
+		dx = (g.MinLon - lon) * scaleX
 	} else if lon > g.MaxLon {
-		dx = (lon - g.MaxLon) * 69.172 * math.Cos(lat*math.Pi/180)
+		dx = (lon - g.MaxLon) * scaleX
 	}
+
 	dy := 0.0
 	if lat < g.MinLat {
 		dy = (g.MinLat - lat) * 69.0
 	} else if lat > g.MaxLat {
 		dy = (lat - g.MaxLat) * 69.0
 	}
-	best := math.Hypot(dx, dy)
 
-	if best > 25 {
-		return best
+	return math.Hypot(dx, dy)
+}
+
+func geometryDistance(lat, lon float64, g *nearbyGeometry) float64 {
+	lowerBound := geometryLowerBoundMiles(lat, lon, g)
+
+	// The API radius is at most 25 miles.
+	if lowerBound > 25 {
+		return lowerBound
 	}
-	for _, poly := range g.Polygons {
-		if pointInPolygon(lat, lon, poly) {
+
+	for _, polygon := range g.Polygons {
+		if pointInPolygon(lat, lon, polygon) {
 			return 0
 		}
 	}
+
+	best := math.Inf(1)
+
+	// Restrict scans to paths whose bounding boxes are near enough
+	// to improve the current best distance.
 	for _, path := range g.Paths {
-		if lon < path.MinLon-1 || lon > path.MaxLon+1 ||
-			lat < path.MinLat-1 || lat > path.MaxLat+1 {
-			continue
+		if best < math.Inf(1) {
+			latPad := best/69.0 + 0.01
+			lonScale := 69.172 * math.Cos(lat*math.Pi/180)
+			lonPad := 180.0
+
+			if math.Abs(lonScale) > 1e-9 {
+				lonPad = best/math.Abs(lonScale) + 0.01
+			}
+
+			if path.MinLon > lon+lonPad ||
+				path.MaxLon < lon-lonPad ||
+				path.MinLat > lat+latPad ||
+				path.MaxLat < lat-latPad {
+				continue
+			}
 		}
+
 		d := distanceToPathMiles(lat, lon, path)
 		if d < best {
 			best = d
 		}
+
 		if best == 0 {
-			break
+			return 0
 		}
 	}
+
 	return best
 }
 
@@ -436,41 +564,114 @@ type nearbyResult struct {
 type nearbyMaxHeap []nearbyResult
 
 func (h nearbyMaxHeap) Len() int { return len(h) }
+
 func (h nearbyMaxHeap) Less(i, j int) bool {
 	if h[i].item.DistanceMiles == h[j].item.DistanceMiles {
 		return h[i].item.Name > h[j].item.Name
 	}
 	return h[i].item.DistanceMiles > h[j].item.DistanceMiles
 }
-func (h nearbyMaxHeap) Swap(i, j int) { h[i], h[j] = h[j], h[i] }
-func (h *nearbyMaxHeap) Push(v any)   { *h = append(*h, v.(nearbyResult)) }
+
+func (h nearbyMaxHeap) Swap(i, j int) {
+	h[i], h[j] = h[j], h[i]
+}
+
+func (h *nearbyMaxHeap) Push(value any) {
+	*h = append(*h, value.(nearbyResult))
+}
+
 func (h *nearbyMaxHeap) Pop() any {
 	old := *h
 	n := len(old)
-	v := old[n-1]
+	value := old[n-1]
 	*h = old[:n-1]
-	return v
+	return value
 }
 
-func queryNearby(ctx context.Context, lat, lon, radius float64) ([]nearbyItem, error) {
+func nearbyItemLess(a, b nearbyItem) bool {
+	if a.DistanceMiles == b.DistanceMiles {
+		return a.Name < b.Name
+	}
+	return a.DistanceMiles < b.DistanceMiles
+}
+
+func queryNearby(
+	ctx context.Context,
+	lat, lon, radius float64,
+) ([]nearbyItem, error) {
 	idx, err := loadNearbyIndex(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	lonStep := nearbyCellMiles / (69.172 * math.Cos(43*math.Pi/180))
-	latStep := nearbyCellMiles / 69.0
-
 	latPad := radius / 69.0
-	lonPad := radius / (69.172 * math.Cos(lat*math.Pi/180))
-	minX := int(math.Floor((lon - lonPad) / lonStep))
-	maxX := int(math.Floor((lon + lonPad) / lonStep))
-	minY := int(math.Floor((lat - latPad) / latStep))
-	maxY := int(math.Floor((lat + latPad) / latStep))
+	cosLat := math.Cos(lat * math.Pi / 180)
+
+	lonPad := 180.0
+	if math.Abs(cosLat) > 1e-9 {
+		lonPad = radius / (69.172 * math.Abs(cosLat))
+	}
+
+	minX := int(math.Floor((lon - lonPad) / nearbyLonStep))
+	maxX := int(math.Floor((lon + lonPad) / nearbyLonStep))
+	minY := int(math.Floor((lat - latPad) / nearbyLatStep))
+	maxY := int(math.Floor((lat + latPad) / nearbyLatStep))
 
 	seen := make(map[int]struct{}, 256)
 	results := make(nearbyMaxHeap, 0, nearbyMaxItems)
 	heap.Init(&results)
+
+	consider := func(i int) {
+		if _, exists := seen[i]; exists {
+			return
+		}
+		seen[i] = struct{}{}
+
+		g := &idx.Items[i]
+
+		lowerBound := geometryLowerBoundMiles(lat, lon, g)
+		if lowerBound > radius {
+			return
+		}
+
+		// Because heap distances are rounded to one decimal place,
+		// keep a margin to avoid dropping candidates that could tie
+		// after rounding and win the name-based tie-break.
+		if results.Len() == nearbyMaxItems {
+			cutoff := results[0].item.DistanceMiles +
+				nearbyRoundingMargin
+
+			if lowerBound > cutoff {
+				return
+			}
+		}
+
+		d := geometryDistance(lat, lon, g)
+		if d > radius {
+			return
+		}
+
+		item := nearbyItem{
+			ID:            g.ID,
+			Name:          g.Name,
+			Type:          g.Type,
+			Grouped:       g.Grouped,
+			SegmentCount:  g.SegmentCount,
+			DistanceMiles: math.Round(d*10) / 10,
+		}
+
+		candidate := nearbyResult{item: item}
+
+		if results.Len() < nearbyMaxItems {
+			heap.Push(&results, candidate)
+			return
+		}
+
+		if nearbyItemLess(candidate.item, results[0].item) {
+			heap.Pop(&results)
+			heap.Push(&results, candidate)
+		}
+	}
 
 	for x := minX; x <= maxX; x++ {
 		for y := minY; y <= maxY; y++ {
@@ -479,62 +680,48 @@ func queryNearby(ctx context.Context, lat, lon, radius float64) ([]nearbyItem, e
 			}
 
 			for _, i := range idx.Cells[nearbyCell{X: x, Y: y}] {
-				if _, ok := seen[i]; ok {
-					continue
-				}
-				seen[i] = struct{}{}
-
-				g := &idx.Items[i]
-				d := geometryDistance(lat, lon, g)
-				if d > radius {
-					continue
-				}
-
-				item := nearbyItem{
-					ID: g.ID, Name: g.Name, Type: g.Type,
-					Grouped: g.Grouped, SegmentCount: g.SegmentCount,
-					DistanceMiles: math.Round(d*10) / 10,
-				}
-				candidate := nearbyResult{item: item}
-				if results.Len() < nearbyMaxItems {
-					heap.Push(&results, candidate)
-				} else if candidate.item.DistanceMiles < results[0].item.DistanceMiles ||
-					(candidate.item.DistanceMiles == results[0].item.DistanceMiles &&
-						candidate.item.Name < results[0].item.Name) {
-					heap.Pop(&results)
-					heap.Push(&results, candidate)
-				}
+				consider(i)
 			}
 		}
+	}
+
+	for _, i := range idx.Oversized {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
+		consider(i)
 	}
 
 	found := make([]nearbyItem, 0, results.Len())
 	for results.Len() > 0 {
 		found = append(found, heap.Pop(&results).(nearbyResult).item)
 	}
+
 	sort.Slice(found, func(i, j int) bool {
-		if found[i].DistanceMiles == found[j].DistanceMiles {
-			return found[i].Name < found[j].Name
-		}
-		return found[i].DistanceMiles < found[j].DistanceMiles
+		return nearbyItemLess(found[i], found[j])
 	})
+
 	return found, nil
 }
 
 func WaterbodiesNearby(w http.ResponseWriter, r *http.Request) {
-	log.Println("Serving waterbodies nearby API.")
 	q := r.URL.Query()
+
 	lat, latErr := strconv.ParseFloat(q.Get("lat"), 64)
 	lon, lonErr := strconv.ParseFloat(q.Get("lon"), 64)
 	radius, radiusErr := strconv.ParseFloat(q.Get("radius"), 64)
 
 	if latErr != nil || lonErr != nil || radiusErr != nil ||
 		!validCoordinate(lon, lat) ||
-		lat < 40 || lat > 46 || lon < -80.5 || lon > -71 ||
+		lat < 40 || lat > 46 ||
+		lon < -80.5 || lon > -71 ||
 		math.IsNaN(radius) || math.IsInf(radius, 0) ||
 		radius < 1 || radius > 25 {
-		http.Error(w, "invalid NY coordinates or radius (1-25 miles)",
-			http.StatusBadRequest)
+		http.Error(
+			w,
+			"invalid NY coordinates or radius (1-25 miles)",
+			http.StatusBadRequest,
+		)
 		return
 	}
 
@@ -542,30 +729,41 @@ func WaterbodiesNearby(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	start := time.Now()
+
 	found, err := queryNearby(ctx, lat, lon, radius)
 	if err != nil {
-		if errors.Is(err, context.DeadlineExceeded) {
-			http.Error(w, "nearby search timed out", http.StatusGatewayTimeout)
+		switch {
+		case errors.Is(err, context.DeadlineExceeded):
+			http.Error(
+				w,
+				"nearby search timed out",
+				http.StatusGatewayTimeout,
+			)
+
+		case errors.Is(err, context.Canceled):
 			return
+
+		default:
+			http.Error(
+				w,
+				"nearby waterbody index unavailable",
+				http.StatusServiceUnavailable,
+			)
+			log.Printf("nearby index/search error: %v", err)
 		}
-		if errors.Is(err, context.Canceled) {
-			return
-		}
-		http.Error(w, "nearby waterbody index unavailable",
-			http.StatusServiceUnavailable)
-		log.Printf("nearby index/search error: %v", err)
 		return
 	}
 
-	log.Printf("nearby search: %.2fms; results=%d",
-		float64(time.Since(start).Microseconds())/1000, len(found))
+	log.Printf(
+		"nearby search: %.2fms; results=%d",
+		float64(time.Since(start).Microseconds())/1000,
+		len(found),
+	)
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Header().Set("Cache-Control", "public, max-age=600")
+
 	if err := json.NewEncoder(w).Encode(found); err != nil {
 		log.Printf("nearby response error: %v", err)
 	}
 }
-
-// Keep strconv referenced in builds that share validation helpers.
-var _ = fmt.Sprintf
