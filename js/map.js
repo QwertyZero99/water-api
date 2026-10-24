@@ -1,5 +1,5 @@
 
-import { initWaterbodySearch } from "./waterbodySearch.js";
+import { initWaterbodySearch } from "./waterbodySearch.js?v=7";
 const NY_BBOX = [-79.8, 40.4, -71.8, 45.1];
 
 const INITIAL_CENTER = [-75, 43];
