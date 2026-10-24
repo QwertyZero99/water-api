@@ -22,6 +22,28 @@ const PARAMETER_NAMES = {
   "00400": "pH",
   "63680": "Turbidity",
   "72019": "Depth to groundwater",
+  "62619": "Water surface elevation (NGVD29)",
+  "62620": "Water surface elevation (NAVD88)",
+  "90860": "Salinity (at 25°C)",
+  "00020": "Air temperature",
+  "00021": "Air temperature (Fahrenheit)",
+  "00025": "Barometric pressure",
+  "00030": "Solar radiation",
+  "00032": "Cloud cover",
+  "00035": "Wind speed",
+  "00036": "Wind direction",
+  "00045": "Precipitation",
+  "00061": "Instantaneous streamflow",
+  "00062": "Reservoir water elevation",
+  "00064": "Mean stream depth",
+  "00072": "Stream stage",
+  "00076": "Turbidity (NTU)",
+  "00077": "Water transparency (Secchi disk)",
+  "00078": "Water transparency (Secchi disk, meters)",
+  "00080": "Water color",
+  "00081": "Apparent water color",
+  "00402": "Specific conductance (uncorrected)",
+  "00480": "Salinity",
 };
 
 let activeMeasurementCoverage = "latest";
@@ -43,9 +65,77 @@ function getWaterCategory(siteTypeCode) {
   return "other";
 }
 
-function getParameterName(code) {
-  return PARAMETER_NAMES[code] ?? `Parameter ${code}`;
+
+// AquaNY contextual measurement links: values navigate to the matching guide section.
+const AQUANY_INFO_BASE = "/info";
+function aquanyInfoLink(valueNode, sectionId) {
+  if (!sectionId) return valueNode;
+  const anchor = document.createElement("a");
+  anchor.href = `${AQUANY_INFO_BASE}#${sectionId}`;
+  anchor.className = "aquany-reading-link";
+  anchor.title = "Understand this measurement";
+  anchor.setAttribute("aria-label", `Learn about ${sectionId.replaceAll('-', ' ')}: ${valueNode.textContent}`);
+  anchor.append(valueNode);
+  return anchor;
 }
+const AQUANY_USGS_GUIDE = {"00010": "water-temperature", "00011": "water-temperature", "00060": "streamflow", "00061": "streamflow", "00065": "gage-height", "00095": "specific-conductance", "00300": "dissolved-oxygen", "00400": "ph", "63680": "turbidity", "00076": "turbidity", "00480": "salinity", "90860": "salinity", "62619": "water-surface-elevation", "62620": "water-surface-elevation"};
+
+function getParameterName(code) {
+  return PARAMETER_NAMES[code] ?? null;
+}
+
+function formatMapStationName(name) {
+  if (!name) return 'Water Monitoring Station';
+
+  const smallWords = new Set([
+    'at', 'of', 'the', 'and', 'in', 'on', 'near', 'to'
+  ]);
+
+  const abbreviations = new Set([
+    'NY', 'US', 'USA', 'USGS', 'S', 'N', 'E', 'W',
+    'NE', 'NW', 'SE', 'SW'
+  ]);
+
+  const formatted = String(name)
+    .trim()
+    .toLowerCase()
+    .split(/\s+/)
+    .map((word, index) => {
+      const upper = word.toUpperCase();
+
+      if (abbreviations.has(upper)) return upper;
+      if (index > 0 && smallWords.has(word)) return word;
+
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(' ');
+
+  return formatted.replace(/\s+NY$/, ', NY');
+}
+
+function formatMapMeasurementUnit(unit) {
+  if (!unit) return '';
+
+  const normalized = String(unit).trim();
+
+  const knownUnits = {
+    'ft^3/s': 'ft³/s',
+    'ft3/s': 'ft³/s',
+    'ft³/s': 'ft³/s',
+    'degc': '°C',
+    'degf': '°F',
+    'us/cm': 'µS/cm',
+    'µs/cm': 'µS/cm',
+    'μs/cm': 'µS/cm',
+    'mg/l': 'mg/L',
+    'ug/l': 'µg/L',
+    '_fnu': 'FNU',
+    '_ntu': 'NTU'
+  };
+
+  return knownUnits[normalized.toLowerCase()] ?? normalized;
+}
+
 
 function getStationName(station) {
   const value =
@@ -455,11 +545,12 @@ function createStationPopupContent(details, id) {
   eyebrow.textContent = "USGS Monitoring Station";
 
   const title = document.createElement("h3");
-  title.textContent =
+  
+  title.textContent = formatMapStationName(
     getWaterbodyName(details) ??
     getStationName(details) ??
-    "Water Monitoring Station";
-
+    "Water Monitoring Station"
+  );
   header.append(eyebrow, title);
 
   const stationName = getStationName(details);
@@ -467,7 +558,7 @@ function createStationPopupContent(details, id) {
   if (stationName && stationName !== title.textContent) {
     const subtitle = document.createElement("p");
     subtitle.className = "station-popup-subtitle";
-    subtitle.textContent = stationName;
+    subtitle.textContent = formatMapStationName(stationName);
     header.append(subtitle);
   }
 
@@ -509,18 +600,63 @@ async function loadPopupMeasurements(id, container) {
       return;
     }
 
-    const validMeasurements = data.measurements.filter(
-      measurement =>
-        measurement &&
-        measurement.value !== null &&
-        measurement.value !== undefined &&
-        String(measurement.value).trim() !== ""
-    );
+    
+    
+// Keep valid readings for parameters we can identify.
+const eligibleMeasurements = data.measurements.filter(measurement => {
+  if (!measurement) return false;
+
+  const code = String(measurement.parameterCode ?? "").trim();
+
+  if (!getParameterName(code)) return false;
+
+  return (
+    measurement.value !== null &&
+    measurement.value !== undefined &&
+    String(measurement.value).trim() !== ""
+  );
+});
+
+// Keep only the newest observation for each parameter code.
+const latestByParameter = new Map();
+
+for (const measurement of eligibleMeasurements) {
+  const code = String(measurement.parameterCode).trim();
+  const existing = latestByParameter.get(code);
+
+  const timestamp = Date.parse(measurement.time ?? "");
+  const existingTimestamp = existing
+    ? Date.parse(existing.time ?? "")
+    : NaN;
+
+  if (
+    !existing ||
+    (Number.isFinite(timestamp) &&
+      (!Number.isFinite(existingTimestamp) ||
+        timestamp > existingTimestamp))
+  ) {
+    latestByParameter.set(code, measurement);
+  }
+}
+
+  const validMeasurements = [...latestByParameter.values()].sort(
+    (a, b) => {
+      const timeA = Date.parse(a.time ?? "");
+      const timeB = Date.parse(b.time ?? "");
+
+      return (
+        (Number.isFinite(timeB) ? timeB : -Infinity) -
+        (Number.isFinite(timeA) ? timeA : -Infinity)
+      );
+    }
+  );
+
+
 
     if (validMeasurements.length === 0) {
       createPopupMessage(
         container,
-        "No recent continuous readings were returned for this station. Historical observations may still be available."
+        "No measurements for supported parameters are available at this station."
       );
 
       return;
@@ -537,17 +673,41 @@ async function loadPopupMeasurements(id, container) {
         String(measurement.parameterCode ?? "")
       );
 
+      
       const value = document.createElement("span");
       value.className = "measurement-value";
-      value.textContent = String(measurement.value);
 
-      if (measurement.unit) {
-        const unit = document.createElement("span");
-        unit.className = "measurement-unit";
-        unit.textContent = ` ${measurement.unit}`;
+      const formattedUnit = formatMapMeasurementUnit(measurement.unit);
+      const numericValue = Number(measurement.value);
 
-        value.append(unit);
+      if (formattedUnit === "°C" && Number.isFinite(numericValue)) {
+        // Convert Celsius to Fahrenheit for display.
+        const fahrenheit = numericValue * 9 / 5 + 32;
+
+        value.textContent = `${fahrenheit.toLocaleString("en-US", {
+          maximumFractionDigits: 1
+        })}°F`;
+
+        const secondary = document.createElement("small");
+
+        secondary.textContent = ` (${numericValue.toLocaleString("en-US", {
+          maximumFractionDigits: 1
+        })}°C)`;
+
+        value.append(secondary);
+      } else {
+        // Keep the original value for all other measurements.
+        value.textContent = String(measurement.value);
+
+        if (formattedUnit) {
+          const unit = document.createElement("span");
+          unit.className = "measurement-unit";
+          unit.textContent = ` ${formattedUnit}`;
+
+          value.append(unit);
+        }
       }
+
 
       const timestamp = document.createElement("small");
 
@@ -560,7 +720,8 @@ async function loadPopupMeasurements(id, container) {
           ? `Observed ${date.toLocaleString()}`
           : "Observation time unavailable";
 
-      row.append(label, value, timestamp);
+      const guideSection = AQUANY_USGS_GUIDE[String(measurement.parameterCode ?? "").trim()];
+      row.append(label, aquanyInfoLink(value, guideSection), timestamp);
       fragment.append(row);
     }
 
@@ -1113,19 +1274,29 @@ function createViewControls(map) {
     });
   }
 
+
   function resetView() {
     map.stop();
 
-    const is3D = viewMode === "3d";
+    // Switch to 2D using the existing control logic.
+    // This also disables terrain and hillshading.
+    setViewMode("2d");
 
-    map.easeTo({
-      center: INITIAL_CENTER,
-      zoom: INITIAL_ZOOM,
-      pitch: is3D ? INITIAL_PITCH : 0,
-      bearing: is3D ? INITIAL_BEARING : 0,
-      duration: 900,
-    });
+    // Fit all of New York State within the map.
+    map.fitBounds(
+      [
+        [-79.8, 40.4],
+        [-71.8, 45.1]
+      ],
+      {
+        padding: 30,
+        pitch: 0,
+        bearing: 0,
+        duration: 900
+      }
+    );
   }
+
 
   return { setViewMode, resetView };
 }

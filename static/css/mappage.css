@@ -1670,6 +1670,69 @@ body {
   display: none !important;
 }
 
+/* Historical USGS measurement cards */
+
+.wb-history-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.wb-history-record {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid #dbe5ef;
+  border-radius: 14px;
+  background: #f8fafc;
+  overflow-wrap: anywhere;
+}
+
+.wb-history-parameter {
+  color: #193650;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.wb-history-value {
+  color: #176998;
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.wb-history-station {
+  color: #536a7d;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.wb-history-time {
+  color: #718397;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+@media (max-width: 480px) {
+  .wb-history-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.wb-condition-value small,
+.wb-history-value small {
+  font-size: 0.65em;
+  font-weight: 400;
+  color: #718397;
+  white-space: nowrap;
+}
+
+
+
 
 
 
@@ -1707,3 +1770,8 @@ body {
 .wb-history-record span { font-size: 15px; font-weight: 700; color: #526779; }
 .wb-history-record small, .wb-history-record time { font-size: 10px; color: #66788a; overflow-wrap: anywhere; }
 @media (max-width: 450px) { .wb-history-list { grid-template-columns: 1fr; } }
+
+/* Subtle contextual links on measurement values */
+a.aquany-reading-link { display: inline-block; color: inherit; text-decoration: none; cursor: pointer; border-radius: 3px; }
+a.aquany-reading-link:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a.aquany-reading-link:focus-visible { outline: 2px solid #168bad; outline-offset: 3px; }

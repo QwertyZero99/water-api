@@ -17,22 +17,22 @@ var (
 )
 
 type Config struct {
-	Port             string
-	APIKey           string
-	DataBasePort     string
-	DataBaseUsername string
-	DataBasePassword string
+	Port               string
+	APIKey             string
+	DataBasePort       string
+	DataBaseUsername   string
+	DataBasePassword   string
 	UpdateStationsFlag string
 }
 
 // loadConfig loads the configuration from environment variables
 func loadConfig() (Config, error) {
 	cfg := Config{
-		Port:             os.Getenv("PORT"),
-		APIKey:           os.Getenv("API_KEY"),
-		DataBasePort:     os.Getenv("DATABASE_PORT"),
-		DataBaseUsername: os.Getenv("DATABASE_USERNAME"),
-		DataBasePassword: os.Getenv("DATABASE_PASSWORD"),
+		Port:               os.Getenv("PORT"),
+		APIKey:             os.Getenv("API_KEY"),
+		DataBasePort:       os.Getenv("DATABASE_PORT"),
+		DataBaseUsername:   os.Getenv("DATABASE_USERNAME"),
+		DataBasePassword:   os.Getenv("DATABASE_PASSWORD"),
 		UpdateStationsFlag: os.Getenv("UPDATE_STATIONS"),
 	}
 
@@ -135,6 +135,9 @@ func main() {
 	// Handlers for page endpoints
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/map", mapHandler)
+	http.HandleFunc("/info", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "../html/info.html")
+	})
 
 	// Run server
 	fmt.Printf("Server running at http://localhost:%s\n", cfg.Port)

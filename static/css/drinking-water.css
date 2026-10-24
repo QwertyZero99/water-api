@@ -1,11 +1,294 @@
-.dw-toggle{display:flex;gap:6px;margin:10px 0}.dw-tab{flex:1;padding:9px 6px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;cursor:pointer;font:inherit}.dw-tab-active{background:#eaf6fa;border-color:#168bad;font-weight:700}.dw-panel{height:420px;max-height:420px;overflow-y:auto;box-sizing:border-box;padding:8px 0;overscroll-behavior:contain}.dw-panel[hidden]{display:none!important}.dw-panel input{box-sizing:border-box;width:100%;padding:9px;margin:8px 0 12px;border-radius:7px;border:1px solid #bccad3}.dw-match{display:block;width:100%;text-align:left;padding:9px;margin:5px 0;background:#f7fafc;border:1px solid #dbe4e8;border-radius:7px;cursor:pointer}.dw-detail{margin-top:12px}.dw-pfas-card{padding:12px;margin:8px 0;border-radius:8px;border:1px solid #d9e3e8;background:#f7fbfd}.dw-pfas-card>*{display:block;margin:3px 0}.dw-value{font-size:1.1rem;font-weight:600}.dw-subtext,.dw-note{font-size:.85rem;color:#536270}.dw-records{width:100%;font-size:.78rem;border-collapse:collapse;margin:8px 0}.dw-records td,.dw-records th{padding:4px;border-bottom:1px solid #e2e8f0;text-align:left}.dw-detail details{margin-top:14px}.dw-detail summary{cursor:pointer;font-weight:600}
-.waterbody-search[hidden]{display:none!important}
 
-/* Summary cards: four fixed priority analytes, followed by detected extras. */
-.dw-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0 14px}
-.dw-card-grid .dw-pfas-card{margin:0;min-width:0;overflow-wrap:anywhere}
-.dw-section-heading{font-size:1rem;margin:16px 0 4px}
-.dw-card-grid .dw-value{font-size:.98rem}
-.dw-detected-card{border-left:3px solid #168bad}
-.dw-detail details{overflow-x:auto}
-@media(max-width:420px){.dw-card-grid{grid-template-columns:1fr}}
+/* ========================================
+   AquaNY — Drinking Water
+   ======================================== */
+
+.dw-toggle {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0 16px;
+}
+
+.dw-tab {
+  flex: 1;
+  min-width: 0;
+  padding: 11px 8px;
+  border: 1px solid #d5e1e9;
+  border-radius: 10px;
+  background: #fff;
+  color: #243d51;
+  cursor: pointer;
+  font: inherit;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.dw-tab:hover {
+  background: #f3f9fc;
+}
+
+.dw-tab-active {
+  background: #e8f5fb;
+  border-color: #168bad;
+  color: #12344b;
+  font-weight: 700;
+}
+
+/* Main content */
+
+.dw-panel {
+  height: 420px;
+  max-height: 420px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 12px 10px 16px 0;
+  overscroll-behavior: contain;
+}
+
+.dw-panel[hidden],
+.waterbody-search[hidden] {
+  display: none !important;
+}
+
+.dw-panel input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px 14px;
+  margin: 10px 0 14px;
+  border: 1px solid #cfdae4;
+  border-radius: 10px;
+  background: #fff;
+  color: #19364d;
+  font: inherit;
+  outline: none;
+}
+
+.dw-panel input:focus {
+  border-color: #168bad;
+  box-shadow: 0 0 0 3px rgba(22, 139, 173, 0.12);
+}
+
+/* Search results */
+
+.dw-match {
+  display: block;
+  width: 100%;
+  padding: 12px 14px;
+  margin: 7px 0;
+  border: 1px solid #dce6ed;
+  border-radius: 10px;
+  background: #f8fbfd;
+  color: #243b4e;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.dw-match:hover {
+  background: #edf7fb;
+  border-color: #8ac5d8;
+}
+
+/* Selected water system */
+
+.dw-detail {
+  margin-top: 18px;
+  color: #24384b;
+}
+
+.dw-system-header {
+  padding: 0 0 14px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid #e0e8ee;
+}
+
+.dw-system-header h3 {
+  margin: 0 0 5px;
+  font-size: 1.35rem;
+  line-height: 1.25;
+  font-weight: 750;
+  color: #19364d;
+}
+
+.dw-system-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  color: #60778a;
+  font-size: 0.9rem;
+}
+
+.dw-system-note {
+  margin: 10px 0 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: #718294;
+}
+
+/* Sections */
+
+.dw-section-heading,
+.dw-section-head h4 {
+  margin: 18px 0 5px;
+  color: #1c384d;
+  font-size: 1.08rem;
+  font-weight: 700;
+}
+
+.dw-section-head p {
+  margin: 0 0 12px;
+  color: #728497;
+  font-size: 0.83rem;
+  line-height: 1.45;
+}
+
+/* Contaminant cards */
+
+.dw-card-grid,
+.dw-key-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 12px 0 18px;
+}
+
+.dw-pfas-card,
+.dw-clean-card {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 14px;
+  margin: 8px 0;
+  border: 1px solid #dbe6ee;
+  border-radius: 13px;
+  background: #f8fbfd;
+  overflow-wrap: anywhere;
+}
+
+.dw-card-grid .dw-pfas-card,
+.dw-key-grid .dw-clean-card {
+  margin: 0;
+}
+
+.dw-pfas-card > * {
+  display: block;
+  margin: 4px 0;
+}
+
+.dw-pfas-card strong,
+.dw-clean-card-title {
+  color: #1d3b50;
+  font-weight: 700;
+}
+
+.dw-value {
+  font-size: 1.05rem;
+  font-weight: 650;
+  color: #214e68;
+  line-height: 1.45;
+}
+
+.dw-card-grid .dw-value {
+  font-size: 0.95rem;
+}
+
+.dw-subtext,
+.dw-note {
+  color: #728395;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.dw-detected-card {
+  border-left: 3px solid #168bad;
+}
+
+/* Optional structured statistic layout */
+
+.dw-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 9px;
+}
+
+.dw-stat-label {
+  color: #748496;
+  font-size: 0.8rem;
+}
+
+.dw-stat-value {
+  color: #1d3b50;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-align: right;
+}
+
+.dw-clean-footer {
+  padding-top: 10px;
+  margin-top: 12px;
+  border-top: 1px solid #e3eaf0;
+  color: #76889a;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.dw-clean-empty {
+  color: #8a98a5;
+  font-size: 0.85rem;
+}
+
+/* Historical measurements */
+
+.dw-detail details {
+  margin-top: 16px;
+  overflow-x: auto;
+}
+
+.dw-detail summary {
+  padding: 9px 0;
+  color: #246d91;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.dw-records {
+  width: 100%;
+  margin: 10px 0;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.dw-records th,
+.dw-records td {
+  padding: 8px 7px;
+  border-bottom: 1px solid #e4ebf1;
+  text-align: left;
+  vertical-align: top;
+}
+
+.dw-records th {
+  color: #536d82;
+  font-weight: 650;
+  background: #f4f8fb;
+}
+
+/* Responsive */
+
+@media (max-width: 420px) {
+  .dw-card-grid,
+  .dw-key-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dw-pfas-card,
+  .dw-clean-card {
+    padding: 13px;
+  }
+}
+
+/* Drinking Water contaminant value links */
+a.aquany-reading-link { color: inherit; text-decoration: none; cursor: pointer; border-radius: 3px; }
+a.aquany-reading-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+a.aquany-reading-link:focus-visible { outline: 2px solid #168bad; outline-offset: 3px; }
