@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -99,6 +100,7 @@ var conditionMatchCache = struct {
 }{}
 
 func WaterbodyConditions(w http.ResponseWriter, r *http.Request) {
+	log.Println("Serving waterbody conditions API.")
 	id := strings.TrimSpace(r.PathValue("id"))
 	if id == "" {
 		writeJSONError(w, http.StatusBadRequest, fmt.Errorf("waterbody ID is required"))

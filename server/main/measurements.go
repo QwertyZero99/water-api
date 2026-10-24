@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -37,6 +38,7 @@ func (h *StationHandlers) StationMeasurements(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
+	log.Println("Serving station measurements API.")
 	id := strings.TrimSpace(r.PathValue("id"))
 
 	if id == "" {

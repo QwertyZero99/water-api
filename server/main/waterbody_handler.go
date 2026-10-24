@@ -29,6 +29,7 @@ type WaterbodyDetail struct {
 
 // Search ordinary waterbodies and manually defined display groups.
 func WaterbodySearch(w http.ResponseWriter, r *http.Request) {
+	log.Println("Serving from waterbody search API.")
 	if stationStore.db == nil {
 		err := errors.New("database not ready")
 		log.Printf(
@@ -170,6 +171,7 @@ func WaterbodySearch(w http.ResponseWriter, r *http.Request) {
 
 // Return either a display group or an ordinary waterbody.
 func WaterbodyByID(w http.ResponseWriter, r *http.Request) {
+	log.Println("Serving from waterbody by ID API.")
 	if stationStore.db == nil {
 		err := errors.New("database not ready")
 		log.Printf(

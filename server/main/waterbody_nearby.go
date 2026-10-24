@@ -1,4 +1,3 @@
-
 package main
 
 import (
@@ -523,6 +522,7 @@ func queryNearby(ctx context.Context, lat, lon, radius float64) ([]nearbyItem, e
 }
 
 func WaterbodiesNearby(w http.ResponseWriter, r *http.Request) {
+	log.Println("Serving waterbodies nearby API.")
 	q := r.URL.Query()
 	lat, latErr := strconv.ParseFloat(q.Get("lat"), 64)
 	lon, lonErr := strconv.ParseFloat(q.Get("lon"), 64)

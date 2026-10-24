@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -53,6 +54,7 @@ type incidentResponse struct {
 
 // Register: http.HandleFunc("GET /api/waterbodies/{id}/incidents", WaterbodyPastIncidents)
 func WaterbodyPastIncidents(w http.ResponseWriter, r *http.Request) {
+	log.Println("Serving beach incident API.")
 	if stationStore.db == nil {
 		http.Error(w, "database unavailable", http.StatusServiceUnavailable)
 		return

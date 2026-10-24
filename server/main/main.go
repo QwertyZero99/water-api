@@ -153,7 +153,6 @@ func main() {
 	)
 	http.HandleFunc("/api/stations/", stationHandlers.StationByID)
 
-
 	// Web page endpoints
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/map", mapHandler)

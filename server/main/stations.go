@@ -118,7 +118,6 @@ func (s *StationStore) Add(station Station) error {
 	return nil
 }
 
-
 // Delete removes a station by ID.
 func (s *StationStore) Delete(id string) error {
 	result, err := s.db.Exec(`
@@ -149,6 +148,7 @@ func (s *StationStore) Delete(id string) error {
 
 	return nil
 }
+
 // Update replaces all stations in the database with the supplied stations.
 //
 // The operation is transactional, so readers either see the old complete

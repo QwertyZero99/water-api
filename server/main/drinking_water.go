@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -14,6 +15,7 @@ type drinkingWaterHandler struct{ db *sql.DB }
 func NewDrinkingWaterHandler(db *sql.DB) *drinkingWaterHandler { return &drinkingWaterHandler{db: db} }
 
 func (h *drinkingWaterHandler) Search(w http.ResponseWriter, r *http.Request) {
+	log.Println("Serving drinking water search API.")
 	q := strings.TrimSpace(r.URL.Query().Get("q"))
 	if len(q) < 2 {
 		drinkingJSON(w, http.StatusOK, []any{})
@@ -49,6 +51,7 @@ func (h *drinkingWaterHandler) Search(w http.ResponseWriter, r *http.Request) {
 	drinkingJSON(w, http.StatusOK, output)
 }
 func (h *drinkingWaterHandler) System(w http.ResponseWriter, r *http.Request) {
+	log.Println("Serving drink water system API.")
 	id := strings.TrimSpace(r.PathValue("id"))
 	if id == "" {
 		http.Error(w, "missing system ID", http.StatusBadRequest)
@@ -76,6 +79,7 @@ func (h *drinkingWaterHandler) System(w http.ResponseWriter, r *http.Request) {
 	drinkingJSON(w, http.StatusOK, x)
 }
 func (h *drinkingWaterHandler) Contaminants(w http.ResponseWriter, r *http.Request) {
+	log.Println("serving drinking water contaminants API.")
 	id := strings.TrimSpace(r.PathValue("id"))
 	if id == "" {
 		http.Error(w, "missing system ID", http.StatusBadRequest)

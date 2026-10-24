@@ -73,6 +73,7 @@ func (h *PFASHandler) WaterbodyPFAS(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
+	log.Println("Serve waterbody pfas API.")
 	waterbodyID := strings.TrimSpace(r.PathValue("id"))
 
 	if h.db == nil {

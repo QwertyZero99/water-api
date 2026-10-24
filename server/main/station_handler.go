@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -54,6 +55,7 @@ func (h *StationHandlers) StationsInBoundingBox(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
+	log.Println("Serving stations in bounding box API.")
 	bbox, err := parseBoundingBox(
 		r.URL.Query().Get("bbox"),
 	)

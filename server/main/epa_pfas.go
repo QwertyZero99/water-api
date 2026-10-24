@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"math"
 	"net/http"
 	"net/http/httptest"
@@ -344,6 +345,7 @@ func epaMatchGeometry(raw json.RawMessage, p epaPoint) bool {
 }
 
 func WaterbodyEPAPFAS(w http.ResponseWriter, r *http.Request) {
+	log.Println("Serving waterbody EPAPFAS API.")
 	id := strings.TrimSpace(r.PathValue("id"))
 	if id == "" || len(id) > 120 {
 		writeJSONError(w, 400, fmt.Errorf("invalid waterbody ID"))
