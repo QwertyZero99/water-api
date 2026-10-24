@@ -1,3 +1,6 @@
 
 # Large waterbody datasets
 /data/
+
+# Generated waterbody spatial index
+server/nearby-waterbodies-index-v2.gob.gz
