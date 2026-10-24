@@ -16,6 +16,7 @@ var (
 	stationStore StationStore
 )
 
+// Config stores application configuration, which is extracted from environment variables
 type Config struct {
 	Port               string
 	APIKey             string
@@ -40,7 +41,22 @@ func loadConfig() (Config, error) {
 		return Config{}, fmt.Errorf("PORT is required")
 	}
 	if cfg.APIKey == "" {
-		return Config{}, fmt.Errorf("API key is required")
+		return Config{}, fmt.Errorf("API_KEY is required")
+	}
+	if cfg.DataBasePort == "" {
+		log.Println("DATABASE_PORT not set, assuming 5432")
+		cfg.DataBasePort = "5432"
+	}
+	if cfg.DataBaseUsername == "" {
+		log.Println("DATABASE_USERNAME not set, assuming \"postgres\"")
+		cfg.DataBasePort = "postgres"
+	}
+	if cfg.DataBasePassword == "" {
+		return Config{}, fmt.Errorf("DATABASE_PASSWORD is required")
+	}
+	if cfg.UpdateStationsFlag == "" {
+		log.Println("UPDATE_STATIONS not set, assuming \"YES\"")
+		cfg.DataBasePort = "YES"
 	}
 
 	return cfg, nil
@@ -59,16 +75,19 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to initialize station database: %v", err)
 	}
-	log.Println("Successfully connected to the database!")
+	log.Println("Successfully connected to the database.")
 	defer db.Close()
 
 	stationStore = *NewStationStore(db)
 
 	if cfg.UpdateStationsFlag == "YES" {
+		log.Println("UPDATE_STATIONS set to \"YES\", will periodically update stations.")
 		startStationUpdater(
 			&stationStore,
 			stationStoreUpdateInterval,
 		)
+	} else {
+		log.Println("UPDATE_STATIONS not set to \"YES\", will NOT periodically update stations.")
 	}
 
 	/* HANDLERS */
@@ -79,19 +98,21 @@ func main() {
 	imageFs := http.FileServer(http.Dir("../images"))
 	http.Handle("/images/", http.StripPrefix("/images/", imageFs))
 
-	jsFS := http.FileServer(http.Dir("../js"))
-	http.Handle("/js/", http.StripPrefix("/js/", jsFS))
+	jsFs := http.FileServer(http.Dir("../js"))
+	http.Handle("/js/", http.StripPrefix("/js/", jsFs))
+
+	// API handlers
+	http.HandleFunc(
+		"GET /api/waterbodies/{id}",
+		WaterbodyByID,
+	)
+
 	http.HandleFunc(
 		"GET /api/waterbodies/search",
 		WaterbodySearch,
 	)
 
-	http.HandleFunc(
-		"GET /api/waterbodies/{id}",
-		WaterbodyByID,
-	)
 	drinking := NewDrinkingWaterHandler(db)
-
 	http.HandleFunc(
 		"GET /api/drinking-water/search",
 		drinking.Search,
@@ -106,13 +127,14 @@ func main() {
 		"GET /api/drinking-water/systems/{id}/contaminants",
 		drinking.Contaminants,
 	)
-	pfasHandler := NewPFASHandler(db)
 
+	pfasHandler := NewPFASHandler(db)
 	http.HandleFunc(
 		"GET /api/waterbodies/{id}/pfas",
 		pfasHandler.WaterbodyPFAS,
 	)
-	// The station API
+	http.HandleFunc("GET /api/waterbodies/{id}/epa-pfas", WaterbodyEPAPFAS)
+
 	stationHandlers := NewStationHandlers(&stationStore)
 	http.HandleFunc("/api/stations", stationHandlers.StationsInBoundingBox)
 	http.HandleFunc(
@@ -130,14 +152,11 @@ func main() {
 	)
 	http.HandleFunc("/api/stations/", stationHandlers.StationByID)
 
-	http.HandleFunc("GET /api/waterbodies/{id}/epa-pfas", WaterbodyEPAPFAS)
 
-	// Handlers for page endpoints
+	// Web page endpoints
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/map", mapHandler)
-	http.HandleFunc("/info", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "../html/info.html")
-	})
+	http.HandleFunc("/info", infoHandler)
 
 	// Run server
 	fmt.Printf("Server running at http://localhost:%s\n", cfg.Port)
@@ -152,4 +171,9 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 // mapHandler handles the map page
 func mapHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "../html/map.html")
+}
+
+// mapHandler handles the map page
+func infoHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "../html/info.html")
 }
