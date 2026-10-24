@@ -1,4 +1,4 @@
-import { createMap } from "./map.js";
+import { createMap } from "./map.js?v=6";
 
 const mapController = await createMap();
 
