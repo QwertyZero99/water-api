@@ -1902,3 +1902,92 @@ a.aquany-reading-link:focus-visible { outline: 2px solid #168bad; outline-offset
 .waterbody-search .waterbody-search-label {
   margin-bottom: 10px;
 }
+
+/* Compact Earlier USGS Observations section */
+
+.wb-history {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #dce7ef;
+}
+
+.wb-history-summary {
+  font-size: 15px;
+  font-weight: 700;
+  color: #176d96;
+  cursor: pointer;
+  padding: 4px 0 10px;
+}
+
+.wb-history-notice {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #718096;
+  margin: 0 0 12px;
+}
+
+/* Two-column compact measurement grid */
+.wb-history-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* Individual historical reading */
+.wb-history-record {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #dce8f0;
+  border-radius: 12px;
+  background: #f0f7fb;
+  box-shadow: none;
+}
+
+/* Measurement name */
+.wb-history-parameter {
+  font-size: 12px;
+  font-weight: 600;
+  color: #587085;
+  line-height: 1.35;
+}
+
+/* Measurement value */
+.wb-history-value {
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #1676a5;
+  overflow-wrap: anywhere;
+}
+
+.wb-history-value small {
+  font-size: 12px;
+  font-weight: 400;
+  color: #718096;
+}
+
+/* Station name: secondary information */
+.wb-history-station {
+  font-size: 11px;
+  line-height: 1.4;
+  font-weight: 500;
+  color: #64748b;
+  overflow-wrap: anywhere;
+}
+
+/* Observation date */
+.wb-history-time {
+  font-size: 11px;
+  color: #718096;
+  line-height: 1.4;
+  margin-top: auto;
+}
+
+@media (max-width: 480px) {
+  .wb-history-list {
+    grid-template-columns: 1fr;
+  }
+}

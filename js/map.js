@@ -1386,6 +1386,24 @@ export async function createMap() {
   initWaterbodySearch(map);
 
   const popupController = createPopupController(map);
+  
+  // Open the normal USGS station popup when Locate is clicked
+  // in the Current Water Conditions section.
+  map.on('aquany:station-locate', ({ stationId, coordinates }) => {
+    if (
+      !stationId ||
+      !Array.isArray(coordinates) ||
+      coordinates.length !== 2
+    ) {
+      return;
+    }
+
+    void popupController.showStationPopup(
+      stationId,
+      coordinates
+    );
+  });
+  
 
   let availableStations = [];
   let allStations = [];

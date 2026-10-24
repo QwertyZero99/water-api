@@ -364,12 +364,34 @@ function renderConditions(section, data, map) {
           map && typeof map.flyTo === 'function') {
         const locate = elt('button', 'Locate', 'wb-condition-locate');
         locate.type = 'button';
+        
         locate.addEventListener('click', () => {
+          const coordinates = [
+            Number(station.longitude),
+            Number(station.latitude)
+          ];
+
+          const stationId = String(
+            station.id ?? stationReadings[0]?.stationId ?? ''
+          ).trim();
+
+          // Open the existing station popup once the map finishes moving.
+          if (stationId) {
+            map.once('moveend', () => {
+              map.fire('aquany:station-locate', {
+                stationId,
+                coordinates
+              });
+            });
+          }
+
           map.flyTo({
-            center: [Number(station.longitude), Number(station.latitude)],
-            zoom: 12, duration: 750,
+            center: coordinates,
+            zoom: 12,
+            duration: 750
           });
         });
+
         heading.append(locate);
       }
       stationCard.append(heading);
