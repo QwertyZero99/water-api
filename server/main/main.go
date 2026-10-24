@@ -100,15 +100,16 @@ func main() {
 
 	jsFs := http.FileServer(http.Dir("../js"))
 	http.Handle("/js/", http.StripPrefix("/js/", jsFs))
-	http.HandleFunc(
-		"GET /api/waterbodies/search",
-		WaterbodySearch,
-	)
 
 	// API handlers
 	http.HandleFunc(
 		"GET /api/waterbodies/{id}",
 		WaterbodyByID,
+	)
+
+	http.HandleFunc(
+		"GET /api/waterbodies/search",
+		WaterbodySearch,
 	)
 
 	drinking := NewDrinkingWaterHandler(db)
