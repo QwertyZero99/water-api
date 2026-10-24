@@ -1623,6 +1623,98 @@ export function initWaterbodySearch(map) {
 
   else intro.append(root);
   initDrinkingWater(intro, root);
+  // ZIP search shares the existing waterbody detail selection and highlight.
+  const zipBox = document.createElement('div');
+  zipBox.className = 'waterbody-zip-search';
+  zipBox.innerHTML = `
+    <label for="aquanyZip">Find nearby water by ZIP code</label>
+    <div class="waterbody-zip-controls">
+      <input id="aquanyZip" type="text" inputmode="numeric" maxlength="5"
+             autocomplete="postal-code" placeholder="e.g. 12054" />
+      <select id="aquanyRadius" aria-label="Search radius">
+        <option value="5">5 mi</option><option value="10" selected>10 mi</option>
+        <option value="25">25 mi</option>
+      </select>
+      <button type="button" class="waterbody-zip-button">Find</button>
+    </div>
+    <p class="waterbody-zip-status" role="status" aria-live="polite"></p>
+    <details class="waterbody-zip-disclosure" hidden>
+      <summary>Nearby waterbodies</summary>
+      <div class="waterbody-zip-results"></div>
+    </details>`;
+  root.insertBefore(zipBox, label);
+  const zipInput = zipBox.querySelector('#aquanyZip');
+  const zipRadius = zipBox.querySelector('#aquanyRadius');
+  const zipButton = zipBox.querySelector('.waterbody-zip-button');
+  const zipStatus = zipBox.querySelector('.waterbody-zip-status');
+  const zipResults = zipBox.querySelector('.waterbody-zip-results');
+  const zipDisclosure = zipBox.querySelector('.waterbody-zip-disclosure');
+  let zipRequest = 0;
+  async function searchByZip() {
+    const current = ++zipRequest;
+    const zipValue = zipInput.value.trim();
+    if (!/^\d{5}$/.test(zipValue)) {
+      zipStatus.textContent = 'Enter a valid five-digit ZIP code.';
+      return;
+    }
+    zipResults.replaceChildren();
+    zipDisclosure.hidden = true;
+    zipDisclosure.open = false;
+    zipStatus.textContent = 'Finding nearby waterbodies…';
+    zipButton.disabled = true;
+    try {
+      const placeResponse = await fetch(`https://api.zippopotam.us/us/${zipValue}`);
+      if (!placeResponse.ok) throw new Error('ZIP code not found');
+      const place = (await placeResponse.json()).places?.[0];
+      if (!place || place['state abbreviation'] !== 'NY') {
+        throw new Error('Please enter a New York ZIP code');
+      }
+      const lat = Number(place.latitude), lon = Number(place.longitude);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) throw new Error('ZIP location unavailable');
+      const searchURL = `/api/waterbodies/nearby?lat=${lat}&lon=${lon}&radius=${zipRadius.value}`;
+      const nearby = await readJSON(searchURL);
+      if (current !== zipRequest) return;
+      zipStatus.textContent = nearby.length
+        ? `Showing ${nearby.length} waterbodies within ${zipRadius.value} miles of ${zipValue}. Approximate straight-line distances.`
+        : `No listed waterbodies within ${zipRadius.value} miles of ${zipValue}. Try a larger radius.`;
+      zipDisclosure.hidden = nearby.length === 0;
+      zipDisclosure.open = nearby.length > 0;
+      zipDisclosure.querySelector('summary').textContent = `Nearby waterbodies (${nearby.length})`;
+      nearby.forEach(item => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'waterbody-result';
+        button.append(node('strong', item.name));
+        button.append(node('span', `${item.distanceMiles.toFixed(1)} mi · ${item.type || 'Waterbody'}`));
+        button.addEventListener('click', async () => {
+          zipDisclosure.open = false;
+          await chooseWaterbody(item.id);
+          if (detail.hidden) return;
+
+          // The information lives within the fixed-height, scrolling search panel.
+          requestAnimationFrame(() => {
+            const targetTop = detail.getBoundingClientRect().top;
+            const rootTop = root.getBoundingClientRect().top;
+            root.scrollTo({
+              top: root.scrollTop + targetTop - rootTop - 16,
+              behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+                ? 'auto' : 'smooth'
+            });
+          });
+        });
+        zipResults.append(button);
+      });
+    } catch (error) {
+      if (current === zipRequest) zipStatus.textContent = error.message || 'ZIP search unavailable';
+    } finally {
+      if (current === zipRequest) zipButton.disabled = false;
+    }
+  }
+  zipButton.addEventListener('click', searchByZip);
+  zipInput.addEventListener('keydown', event => {
+    if (event.key === 'Enter') { event.preventDefault(); void searchByZip(); }
+  });
+
 
 
   let searchVersion = 0;

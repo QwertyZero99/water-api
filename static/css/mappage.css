@@ -53,7 +53,7 @@ body {
 }
 
 .map-title {
-  font-family: "Manrope", sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: clamp(48px, 4.5vw, 76px);
   font-weight: 800;
   line-height: 1.05;
@@ -184,7 +184,7 @@ body {
 }
 
 #nearbyStationResults h3 {
-  font-family: "Manrope", sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 17px;
   font-weight: 700;
   color: #142f46;
@@ -507,7 +507,7 @@ body {
 
   color: #142f46;
 
-  font-family: "Manrope", sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 17px;
   font-weight: 750;
   line-height: 1.4;
@@ -931,23 +931,30 @@ body {
     padding: 11px;
   }
 }
+
+/* Waterbody search card: roomy, consistently padded, internally scrollable. */
 .waterbody-search {
   width: 100%;
-  max-width: 440px;
-  padding: 18px;
-
-  background: #fff;
+  max-width: 600px;
+  min-width: 0;
+  height: min(650px, 75vh);
+  max-height: 75vh;
+  padding: 22px 24px;
+  background: #ffffff;
   border: 1px solid #dce7ed;
-  border-radius: 14px;
-
+  border-radius: 16px;
   box-shadow: 0 7px 24px rgba(13, 34, 95, 0.08);
-
   text-align: left;
   font-family: "Inter", sans-serif;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
 }
 
+
 .waterbody-search h3 {
-  font-family: "Manrope", sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 17px;
   font-weight: 750;
   line-height: 1.3;
@@ -1058,7 +1065,7 @@ body {
 }
 
 .waterbody-detail h4 {
-  font-family: "Manrope", sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 15px;
   font-weight: 750;
   line-height: 1.4;
@@ -1168,7 +1175,7 @@ body {
 .waterbody-incidents-header h5 {
   margin: 0;
 
-  font-family: "Manrope", sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 16px;
   font-weight: 750;
   line-height: 1.4;
@@ -1267,7 +1274,7 @@ body {
   margin: 0;
 
   color: #18314a;
-  font-family: "Manrope", sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 13px;
   font-weight: 750;
   line-height: 1.45;
@@ -1414,7 +1421,7 @@ body {
 .waterbody-group-segment h5 {
   margin: 0 0 10px;
   color: #142f46;
-  font-family: "Manrope", sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 13px;
   font-weight: 750;
   line-height: 1.5;
@@ -1427,59 +1434,21 @@ body {
 .waterbody-group-segment .waterbody-detail-row:last-child {
   margin-bottom: 0;
 }
-/* Keep expanded waterbody profiles from pushing the map down */
+/* Limit name-search results; detailed profile scrolls with its panel. */
+.waterbody-results {
+  max-height: 180px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
 
 .waterbody-detail {
-    max-height: 420px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    overscroll-behavior: contain;
-    scrollbar-width: thin;
+  max-height: none;
+  overflow: visible;
 }
-
-/* Prevent long search result lists from expanding the page */
-
-.waterbody-results {
-    max-height: 240px;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-width: thin;
-}
-
-/* Hide the detail panel completely when no waterbody is selected */
 
 .waterbody-detail[hidden] {
-    display: none !important;
-}
-/* Prevent the waterbody search from growing when a result is selected */
-
-.waterbody-search {
-    height: 420px;
-    max-height: 420px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    box-sizing: border-box;
-    overscroll-behavior: contain;
-}
-
-/* Let the full profile scroll within the fixed search panel */
-
-.waterbody-detail {
-    max-height: none;
-    overflow: visible;
-}
-
-/* Keep search results contained */
-
-.waterbody-results {
-    max-height: 180px;
-    overflow-y: auto;
-}
-
-/* Preserve proper visibility when no profile is selected */
-
-.waterbody-detail[hidden] {
-    display: none !important;
+  display: none !important;
 }
 
 /* ========================================
@@ -1651,25 +1620,6 @@ body {
   margin: 3px 0;
 }
 
-/* Preserve the fixed search-panel height. */
-.waterbody-search {
-  height: 420px;
-  max-height: 420px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  box-sizing: border-box;
-  overscroll-behavior: contain;
-}
-
-.waterbody-detail {
-  max-height: none;
-  overflow: visible;
-}
-
-.waterbody-detail[hidden] {
-  display: none !important;
-}
-
 /* Historical USGS measurement cards */
 
 .wb-history-list {
@@ -1731,13 +1681,41 @@ body {
   white-space: nowrap;
 }
 
+/* Allow the map page to accommodate a taller search panel */
+.map-page {
+  min-height: 100vh;
+  height: auto;
+  align-items: flex-start;
+}
 
+/* Keep the introduction and map aligned */
+.map-intro {
+  align-self: flex-start;
+}
 
+.map-wrapper {
+  align-self: flex-start;
+}
 
+/* Mobile and tablet adjustments */
+@media (max-width: 1100px) {
+  .map-page {
+    align-items: center;
+  }
 
+  .map-intro,
+  .map-wrapper {
+    align-self: center;
+  }
+}
 
-
-
+@media (max-width: 600px) {
+  .waterbody-search {
+    padding: 18px;
+    height: min(650px, 75vh);
+    max-height: 75vh;
+  }
+}
 /* ===== Layer 1 waterbody current conditions ===== */
 /* Current conditions: fits inside the existing 420px scrolling search panel. */
 .wb-conditions { margin: 14px 0 18px; padding: 14px 0 16px; border-top: 1px solid #dce7ed; border-bottom: 1px solid #dce7ed; text-align: left; font-family: Inter, sans-serif; }
@@ -1775,3 +1753,125 @@ body {
 a.aquany-reading-link { display: inline-block; color: inherit; text-decoration: none; cursor: pointer; border-radius: 3px; }
 a.aquany-reading-link:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 a.aquany-reading-link:focus-visible { outline: 2px solid #168bad; outline-offset: 3px; }
+
+/* ==========================================
+   ZIP-CODE WATERBODY SEARCH
+   Scoped to the waterbody search panel.
+========================================== */
+.waterbody-search .waterbody-zip-search {
+  margin: 16px 0 20px;
+  width: 100%;
+  font-family: "Inter", sans-serif;
+  text-align: left;
+}
+.waterbody-search .waterbody-zip-search label {
+  display: block;
+  margin: 0 0 8px;
+  color: #193650;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.waterbody-search .waterbody-zip-controls {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 4px;
+  align-items: stretch;
+}
+.waterbody-search .waterbody-zip-controls input,
+.waterbody-search .waterbody-zip-controls select,
+.waterbody-search .waterbody-zip-controls button {
+  box-sizing: border-box;
+  height: 42px;
+  margin: 0;
+  padding: 9px 11px;
+  border: 1px solid #d6e4ed;
+  border-radius: 9px;
+  font: 500 12px/1.3 "Inter", sans-serif;
+  color: #18314a;
+  background: #f8fbfd;
+}
+.waterbody-search .waterbody-zip-controls input {
+  flex: 1 1 auto;
+  width: 0;
+  min-width: 0;
+}
+.waterbody-search .waterbody-zip-controls select {
+  flex: 0 0 86px;
+  cursor: pointer;
+}
+.waterbody-search .waterbody-zip-controls button {
+  flex: 0 0 64px;
+  background: #e8f5fb;
+  color: #176c95;
+  border-color: #a4cede;
+  font-weight: 700;
+  cursor: pointer;
+}
+.waterbody-search .waterbody-zip-controls button:hover:not(:disabled) {
+  background: #d9eff9;
+}
+.waterbody-search .waterbody-zip-controls button:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+.waterbody-search .waterbody-zip-controls :is(input, select, button):focus-visible {
+  outline: 2px solid #168bad;
+  outline-offset: 2px;
+}
+.waterbody-search .waterbody-zip-status {
+  margin: 9px 0;
+  color: #657d91;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.waterbody-search .waterbody-zip-disclosure {
+  margin: 12px 0 0;
+  padding: 8px 0 0;
+  border-top: 1px solid #e2e8f0;
+}
+.waterbody-search .waterbody-zip-disclosure[hidden] { display: none; }
+.waterbody-search .waterbody-zip-disclosure > summary {
+  padding: 8px 0;
+  color: #176c95;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.waterbody-search .waterbody-zip-disclosure > summary:hover { color: #0b4e70; }
+.waterbody-search .waterbody-zip-results {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 100%;
+  max-height: 220px;
+  overflow-y: auto;
+  margin-top: 7px;
+  padding-right: 4px;
+  overscroll-behavior: contain;
+}
+.waterbody-search .waterbody-zip-results:empty { display: none; }
+.waterbody-search .waterbody-zip-results .waterbody-result {
+  width: 100%;
+  padding: 10px 12px;
+  background: #f8fbfd;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  font-family: "Inter", sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+.waterbody-search .waterbody-zip-results .waterbody-result:hover {
+  background: #eff7fd;
+  border-color: #168bad;
+}
+.waterbody-detail { scroll-margin-top: 24px; }
+@media (max-width: 420px) {
+  .waterbody-search .waterbody-zip-controls { flex-wrap: wrap; }
+  .waterbody-search .waterbody-zip-controls input { flex: 1 1 100%; width: 100%; }
+  .waterbody-search .waterbody-zip-controls select,
+  .waterbody-search .waterbody-zip-controls button { flex: 1 1 0; }
+}
