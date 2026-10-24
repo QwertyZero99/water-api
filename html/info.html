@@ -4,6 +4,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <a href="/map" class="info-back-button" id="infoBackButton">
+  ← Back to Map
+  </a>
   <meta name="description" content="Understand water quality, USGS river measurements, PFAS and drinking-water contaminant data in AquaNY.">
   <title>Understanding Your Water | AquaNY</title>
   <link rel="icon" type="image/png" href="/images/favicon.png">
@@ -216,5 +219,26 @@
 
 <script type="module" src="/js/sidebar.js?v=3"></script>
 <script type="module" src="/js/info.js"></script>
+<script>
+  document.getElementById("infoBackButton")?.addEventListener("click", (event) => {
+    try {
+      const previous = document.referrer
+        ? new URL(document.referrer)
+        : null;
+
+      if (
+        previous &&
+        previous.origin === window.location.origin &&
+        previous.pathname.replace(/\/$/, "") === "/map" &&
+        window.history.length > 1
+      ) {
+        event.preventDefault();
+        window.history.back();
+      }
+    } catch {
+      // The /map link remains available as a fallback.
+    }
+  });
+</script>
 </body>
 </html>
