@@ -1,11 +1,64 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AquaNY | Info</title>
+  <title>AquaNY | Info</title>
+  <link rel="icon" type="image/png" href="/images/favicon.png">
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="/static/css/sidebar.css" />
 </head>
+
 <body>
-    
+  <div id="sidebar" class="sidebar collapsed">
+    <h1>💧 AquaNY</h1>
+    <p class="subtitle">Know Your Water</p>
+
+    <div class="sidebar-nav">
+      <a href="/">Home</a>
+      <a href="/map">Interactive Map</a>
+      <a href="/info">Info</a>
+    </div>
+
+    <div id="station">
+      <h2>Select a location</h2>
+      <p>Click a water monitoring station.</p>
+    </div>
+  </div>
+
+  <button id="toggle-btn" class="collapsed">›</button>
+
+  <div class="page-content">
+
+    <section class="reveal info-row" id="main">
+
+      <div class="info-text">
+        <h2 class="section-title">More Information</h2>
+
+        <p class="bodytext">Want to learn more about a specific statistic or water reading? Well, you're in the right place. Click on any statistic's hint button, or find it below, to see more info.</p>
+      </div>
+
+      <div id="tapWaterImage" class="info-image"></div>
+
+    </section>
+
+  </div>
+
+  <div id="sidePanel"></div>
+
+  <script type="module" src="/js/main.js"></script>
+  <script type="module" src="/js/sidebar.js"></script>
+
 </body>
 </html>
