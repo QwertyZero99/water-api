@@ -107,6 +107,7 @@ func main() {
 		WaterbodyByID,
 	)
 
+	http.HandleFunc("GET /api/waterbodies/nearby", WaterbodiesNearby)
 	http.HandleFunc(
 		"GET /api/waterbodies/search",
 		WaterbodySearch,

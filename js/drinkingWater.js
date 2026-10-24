@@ -232,7 +232,7 @@ function contaminantName(record) {
 
 
 // AquaNY contextual measurement links: values navigate to the matching guide section.
-const AQUANY_INFO_BASE = "/info.html";
+const AQUANY_INFO_BASE = "/info";
 function aquanyInfoLink(valueNode, sectionId) {
   if (!sectionId) return valueNode;
   const anchor = document.createElement("a");
@@ -293,9 +293,15 @@ function recordCard(record, label, emphasized = false) {
       )
     );
 
+
     const valueElement = row.lastElementChild;
     const guideSection = AQUANY_CONTAMINANT_GUIDE[label] || 'other-contaminants';
-    if (valueElement) valueElement.replaceWith(aquanyInfoLink(valueElement, guideSection));
+
+    if (valueElement) {
+      const link = aquanyInfoLink(valueElement, guideSection);
+      row.appendChild(link);
+    }
+
     stats.append(row);
   }
 

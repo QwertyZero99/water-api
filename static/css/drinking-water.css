@@ -292,3 +292,18 @@
 a.aquany-reading-link { color: inherit; text-decoration: none; cursor: pointer; border-radius: 3px; }
 a.aquany-reading-link:hover { text-decoration: underline; text-underline-offset: 3px; }
 a.aquany-reading-link:focus-visible { outline: 2px solid #168bad; outline-offset: 3px; }
+
+/* Match the softer Rivers & Lakes cards: no extra highlighted border. */
+.dw-card-grid .dw-pfas-card {
+  background: #eef6fa;
+  border: 1px solid #dce7ed;
+  border-radius: 15px;
+  box-shadow: 0 3px 12px rgba(29,76,101,.035);
+  padding: 16px;
+}
+.dw-card-grid .dw-detected-card { border-left: 1px solid #dce7ed; }
+.dw-card-grid .dw-stat-value { color: #156f99; font-weight: 700; }
+.dw-card-grid .dw-stat-label, .dw-card-grid .dw-clean-footer { color: #7b90a1; }
+.dw-card-grid .aquany-reading-link { color: inherit; text-decoration: none; }
+.dw-card-grid .aquany-reading-link:hover,
+.dw-card-grid .aquany-reading-link:focus-visible { color: #087b9a; text-decoration: underline; }
