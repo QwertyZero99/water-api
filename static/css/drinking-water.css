@@ -1,0 +1,418 @@
+
+/* ========================================
+   AquaNY — Drinking Water
+   ======================================== */
+
+.dw-toggle {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0 16px;
+}
+
+.dw-tab {
+  flex: 1;
+  min-width: 0;
+  padding: 11px 8px;
+  border: 1px solid #d5e1e9;
+  border-radius: 10px;
+  background: #fff;
+  color: #243d51;
+  cursor: pointer;
+  font: inherit;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.dw-tab:hover {
+  background: #f3f9fc;
+}
+
+.dw-tab-active {
+  background: #e8f5fb;
+  border-color: #168bad;
+  color: #12344b;
+  font-weight: 700;
+}
+
+/* Main content */
+
+/* Drinking Water main container — matches Rivers & Lakes */
+
+.dw-panel {
+  width: 100%;
+  max-width: 600px;
+  min-width: 0;
+
+  height: min(650px, 75vh);
+  max-height: 75vh;
+
+  box-sizing: border-box;
+  padding: 22px 24px;
+
+  background: #ffffff;
+  border: 1px solid #dce7ed;
+  border-radius: 16px;
+  box-shadow: 0 7px 24px rgba(13, 34, 95, 0.08);
+
+  text-align: left;
+  font-family: "Inter", sans-serif;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.dw-panel[hidden],
+.waterbody-search[hidden] {
+  display: none !important;
+}
+
+/* Consistent ZIP and water-system search inputs */
+
+.dw-panel input[type="search"],
+.dw-panel input[type="text"] {
+  display: block;
+  box-sizing: border-box;
+
+  width: 100%;
+  height: 42px;
+  min-height: 42px;
+
+  padding: 11px 12px;
+  margin: 10px 0 14px;
+
+  border: 1px solid #d6e4ed;
+  border-radius: 9px;
+
+  background: #f8fbfd;
+  color: #18314a;
+
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: normal;
+
+  outline: none;
+  appearance: none;
+}
+/* Consistent search labels */
+
+.dw-panel label {
+  display: block;
+
+  margin: 0 0 6px;
+
+  color: #526779;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.dw-panel input[type="search"]:focus,
+.dw-panel input[type="text"]:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.12);
+}
+
+/* Search results */
+
+.dw-match {
+  display: block;
+  width: 100%;
+  padding: 12px 14px;
+  margin: 7px 0;
+  border: 1px solid #dce6ed;
+  border-radius: 10px;
+  background: #f8fbfd;
+  color: #243b4e;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.dw-match:hover {
+  background: #edf7fb;
+  border-color: #8ac5d8;
+}
+
+/* Selected water system */
+
+.dw-detail {
+  margin-top: 18px;
+  color: #24384b;
+}
+
+.dw-system-header {
+  padding: 0 0 14px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid #e0e8ee;
+}
+
+.dw-system-header h3 {
+  margin: 0 0 5px;
+  font-size: 1.35rem;
+  line-height: 1.25;
+  font-weight: 750;
+  color: #19364d;
+}
+
+.dw-system-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  color: #60778a;
+  font-size: 0.9rem;
+}
+
+.dw-system-note {
+  margin: 10px 0 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: #718294;
+}
+
+/* Sections */
+
+.dw-section-heading,
+.dw-section-head h4 {
+  margin: 18px 0 5px;
+  color: #1c384d;
+  font-size: 1.08rem;
+  font-weight: 700;
+}
+
+.dw-section-head p {
+  margin: 0 0 12px;
+  color: #728497;
+  font-size: 0.83rem;
+  line-height: 1.45;
+}
+
+/* Contaminant cards */
+
+.dw-card-grid,
+.dw-key-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 12px 0 18px;
+}
+
+.dw-pfas-card,
+.dw-clean-card {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 14px;
+  margin: 8px 0;
+  border: 1px solid #dbe6ee;
+  border-radius: 13px;
+  background: #f8fbfd;
+  overflow-wrap: anywhere;
+}
+
+.dw-card-grid .dw-pfas-card,
+.dw-key-grid .dw-clean-card {
+  margin: 0;
+}
+
+.dw-pfas-card > * {
+  display: block;
+  margin: 4px 0;
+}
+
+.dw-pfas-card strong,
+.dw-clean-card-title {
+  color: #1d3b50;
+  font-weight: 700;
+}
+
+.dw-value {
+  font-size: 1.05rem;
+  font-weight: 650;
+  color: #214e68;
+  line-height: 1.45;
+}
+
+.dw-card-grid .dw-value {
+  font-size: 0.95rem;
+}
+
+.dw-subtext,
+.dw-note {
+  color: #728395;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.dw-detected-card {
+  border-left: 3px solid #168bad;
+}
+
+/* Optional structured statistic layout */
+
+.dw-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 9px;
+}
+
+.dw-stat-label {
+  color: #748496;
+  font-size: 0.8rem;
+}
+
+.dw-stat-value {
+  color: #1d3b50;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-align: right;
+}
+
+.dw-clean-footer {
+  padding-top: 10px;
+  margin-top: 12px;
+  border-top: 1px solid #e3eaf0;
+  color: #76889a;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.dw-clean-empty {
+  color: #8a98a5;
+  font-size: 0.85rem;
+}
+
+/* Historical measurements */
+
+.dw-detail details {
+  margin-top: 16px;
+  overflow-x: auto;
+}
+
+.dw-detail summary {
+  padding: 9px 0;
+  color: #246d91;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.dw-records {
+  width: 100%;
+  margin: 10px 0;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.dw-records th,
+.dw-records td {
+  padding: 8px 7px;
+  border-bottom: 1px solid #e4ebf1;
+  text-align: left;
+  vertical-align: top;
+}
+
+.dw-records th {
+  color: #536d82;
+  font-weight: 650;
+  background: #f4f8fb;
+}
+
+/* Responsive */
+
+@media (max-width: 420px) {
+  .dw-card-grid,
+  .dw-key-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dw-pfas-card,
+  .dw-clean-card {
+    padding: 13px;
+  }
+}
+.dw-panel .dw-zip-status {
+  margin: 8px 0 14px;
+  color: #718294;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+/* Drinking Water contaminant value links */
+a.aquany-reading-link { color: inherit; text-decoration: none; cursor: pointer; border-radius: 3px; }
+a.aquany-reading-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+a.aquany-reading-link:focus-visible { outline: 2px solid #168bad; outline-offset: 3px; }
+
+/* Match the softer Rivers & Lakes cards: no extra highlighted border. */
+.dw-card-grid .dw-pfas-card {
+  background: #eef6fa;
+  border: 1px solid #dce7ed;
+  border-radius: 15px;
+  box-shadow: 0 3px 12px rgba(29,76,101,.035);
+  padding: 16px;
+}
+.dw-panel .dw-search-empty {
+  margin: 8px 0 12px;
+  color: #718294;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+/* Drinking Water OR divider */
+.dw-search-divider {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+
+  margin: 18px 0 22px;
+
+  color: #8193a4;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.dw-search-divider::before,
+.dw-search-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #d6e3eb;
+}
+@media (max-width: 1100px) {
+  .dw-panel {
+    max-width: 560px;
+  }
+}
+
+@media (max-width: 600px) {
+  .dw-panel {
+    padding: 14px;
+  }
+}
+.dw-panel > h3 {
+  font-family: "Inter", sans-serif;
+  font-size: 17px;
+  font-weight: 750;
+  line-height: 1.3;
+  color: #142f46;
+  margin: 0 0 5px;
+}
+
+.dw-panel > .dw-search-description {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #64748b;
+  margin: 0 0 12px;
+}
+
+.dw-card-grid .dw-detected-card { border-left: 1px solid #dce7ed; }
+.dw-card-grid .dw-stat-value { color: #156f99; font-weight: 700; }
+.dw-card-grid .dw-stat-label, .dw-card-grid .dw-clean-footer { color: #7b90a1; }
+.dw-card-grid .aquany-reading-link { color: inherit; text-decoration: none; }
+.dw-card-grid .aquany-reading-link:hover,
+.dw-card-grid .aquany-reading-link:focus-visible { color: #087b9a; text-decoration: underline; }

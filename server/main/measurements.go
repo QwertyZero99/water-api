@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
 )
 
-// Measurement represents one USGS observation.
+// measurement represents one usgs observation
 type Measurement struct {
 	ParameterCode  string          `json:"parameterCode"`
 	Value          json.RawMessage `json:"value"`
@@ -18,7 +19,7 @@ type Measurement struct {
 	ApprovalStatus string          `json:"approvalStatus"`
 }
 
-// Structure of the USGS GeoJSON response.
+// Defines and makes sure go knows the structure of the usgs geojson response
 type USGSMeasurementResponse struct {
 	Features []struct {
 		Properties struct {
@@ -31,12 +32,11 @@ type USGSMeasurementResponse struct {
 	} `json:"features"`
 }
 
-// StationMeasurements handles:
-// GET /api/stations/{id}/measurements
 func (h *StationHandlers) StationMeasurements(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
+	log.Println("Serving station measurements API.")
 	id := strings.TrimSpace(r.PathValue("id"))
 
 	if id == "" {
@@ -48,7 +48,6 @@ func (h *StationHandlers) StationMeasurements(
 		return
 	}
 
-	// Construct the USGS request.
 	endpoint := UsgsBaseURL +
 		"/collections/latest-continuous/items"
 

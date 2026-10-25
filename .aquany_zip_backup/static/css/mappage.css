@@ -1,0 +1,1777 @@
+/* ==========================================
+   GLOBAL STYLES
+========================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  min-height: 100vh;
+  background-color: rgb(243, 249, 249);
+  color: #222;
+  overflow-x: hidden;
+}
+
+
+/* ==========================================
+   MAIN PAGE LAYOUT
+========================================== */
+
+.map-page {
+  width: 100%;
+  min-height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 6%;
+  padding: 6vh 3% 6vh 5%;
+}
+
+
+/* ==========================================
+   LEFT COLUMN / INTRODUCTION
+========================================== */
+
+.map-intro {
+  width: 34%;
+  max-width: 520px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.map-title {
+  font-family: "Manrope", sans-serif;
+  font-size: clamp(48px, 4.5vw, 76px);
+  font-weight: 800;
+  line-height: 1.05;
+  color: rgb(13, 34, 95);
+}
+
+.map-text {
+  max-width: 430px;
+  font-size: 21px;
+  line-height: 1.55;
+  color: #444;
+}
+
+.map-hint {
+  max-width: 390px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #747b82;
+}
+
+
+/* ==========================================
+   ZIP CODE SEARCH
+========================================== */
+
+.zip-search {
+  width: 100%;
+  margin-top: 8px;
+  font-family: "Inter", sans-serif;
+}
+
+.zip-search-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+#zipInput {
+  flex: 1;
+  min-width: 0;
+
+  padding: 13px 16px;
+
+  background: #ffffff;
+  border: 1px solid #d6e1eb;
+  border-radius: 10px;
+
+  font-family: inherit;
+  font-size: 14px;
+  color: #18314a;
+  outline: none;
+
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+#zipInput:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.12);
+}
+
+#zipSearchButton {
+  padding: 13px 20px;
+
+  background: #1976d2;
+  color: #ffffff;
+
+  border: none;
+  border-radius: 10px;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s,
+    transform 0.2s;
+}
+
+#zipSearchButton:hover {
+  background: #1565c0;
+}
+
+#zipSearchButton:active {
+  transform: scale(0.97);
+}
+
+#zipSearchButton:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+#zipSearchStatus {
+  margin-top: 10px;
+  min-height: 18px;
+
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+
+/* ==========================================
+   NEARBY STATION RESULTS
+========================================== */
+
+#nearbyStationResults {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  width: 100%;
+  max-height: 360px;
+
+  margin-top: 14px;
+  padding: 2px 5px 4px 0;
+
+  overflow-y: auto;
+}
+
+#nearbyStationResults:empty {
+  display: none;
+}
+
+#nearbyStationResults h3 {
+  font-family: "Manrope", sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: #142f46;
+}
+
+
+/* ==========================================
+   WATER CATEGORY SECTIONS
+========================================== */
+
+.water-category {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.water-category h4 {
+  margin: 4px 0;
+
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.water-category-empty {
+  margin: 4px 0 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #8191a1;
+}
+
+
+/* ==========================================
+   STATION RESULT CARDS
+========================================== */
+
+.nearby-station-result {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+
+  width: 100%;
+  padding: 12px 14px;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #94a3b8;
+  border-radius: 10px;
+
+  font-family: "Inter", sans-serif;
+  text-align: left;
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
+}
+
+.nearby-station-result:hover {
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
+
+.nearby-station-result:focus-visible {
+  outline: 2px solid #1976d2;
+  outline-offset: 2px;
+}
+
+.nearby-station-result strong {
+  display: block;
+
+  color: #1e293b;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.nearby-station-result span {
+  display: block;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #64748b;
+}
+
+
+/* Surface water */
+
+.nearby-station-result.surface-result {
+  border-left-color: #1c7bb9;
+}
+
+.nearby-station-result.surface-result:hover {
+  background: #f0fdfa;
+  border-color: #1c7bb9;
+}
+
+
+/* Groundwater */
+
+.nearby-station-result.groundwater-result {
+  border-left-color: #217842;
+}
+
+.nearby-station-result.groundwater-result:hover {
+  background: #fff8eb;
+  border-color: #217842;
+}
+
+
+/* ==========================================
+   MAP CONTAINER
+========================================== */
+
+.map-wrapper {
+  position: relative;
+
+  width: 58%;
+  height: 84vh;
+  min-height: 500px;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+
+  overflow: hidden;
+}
+
+
+/* ==========================================
+   MAP CONTROLS
+========================================== */
+
+.map-controls {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.view-switch {
+  display: flex;
+
+  background-color: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 7px;
+
+  overflow: hidden;
+
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.22);
+}
+
+.view-button {
+  padding: 8px 14px;
+
+  border: none;
+  background-color: transparent;
+  color: #444;
+
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.view-button:hover {
+  background-color: #eef2f4;
+}
+
+.view-button.active {
+  background-color: rgb(13, 34, 95);
+  color: #ffffff;
+}
+
+#resetZoom {
+  padding: 8px 13px;
+
+  background-color: rgba(255, 255, 255, 0.96);
+  color: #333;
+
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 7px;
+
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.22);
+
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    transform 0.2s;
+}
+
+#resetZoom:hover {
+  background-color: #ffffff;
+  color: rgb(13, 34, 95);
+  transform: translateY(-1px);
+}
+
+
+/* ==========================================
+   MAPLIBRE CONTROLS
+========================================== */
+
+.maplibregl-ctrl-group {
+  border-radius: 7px;
+}
+
+.maplibregl-ctrl button {
+  cursor: pointer;
+}
+
+.maplibregl-ctrl-attrib {
+  font-family: "Inter", sans-serif;
+}
+
+
+/* ==========================================
+   STATION POPUP
+========================================== */
+
+.maplibregl-popup {
+  z-index: 20;
+}
+
+.maplibregl-popup-content {
+  width: 330px;
+  max-width: calc(100vw - 40px);
+
+  padding: 0;
+  overflow: hidden;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+
+  font-family: "Inter", sans-serif;
+
+  box-shadow:
+    0 12px 40px rgba(20, 47, 70, 0.14),
+    0 2px 8px rgba(20, 47, 70, 0.05);
+}
+
+
+/* Popup close button */
+
+.maplibregl-popup-close-button {
+  top: 9px;
+  right: 10px;
+
+  width: 28px;
+  height: 28px;
+
+  border-radius: 50%;
+
+  color: #64748b;
+  font-size: 20px;
+  line-height: 28px;
+
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.maplibregl-popup-close-button:hover {
+  background: #f1f5f9;
+  color: #18314a;
+}
+
+
+/* ==========================================
+   POPUP CONTENT
+========================================== */
+
+.station-popup {
+  min-width: 0;
+  padding: 20px 18px 18px;
+}
+
+.station-popup-header {
+  padding-right: 16px;
+}
+
+.station-popup-eyebrow {
+  margin-bottom: 7px;
+
+  color: #6b8394;
+  font-size: 10px;
+  font-weight: 700;
+
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.station-popup h3 {
+  margin: 0 0 7px;
+
+  color: #142f46;
+
+  font-family: "Manrope", sans-serif;
+  font-size: 17px;
+  font-weight: 750;
+  line-height: 1.4;
+
+  overflow-wrap: anywhere;
+}
+
+.station-popup p {
+  margin: 4px 0;
+
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.station-popup-subtitle {
+  color: #526779 !important;
+}
+
+.station-popup-id {
+  margin-top: 8px !important;
+
+  color: #8090a0 !important;
+  font-size: 11px !important;
+  font-weight: 500;
+}
+
+
+/* ==========================================
+   MEASUREMENT GRID
+========================================== */
+
+.station-measurements {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+
+  max-height: 310px;
+  overflow-y: auto;
+
+  margin-top: 15px;
+  padding-top: 14px;
+
+  border-top: 1px solid #e2e8f0;
+
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.station-measurements::-webkit-scrollbar {
+  width: 5px;
+}
+
+.station-measurements::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.station-measurements::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+
+/* ==========================================
+   INDIVIDUAL MEASUREMENT CARDS
+========================================== */
+
+.measurement-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  min-width: 0;
+  padding: 12px;
+
+  background: #f2f8fb;
+
+  border: 1px solid #e4eef4;
+  border-radius: 11px;
+
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
+}
+
+.measurement-row:hover {
+  background: #eaf4f9;
+  border-color: #d1e6f1;
+}
+
+
+/* Measurement label */
+
+.measurement-row strong {
+  color: #526779;
+
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+
+/* Measurement value */
+
+.measurement-row .measurement-value {
+  color: #146c9c;
+
+  font-size: 17px;
+  font-weight: 750;
+  line-height: 1.3;
+
+  overflow-wrap: anywhere;
+}
+
+
+.measurement-row .measurement-unit {
+  color: #5b849d;
+
+  font-size: 11px;
+  font-weight: 500;
+}
+
+
+/* Observation time */
+
+.measurement-row small {
+  margin-top: auto;
+
+  color: #8796a5;
+
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.station-measurements:has(.measurement-empty) {
+  display: block;
+}
+
+.measurement-empty {
+  width: 100%;
+
+  padding: 13px;
+
+  background: #f8fafc;
+  border: 1px solid #e9eef3;
+  border-radius: 10px;
+
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.measurement-error {
+  background: #fff7f4;
+  border-color: #f3e1dc;
+  color: #936457;
+}
+
+
+/* ==========================================
+   SCROLL REVEAL ANIMATIONS
+========================================== */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(60px);
+
+  transition:
+    opacity 0.8s ease,
+    transform 0.8s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+/* ==========================================
+   TABLET / SMALL DESKTOP
+========================================== */
+
+@media (max-width: 1100px) {
+  .map-page {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    gap: 40px;
+    padding: 80px 5%;
+  }
+
+  .map-intro {
+    width: 100%;
+    max-width: 800px;
+
+    text-align: center;
+    align-items: center;
+  }
+
+  .map-title {
+    font-size: clamp(48px, 8vw, 70px);
+  }
+
+  .map-text {
+    font-size: 21px;
+  }
+
+  .zip-search {
+    max-width: 560px;
+    text-align: left;
+  }
+
+  .map-wrapper {
+    width: 100%;
+    height: 72vh;
+    min-height: 450px;
+  }
+}
+
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width: 600px) {
+  .map-page {
+    padding: 70px 20px 40px;
+    gap: 30px;
+  }
+
+  .map-intro {
+    width: 100%;
+    gap: 18px;
+  }
+
+  .map-title {
+    font-size: 42px;
+  }
+
+  .map-text {
+    font-size: 18px;
+  }
+
+  .map-hint {
+    font-size: 13px;
+  }
+
+  .zip-search {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  #zipInput {
+    padding: 12px;
+  }
+
+  #zipSearchButton {
+    padding: 12px 15px;
+  }
+
+  #nearbyStationResults {
+    max-height: 280px;
+  }
+
+  .map-wrapper {
+    width: 100%;
+    height: 65vh;
+    min-height: 350px;
+  }
+
+  .map-controls {
+    top: 12px;
+    right: 12px;
+    gap: 5px;
+  }
+
+  .view-button {
+    padding: 7px 11px;
+  }
+
+  #resetZoom {
+    padding: 7px 10px;
+  }
+
+  /* Popup adjustments */
+
+  .maplibregl-popup-content {
+    width: min(330px, calc(100vw - 40px));
+  }
+
+  .station-popup {
+    padding: 18px 15px 15px;
+  }
+
+  .station-popup h3 {
+    font-size: 16px;
+  }
+
+  .station-measurements {
+    max-height: 240px;
+  }
+
+  .measurement-row {
+    padding: 10px;
+  }
+
+  .measurement-row .measurement-value {
+    font-size: 16px;
+  }
+}
+
+
+/* ==========================================
+   REDUCED MOTION ACCESSIBILITY
+========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    transition: none;
+  }
+
+  .nearby-station-result,
+  .measurement-row,
+  .view-button,
+  #resetZoom,
+  #zipSearchButton {
+    transition: none;
+  }
+}
+.measurement-filter {
+  position: absolute;
+  z-index: 12;
+
+  left: 16px;
+  bottom: 32px;
+
+  width: min(260px, calc(100% - 32px));
+  padding: 14px;
+
+  background: rgba(255, 255, 255, 0.97);
+
+  border: 1px solid #e2e8f0;
+  border-radius: 13px;
+
+  box-shadow:
+    0 6px 22px rgba(20, 47, 70, 0.16);
+
+  backdrop-filter: blur(8px);
+  font-family: "Inter", sans-serif;
+}
+
+.measurement-filter-title {
+  margin-bottom: 10px;
+
+  font-size: 13px;
+  font-weight: 750;
+
+  color: #142f46;
+}
+
+.measurement-filter label {
+  display: block;
+  margin-top: 8px;
+
+  color: #526779;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.measurement-filter select {
+  display: block;
+
+  width: 100%;
+  margin-top: 4px;
+  padding: 9px 11px;
+
+  background: #ffffff;
+  border: 1px solid #d6e1eb;
+  border-radius: 8px;
+
+  color: #18314a;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.measurement-filter select:hover {
+  border-color: #94b8d4;
+}
+
+.measurement-filter select:focus-visible {
+  outline: 2px solid #1976d2;
+  outline-offset: 2px;
+}
+
+.measurement-filter select:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.measurement-filter-status {
+  margin-top: 10px;
+
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+@media (max-width: 600px) {
+  .measurement-filter {
+    left: 10px;
+    bottom: 25px;
+
+    width: min(230px, calc(100% - 20px));
+    padding: 11px;
+  }
+}
+.waterbody-search {
+  width: 100%;
+  max-width: 440px;
+  padding: 18px;
+
+  background: #fff;
+  border: 1px solid #dce7ed;
+  border-radius: 14px;
+
+  box-shadow: 0 7px 24px rgba(13, 34, 95, 0.08);
+
+  text-align: left;
+  font-family: "Inter", sans-serif;
+}
+
+.waterbody-search h3 {
+  font-family: "Manrope", sans-serif;
+  font-size: 17px;
+  font-weight: 750;
+  line-height: 1.3;
+
+  color: #142f46;
+  margin-bottom: 5px;
+}
+
+.waterbody-search > p {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #64748b;
+  margin-bottom: 12px;
+}
+
+.waterbody-search-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 650;
+  color: #526779;
+  margin-bottom: 6px;
+}
+
+#waterbodyQuery {
+  display: block;
+  width: 100%;
+  padding: 11px 12px;
+
+  border: 1px solid #d6e4ed;
+  border-radius: 9px;
+
+  background: #f8fbfd;
+  color: #18314a;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+
+  outline: none;
+}
+
+#waterbodyQuery:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.12);
+}
+
+.waterbody-search .waterbody-status {
+  margin: 8px 0;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.waterbody-results {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  max-height: 210px;
+  overflow-y: auto;
+}
+
+.waterbody-result {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 11px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  background: #f8fbfd;
+
+  text-align: left;
+  cursor: pointer;
+}
+
+.waterbody-result:hover,
+.waterbody-result:focus-visible {
+  border-color: #1976d2;
+  background: #eff7fd;
+  outline: none;
+}
+
+.waterbody-result strong {
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 650;
+  color: #1e293b;
+}
+
+.waterbody-result span {
+  font-size: 11px;
+  line-height: 1.4;
+  color: #64748b;
+  text-transform: capitalize;
+}
+
+/* ==========================================
+   WATERBODY DETAIL PANEL
+========================================== */
+
+.waterbody-detail {
+  margin-top: 13px;
+  padding-top: 13px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.waterbody-detail[hidden] {
+  display: none;
+}
+
+.waterbody-detail h4 {
+  font-family: "Manrope", sans-serif;
+  font-size: 15px;
+  font-weight: 750;
+  line-height: 1.4;
+  margin-bottom: 11px;
+  color: #142f46;
+}
+
+.waterbody-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+
+  margin: 8px 0;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.waterbody-detail-row > span {
+  flex: 0 0 38%;
+  color: #64748b;
+}
+
+.waterbody-detail-row > strong {
+  flex: 1;
+  font-weight: 600;
+  color: #18314a;
+  overflow-wrap: anywhere;
+}
+
+.waterbody-detail-note {
+  margin: 12px 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+.waterbody-detail a {
+  display: inline-block;
+  margin: 4px 0 10px;
+
+  color: #1976d2;
+  font-size: 12px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.waterbody-detail a:hover {
+  text-decoration: underline;
+}
+
+.waterbody-clear {
+  display: block;
+  padding: 8px 11px;
+
+  border: 1px solid #d6e4ed;
+  border-radius: 8px;
+  background: #fff;
+
+  color: #18314a;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.waterbody-clear:hover {
+  background: #f1f5f9;
+}
+
+/* Responsive adjustments */
+
+@media (max-width: 1100px) {
+  .waterbody-search {
+    max-width: 560px;
+  }
+}
+
+@media (max-width: 600px) {
+  .waterbody-search {
+    padding: 14px;
+  }
+}
+/* ==========================================
+   PAST INCIDENTS
+========================================== */
+
+.waterbody-incidents {
+  margin-top: 20px;
+  padding-top: 18px;
+
+  border-top: 1px solid #e2e8f0;
+
+  font-family: "Inter", sans-serif;
+  text-align: left;
+}
+
+.waterbody-incidents-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  margin-bottom: 9px;
+}
+
+.waterbody-incidents-header h5 {
+  margin: 0;
+
+  font-family: "Manrope", sans-serif;
+  font-size: 16px;
+  font-weight: 750;
+  line-height: 1.4;
+
+  color: #142f46;
+}
+
+.waterbody-incidents-badge {
+  flex-shrink: 0;
+
+  padding: 5px 9px;
+
+  background: #edf5fa;
+  border: 1px solid #d9eaf5;
+  border-radius: 999px;
+
+  color: #356987;
+  font-size: 10px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.waterbody-incidents-description {
+  margin: 0 0 8px;
+
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.waterbody-incidents-coverage {
+  margin: 0 0 14px;
+
+  color: #8090a0;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.waterbody-incidents-list {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+
+  max-height: 420px;
+  padding-right: 5px;
+
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.waterbody-incidents-count {
+  margin: 0 0 2px;
+
+  color: #526779;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ==========================================
+   INDIVIDUAL INCIDENT CARDS
+========================================== */
+
+.waterbody-incident-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  padding: 14px;
+
+  background: #f8fbfd;
+  border: 1px solid #dfeaf1;
+  border-left: 3px solid #1976d2;
+  border-radius: 11px;
+
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
+}
+
+.waterbody-incident-card:hover {
+  background: #f1f8fc;
+  border-color: #c9e0ef;
+  border-left-color: #1976d2;
+  transform: translateY(-1px);
+}
+
+.waterbody-incident-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.waterbody-incident-card h6 {
+  margin: 0;
+
+  color: #18314a;
+  font-family: "Manrope", sans-serif;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.waterbody-incident-date {
+  color: #8090a0;
+  font-size: 10px;
+  font-weight: 550;
+}
+
+.waterbody-incident-beach {
+  margin: 0;
+
+  color: #356987;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.waterbody-incident-reason {
+  margin: 0;
+
+  color: #526779;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.waterbody-incident-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  padding-top: 9px;
+
+  border-top: 1px solid #e4edf3;
+}
+
+.waterbody-incident-status {
+  display: inline-block;
+  padding: 4px 8px;
+
+  background: #eef4f8;
+  border: 1px solid #dce8ef;
+  border-radius: 6px;
+
+  color: #45647a;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.waterbody-incident-source {
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+/* ==========================================
+   LOADING / EMPTY / ERROR STATES
+========================================== */
+
+.waterbody-incidents-loading,
+.waterbody-incidents-empty,
+.waterbody-incidents-error {
+  padding: 14px;
+
+  background: #f8fafc;
+  border: 1px solid #e9eef3;
+  border-radius: 10px;
+
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.waterbody-incidents-error {
+  background: #fff7f4;
+  border-color: #f3e1dc;
+  color: #936457;
+}
+
+.waterbody-incidents-note {
+  padding: 10px 0 2px;
+
+  color: #8796a5;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media (max-width: 600px) {
+  .waterbody-incidents {
+    margin-top: 16px;
+    padding-top: 15px;
+  }
+  
+
+  .waterbody-incidents-header {
+    flex-wrap: wrap;
+  }
+
+  .waterbody-incident-card {
+    padding: 12px;
+  }
+
+  .waterbody-incidents-list {
+    max-height: 340px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .waterbody-incident-card {
+    transition: none;
+  }
+
+  .waterbody-incident-card:hover {
+    transform: none;
+  }
+}
+
+/* ==========================================
+   GROUPED WATERBODY ASSESSMENTS
+========================================== */
+
+.waterbody-group-segments {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 14px 0 20px;
+}
+
+.waterbody-group-segment {
+  padding: 13px 14px;
+  background: #f8fbfd;
+  border: 1px solid #dfeaf1;
+  border-left: 3px solid #1976d2;
+  border-radius: 11px;
+}
+
+.waterbody-group-segment h5 {
+  margin: 0 0 10px;
+  color: #142f46;
+  font-family: "Manrope", sans-serif;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+.waterbody-group-segment .waterbody-detail-row {
+  margin: 6px 0;
+}
+
+.waterbody-group-segment .waterbody-detail-row:last-child {
+  margin-bottom: 0;
+}
+/* Keep expanded waterbody profiles from pushing the map down */
+
+.waterbody-detail {
+    max-height: 420px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+}
+
+/* Prevent long search result lists from expanding the page */
+
+.waterbody-results {
+    max-height: 240px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+}
+
+/* Hide the detail panel completely when no waterbody is selected */
+
+.waterbody-detail[hidden] {
+    display: none !important;
+}
+/* Prevent the waterbody search from growing when a result is selected */
+
+.waterbody-search {
+    height: 420px;
+    max-height: 420px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    overscroll-behavior: contain;
+}
+
+/* Let the full profile scroll within the fixed search panel */
+
+.waterbody-detail {
+    max-height: none;
+    overflow: visible;
+}
+
+/* Keep search results contained */
+
+.waterbody-results {
+    max-height: 180px;
+    overflow-y: auto;
+}
+
+/* Preserve proper visibility when no profile is selected */
+
+.waterbody-detail[hidden] {
+    display: none !important;
+}
+
+/* ========================================
+   AquaNY — PFAS monitoring
+   ======================================== */
+
+.waterbody-pfas {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #d8e4e9;
+}
+
+.waterbody-pfas-heading,
+.waterbody-pfas-site-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.waterbody-pfas-heading h5,
+.waterbody-pfas-site-heading h6 {
+  margin: 0;
+}
+
+.waterbody-pfas-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #a65c06;
+  background: #fff2d7;
+  border-radius: 20px;
+  padding: 4px 9px;
+}
+
+.waterbody-pfas-description,
+.waterbody-pfas-note,
+.waterbody-pfas-table-note {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.waterbody-pfas-summary {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 10px 0;
+}
+
+.waterbody-pfas-list {
+  display: grid;
+  gap: 10px;
+}
+
+.waterbody-pfas-site {
+  padding: 12px;
+  border: 1px solid #dde6eb;
+  border-radius: 10px;
+  background: #fff;
+  min-width: 0;
+}
+
+.waterbody-pfas-site-heading h6 {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.waterbody-pfas-site-count,
+.waterbody-pfas-site-date {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.waterbody-pfas-key-results {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.waterbody-pfas-key-result {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 9px;
+  background: #f7fafc;
+  border: 1px solid #e5edf1;
+  border-radius: 7px;
+  font-size: 12px;
+}
+
+.waterbody-pfas-key-result strong {
+  color: #244d61;
+}
+
+.waterbody-pfas-key-result span {
+  font-weight: 600;
+}
+
+.waterbody-pfas-key-result small {
+  color: #64748b;
+}
+
+.waterbody-pfas-locate {
+  background: #fff7e9;
+  color: #925406;
+  border: 1px solid #ebca90;
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 7px 10px;
+  font-size: 12px;
+}
+
+.waterbody-pfas-locate:hover {
+  background: #ffedcc;
+}
+
+.waterbody-pfas-measurements {
+  margin-top: 12px;
+  min-width: 0;
+}
+
+.waterbody-pfas-measurements summary {
+  cursor: pointer;
+  color: #087b9f;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 0;
+}
+
+.waterbody-pfas-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  margin-top: 9px;
+}
+
+.waterbody-pfas-table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 440px;
+  font-size: 11px;
+}
+
+.waterbody-pfas-table th,
+.waterbody-pfas-table td {
+  padding: 7px;
+  text-align: left;
+  border-bottom: 1px solid #e9eef2;
+  vertical-align: top;
+}
+
+.waterbody-pfas-table th {
+  background: #f4f8fa;
+  color: #334155;
+  font-weight: 600;
+}
+
+.waterbody-pfas-nondetect {
+  color: #64748b;
+}
+
+.waterbody-pfas-popup {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.waterbody-pfas-popup p {
+  margin: 3px 0;
+}
+
+/* Preserve the fixed search-panel height. */
+.waterbody-search {
+  height: 420px;
+  max-height: 420px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  overscroll-behavior: contain;
+}
+
+.waterbody-detail {
+  max-height: none;
+  overflow: visible;
+}
+
+.waterbody-detail[hidden] {
+  display: none !important;
+}
+
+/* Historical USGS measurement cards */
+
+.wb-history-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.wb-history-record {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid #dbe5ef;
+  border-radius: 14px;
+  background: #f8fafc;
+  overflow-wrap: anywhere;
+}
+
+.wb-history-parameter {
+  color: #193650;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.wb-history-value {
+  color: #176998;
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.wb-history-station {
+  color: #536a7d;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.wb-history-time {
+  color: #718397;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+@media (max-width: 480px) {
+  .wb-history-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.wb-condition-value small,
+.wb-history-value small {
+  font-size: 0.65em;
+  font-weight: 400;
+  color: #718397;
+  white-space: nowrap;
+}
+
+
+
+
+
+
+
+
+/* ===== Layer 1 waterbody current conditions ===== */
+/* Current conditions: fits inside the existing 420px scrolling search panel. */
+.wb-conditions { margin: 14px 0 18px; padding: 14px 0 16px; border-top: 1px solid #dce7ed; border-bottom: 1px solid #dce7ed; text-align: left; font-family: Inter, sans-serif; }
+.wb-conditions-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.wb-conditions-heading h5 { margin: 0; color: #142f46; font: 750 15px/1.4 Manrope, sans-serif; }
+.wb-conditions-badge { padding: 4px 7px; border-radius: 7px; color: #176186; background: #e9f5fb; font-size: 10px; font-weight: 650; }
+.wb-conditions-summary, .wb-conditions-message, .wb-condition-disclaimer { margin: 7px 0 10px; color: #64748b; font-size: 11px; line-height: 1.55; }
+.wb-condition-station { margin: 10px 0; padding: 11px; border: 1px solid #e2e8f0; border-radius: 10px; background: #fbfdff; }
+.wb-condition-station-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 7px; margin-bottom: 9px; }
+.wb-condition-station-heading h6 { margin: 0; color: #1e293b; font-size: 12px; font-weight: 700; line-height: 1.45; overflow-wrap: anywhere; }
+.wb-condition-locate { flex-shrink: 0; background: white; color: #176c95; border: 1px solid #bad8e9; border-radius: 7px; padding: 5px 7px; cursor: pointer; font-size: 11px; }
+.wb-condition-locate:hover { background: #e9f5fb; }
+.wb-condition-metrics { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 6px; }
+.wb-condition-metric { min-width: 0; padding: 8px 7px; border-radius: 8px; border: 1px solid #e2edf4; background: #f0f8fc; display: flex; flex-direction: column; gap: 5px; }
+.wb-condition-label { color: #526779; font-size: 10px; font-weight: 650; line-height: 1.35; }
+.wb-condition-value { color: #146c9c; font-size: 18px; font-weight: 750; overflow-wrap: anywhere; }
+.wb-condition-value small { color: #527e97; font-size: 10px; font-weight: 500; }
+.wb-condition-missing { color: #8b98a7; font-size: 11px; font-weight: 600; }
+.wb-condition-time, .wb-condition-approval { color: #718096; font-size: 9px; line-height: 1.4; }
+.wb-condition-source { margin: 9px 0 0; color: #64748b; font-size: 10px; overflow-wrap: anywhere; }
+@media (max-width: 430px) { .wb-condition-metrics { grid-template-columns: 1fr; } }
+
+/* Layer 1 historical observations, separated from current measurements */
+.wb-history { margin-top: 13px; border-top: 1px solid #dce7ed; padding-top: 12px; }
+.wb-history-summary { cursor: pointer; font-size: 12px; font-weight: 700; color: #17678c; }
+.wb-history-notice { margin: 10px 0; font-size: 11px; color: #6b4e26; line-height: 1.5; }
+.wb-history-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.wb-history-record { min-width: 0; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 9px; padding: 10px; display: flex; flex-direction: column; gap: 3px; }
+.wb-history-record strong { font-size: 11px; color: #18314a; }
+.wb-history-record span { font-size: 15px; font-weight: 700; color: #526779; }
+.wb-history-record small, .wb-history-record time { font-size: 10px; color: #66788a; overflow-wrap: anywhere; }
+@media (max-width: 450px) { .wb-history-list { grid-template-columns: 1fr; } }
+
+/* Subtle contextual links on measurement values */
+a.aquany-reading-link { display: inline-block; color: inherit; text-decoration: none; cursor: pointer; border-radius: 3px; }
+a.aquany-reading-link:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a.aquany-reading-link:focus-visible { outline: 2px solid #168bad; outline-offset: 3px; }

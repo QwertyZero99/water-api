@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="description" content="Understand water quality, USGS river measurements, PFAS and drinking-water contaminant data in AquaNY.">
+
+  <title>AquaNY | Info</title>
+
+  <link rel="icon" type="image/png" href="/images/favicon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/static/css/sidebar.css?v=3">
+
+  <link rel="stylesheet" href="/static/css/info.css">
+
+  <style>
+    /* Small navigation link inside each explanation card; preserves target highlighting. */
+    .info-page .card.info-target .info-card-back {
+      display: inline-block;
+      width: fit-content;
+      margin-top: 14px;
+      padding: 3px 0;
+      color: #176c95;
+      font: 600 12px/1.4 "Inter", sans-serif;
+      text-decoration: none;
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+    }
+    .info-page .card.info-target .info-card-back:hover {
+      color: #0b4e70;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .info-page .card.info-target .info-card-back:focus-visible {
+      outline: 2px solid #168bad;
+      outline-offset: 3px;
+      border-radius: 2px;
+    }
+  </style>
+</head>
+
+<body>
+
+<nav class="aquany-navigation" aria-label="Main navigation">
+
+  <button
+
+    id="aquany-menu-button"
+
+    class="aquany-menu-button"
+
+    type="button"
+
+    aria-label="Open navigation menu"
+
+    aria-controls="aquany-dropdown"
+
+    aria-expanded="false"
+
+  >☰</button>
+
+  <div id="aquany-dropdown" class="aquany-dropdown" hidden>
+
+    <a href="/">Home</a>
+
+    <a href="/map">Interactive Map</a>
+
+    <a href="/info">Info</a>
+
+  </div>
+
+</nav>
+
+<main class="info-page">
+
+  <div class="hero">
+
+    <div class="eyebrow">Detailed Water Information</div>
+
+    <h1>Understanding Your Water</h1>
+
+  <p class="lead">Water affects our health, ecosystems, and communities. AquaNY brings public water measurements into one place. This guide will help you understand what the measurements on the map page mean, and how they affect you.</p>
+
+    <div class="hero-links" aria-label="Page navigation">
+<a class="jump" href="#example">Example</a>
+
+      <a class="jump" href="#sources">Data types</a>
+
+      <a class="jump" href="#measurements">River measurements</a>
+
+      <a class="jump" href="#contaminants">Contaminants</a>
+
+      <a class="jump" href="#interpret">Reading results</a>
+
+      <a class="jump" href="#faq">FAQ</a>
+
+    </div>
+
+  </div>
+
+  <!-- EXAMPLE READINGS -->
+
+  <section id="example">
+
+    <h2>About Measurements</h2>
+
+    <p class="section-intro">When you click a measurement value in AquaNY, you will see its explanation here. Try using these example readings.</p>
+
+    <div class="demo-metrics">
+
+      <a class="demo-metric" href="#ph"><span>pH</span><strong>7.7</strong></a>
+
+      <a class="demo-metric" href="#water-temperature"><span>Water temperature</span><strong>68°F</strong></a>
+
+      <a class="demo-metric" href="#streamflow"><span>Streamflow</span><strong>1,290 ft³/s</strong></a>
+
+      <a class="demo-metric" href="#dissolved-oxygen"><span>Dissolved oxygen</span><strong>8.2 mg/L</strong></a>
+
+    </div>
+
+  </section>
+
+  <!-- WHY WATER DATA MATTERS -->
+
+  <section id="why">
+
+    <h2>Why water data matters</h2>
+
+    <p class="section-intro">A river's condition changes with weather, runoff, seasons, and human activity. Drinking-water systems are tested for substances that may affect health over time. Public agencies collect this information, but the results can be difficult to find or interpret.</p>
+
+    <div class="grid">
+
+      <article class="card"><h3>Waterbody Measurements</h3><p>Water level and streamflow can help explain changing river conditions. Temperature, oxygen, and other measurements reveal other information regarding the waterbody.</p></article>
+
+      <article class="card"><h3>Water Contaminants</h3><p>Laboratory tests can identify chemicals such as PFAS, arsenic, or nitrate. Knowing what a substance is helps you ask better questions about a result.</p></article>
+
+      <article class="card"><h3>Context Matters</h3><p>One measurement is not indicative of the entire location. Location, date, units, detection limits, and the type of sample matter as well.</p></article>
+
+    </div>
+
+  </section>
+
+  <!-- DATA SOURCES -->
+
+  <section id="sources">
+
+    <h2>AquaNY's Data Sources</h2>
+
+    <div class="grid two">
+
+      <article class="card">
+
+        <span class="tag">Rivers &amp; Lakes</span>
+
+        <h3>What's been observed in a waterway?</h3>
+
+        <p>AquaNY displays recent USGS monitoring-station readings where confidently associated with a waterbody, alongside older observations and historical environmental sampling results.</p>
+
+        <p><strong>Important:</strong> A river measurement is tied to a particular station and time. It does not represent the entire river, nor does it establish current swimming or drinking safety directly.</p>
+
+      </article>
+
+      <article class="card">
+
+        <span class="tag">Drinking Water</span>
+
+        <h3>What's been reported for a public water system?</h3>
+
+        <p>AquaNY shows historical NYSDOH contaminant summaries for named public water systems. The records are just annual or quarterly summaries, not live readings from your faucet; while they give a good overview, do more research before taking action.</p>
+
+        <p><strong>Important:</strong> Some records can refer to untreated or inactive sources. Confirm your actual water supplier and consult its latest official water quality report.</p>
+
+      </article>
+
+    </div>
+
+  </section>
+
+  <!-- RIVER MEASUREMENTS -->
+
+  <section id="measurements">
+
+    <h2>What do river measurements mean?</h2>
+
+    <p class="section-intro">Not every measurement is a pollutant. Many describe the physical or chemical conditions at a USGS station. AquaNY only labels parameters it can identify reliably.</p>
+
+    <div class="grid">
+
+      <article id="streamflow" class="card info-target">
+
+        <div class="definition"><h3>Streamflow</h3><span class="unit">ft³/s</span></div>
+
+        <p>Measures how much water passes a location each second. Higher streamflow often occurs after rainfall or snowmelt and can indicate stronger currents or increased flood risk. There is no universal good or bad streamflow value; it depends on the river's normal conditions.</p>
+        <a class="info-card-back" href="/map" aria-label="Back to interactive map">← Back to map</a>
+
+
+      </article>
+
+      <article id="gage-height" class="card info-target">
+
+        <div class="definition"><h3>Gage height</h3><span class="unit">ft</span></div>
+
+        <p>Measures water-surface height relative to a station's reference point. A rising gage height may indicate increasing flood risk, especially when approaching local flood thresholds. The number alone does not tell you whether flooding will occur, but can be useful combined with other factors.</p>
+        <a class="info-card-back" href="/map" aria-label="Back to interactive map">← Back to map</a>
+
+
+      </article>
+
+      <article id="water-temperature" class="card info-target">
+
+        <div class="definition"><h3>Water temperature</h3><span class="unit">°F / °C</span></div>
+
+        <p>Affects aquatic organisms and how much oxygen water can hold. Warmer water generally holds less dissolved oxygen and can stress cold-water fish such as trout. Temperatures above 68°F (20°C) may be stressful for some cold-water species, but there is no single safe temperature for every waterbody.</p>
+        <a class="info-card-back" href="/map" aria-label="Back to interactive map">← Back to map</a>
+
+
+      </article>
+
+      <article id="dissolved-oxygen" class="card info-target">
+
+        <div class="definition"><h3>Dissolved oxygen</h3><span class="unit">mg/L</span></div>
+
+        <p>Measures oxygen available in the water, which is used fish and other aquatic life. Higher values are generally more favorable. Concentrations below 5 mg/L can stress many fish, while levels below 3 mg/L are particularly concerning. Different species have different oxygen requirements, so different ecosystems require different levels.</p>
+        <a class="info-card-back" href="/map" aria-label="Back to interactive map">← Back to map</a>
+
+
+      </article>
+
+      <article id="ph" class="card info-target">
+
+        <div class="definition"><h3>pH</h3></div>
+
+        <p>Measures how acidic or basic water is. A pH of 7 is neutral, below 7 is acidic, and above 7 is basic. A commonly used <a href="https://www.epa.gov/caddis/ph" target="_blank">EPA freshwater aquatic-life reference range</a> is 6.5–9.0. Values outside this range may stress organisms and affect how other chemicals behave in the water.</p>
+        <a class="info-card-back" href="/map" aria-label="Back to interactive map">← Back to map</a>
+
+
+      </article>
+
+      <article id="turbidity" class="card info-target">
+
+        <div class="definition"><h3>Turbidity</h3><span class="unit">FNU / NTU</span></div>
+
+        <p>Measures cloudiness caused by suspended particles. Higher turbidity can reduce sunlight penetration and affect aquatic habitats. Sudden increases above a river's normal level may indicate runoff, sediment, or algae. Other causes include rainstorms, spring snowmelt, bank erosion, bottom-feeding fish stirring up sediment, and natural algae or plankton growth. There is no NTU or FNU cutoff that defines poor water quality universally. For reference, 1 FTU is practically crystal clear, while 50 FTU is completely muddy and cloudy.</p> <a class="info-card-back" href="/map" aria-label="Back to interactive map">← Back to map</a>
+      </article>
+
+      <article id="specific-conductance" class="card info-target">
+
+        <div class="definition"><h3>Specific conductance</h3><span class="unit">µS/cm</span></div>
+
+        <p>Indicates how well water conducts electricity, which is related to its concentration of dissolved ions. Examples of such include calcium, magnesium, sodium, and chloride. Higher values may reflect more dissolved salts or minerals from road salt, runoff, or natural geology. Unusually high readings compared with a station's normal values may warrant investigation, but there is no universal harmful threshold.</p>
+        <a class="info-card-back" href="/map" aria-label="Back to interactive map">← Back to map</a>
+
+
+      </article>
+
+      <article id="salinity" class="card info-target">
+
+        <div class="definition"><h3>Salinity</h3><span class="unit">PSU</span></div>
+
+        <p>Measures dissolved salts in water. Freshwater generally has salinity below about 0.5 PSU, while seawater is around 35 PSU. Elevated salinity can harm freshwater organisms, although higher values are normal in tidal estuaries such as parts of the Hudson River.</p>
+        <a class="info-card-back" href="/map" aria-label="Back to interactive map">← Back to map</a>
+
+
+      </article>
+
+      <article id="water-surface-elevation" class="card info-target">
+
+        <div class="definition"><h3>Water-surface elevation</h3><span class="unit">ft</span></div>
+
+        <p>Measures water elevation relative to a reference datum (agreed upon reference level), such as <a href="https://www.dot.ny.gov/divisions/engineering/design/design-services/land-survey/repository/Chapter%206%20NYSDOT%20Coordinate%20Systems%20and%20Datums.pdf" target="_blank">NAVD88</a>. Higher elevations may result from tides, storms, or increased river levels. Whether a value is concerning depends on local flood thresholds and the reference datum.</p>
+        <a class="info-card-back" href="/map" aria-label="Back to interactive map">← Back to map</a>
+
+
+      </article>
+
+    </div>
+
+  </section>
+
+  <!-- DRINKING WATER CONTAMINANTS -->
+
+  <section id="contaminants">
+
+    <h2>What are the contaminants?</h2>
+
+    <p class="section-intro">A contaminant is a substance measured in a water sample. Note, detection does not automatically mean a health standard was exceeded. Keep in mind that standards and interpretations depend on the substance, amount, source, and regulatory limits.</p>
+
+    <div class="grid two">
+
+      <article class="card info-target" id="pfas">
+
+        <h3>PFAS: <span id="pfoa">PFOA</span> and <span id="pfos">PFOS</span></h3>
+
+        <p>PFAS (commonly known as "forever chemicals") are a large family of manufactured chemicals used in industrial processes and consumer products. PFOA and PFOS are two widely studied examples. They can persist in the environment, and long-term exposure to certain PFAS has been associated with health concerns.</p>
+
+        <small>Often reported in ng/L (approximately parts per trillion in water)</small>
+        <a class="info-official-link"
+        href="https://www.health.ny.gov/environmental/water/drinking/emerging_pfas_publicwater"
+        target="_blank"
+        rel="noopener noreferrer">
+        Learn more from NYSDOH ↗
+        </a>
+        <a class="info-card-back" href="/map" aria-label="Back to interactive map">← Back to map</a>
+
+
+      </article>
+
+      <article class="card info-target" id="nitrate">
+
+        <h3>Nitrate</h3>
+
+        <p>A form of nitrogen that may enter water through fertilizers, wastewater, and natural processes. The U.S. EPA limit for nitrates is 10ppm. Elevated nitrate in drinking water is a particular concern for infants.</p>
+
+        <small>Usually recorded in mg/L</small>
+        <a class="info-official-link"
+          href="https://www.health.ny.gov/statistics/environmental/public_health_tracking/about_pages/drinking_water/about_dw"
+          target="_blank"
+          rel="noopener noreferrer">
+          Learn more from NYSDOH ↗
+        </a>
+        <a class="info-card-back" href="/map" aria-label="Back to interactive map">← Back to map</a>
+
+
+      </article>
+
+      <article class="card info-target" id="arsenic">
+
+        <h3>Arsenic</h3>
+
+        <p>A naturally occurring element that can enter groundwater from rocks and minerals. Long-term consumption of elevated concentrations in drinking water can pose health risks.</p>
+
+        <small>Often reported in µg/L</small>
+                <a class="info-official-link"
+          href="https://www.health.ny.gov/statistics/environmental/public_health_tracking/about_pages/drinking_water/about_dw"
+          target="_blank"
+          rel="noopener noreferrer">
+          Learn more from NYSDOH ↗
+        </a>
+        <a class="info-card-back" href="/map" aria-label="Back to interactive map">← Back to map</a>
+
+
+      </article>
+
+      <article class="card info-target" id="haa5">
+
+        <h3>Haloacetic acids (HAA5)</h3>
+
+        <p>HAA5 is a group of five disinfection byproducts that can form when disinfectants used to treat drinking water react with naturally occurring organic matter. These chemicals are monitored because long-term exposure above regulatory limits may pose health risks.</p>
+
+        <small>EPA drinking-water limit: 60 µg/L (60 ppb)</small>
+                <a class="info-official-link"
+          href="https://www.health.ny.gov/statistics/environmental/public_health_tracking/about_pages/drinking_water/about_dw"
+          target="_blank"
+          rel="noopener noreferrer">
+          Learn more from NYSDOH ↗
+        </a>
+        <a class="info-card-back" href="/map" aria-label="Back to interactive map">← Back to map</a>
+
+      </article>
+
+      <article class="card info-target" id="tthm">
+
+        <h3>Total trihalomethanes (TTHM)</h3>
+
+        <p>TTHM is the combined concentration of four disinfection byproducts, including chloroform. They can form during drinking-water treatment when disinfectants react with organic matter. Long-term exposure above regulatory limits may pose health risks.</p>
+
+        <small>EPA drinking-water limit: 80 µg/L (80 ppb)</small>
+                <a class="info-official-link"
+          href="https://www.health.ny.gov/statistics/environmental/public_health_tracking/about_pages/drinking_water/about_dw"
+          target="_blank"
+          rel="noopener noreferrer">
+          Learn more from NYSDOH ↗
+        </a>
+        <a class="info-card-back" href="/map" aria-label="Back to interactive map">← Back to map</a>
+
+      </article>
+
+      <article class="card info-target" id="other-contaminants">
+
+        <h3>Other detected contaminants</h3>
+
+        <p>Water-system summaries may also include disinfection byproducts, solvents, radionuclides, and other substances. AquaNY displays selected detected analytes, but its card list is not the full monitoring history.</p>
+
+        <small>Use “View all contaminant summaries” for more records</small>
+        <a class="info-official-link"
+          href="https://www.health.ny.gov/statistics/environmental/public_health_tracking/about_pages/drinking_water/about_data"
+          target="_blank"
+          rel="noopener noreferrer">
+          Learn more from NYSDOH ↗
+</a>
+        <a class="info-card-back" href="/map" aria-label="Back to interactive map">← Back to map</a>
+
+
+      </article>
+
+    </div>
+
+    <div class="callout">
+
+      <strong>Understanding disinfection byproducts</strong>
+
+      <p>Disinfecting drinking water protects against harmful microorganisms. HAA5 and TTHM can form as unintended byproducts of that essential treatment. Their EPA limits are generally evaluated using a <strong>locational running annual average</strong>, not a single sample. AquaNY's historical system summaries alone cannot establish regulatory compliance.</p>
+
+    </div>
+
+    <div class="callout">
+
+      <strong>About PFAS standards</strong>
+
+      <p>New York regulates PFOA and PFOS in public drinking water. Regulatory thresholds and compliance schedules can change. For current standards and official guidance, consult the <a href="https://www.health.ny.gov/environmental/water/drinking/emerging_pfas_publicwater" target="_blank" rel="noopener noreferrer">New York State Department of Health</a> rather than treating an AquaNY card as a complete determination.</p>
+
+    </div>
+
+  </section>
+
+  <!-- INTERPRETING RESULTS -->
+    <div class="callout">
+
+      <strong>Mean and Maximum</strong>
+
+      <p>In AquaNY's drinking-water cards, <strong>mean</strong> is a summary average and <strong>maximum</strong> is the highest summarized value for the selected reporting period. These are not necessarily individual tap samples. “No published measurement,” meaning a measurement was not recorded, is different from “Nondetect,” usually meaning a low or undetectable level.</p>
+
+    </div>
+  <!-- FAQ -->
+
+  <section id="faq">
+
+    <h2>Common questions</h2>
+
+    <div class="details-list">
+
+      <details><summary>Does a detected contaminant mean my drinking water is unsafe?</summary><p>Not necessarily. A detection tells you a substance was measured, not whether a threshold was exceeded or whether there is a health risk. Check the water supplier's official report and public notices.</p></details>
+
+      <details><summary>Can I drink or swim in a river based on AquaNY readings?</summary><p>No, while they are a good starting point, streamflow, temperature, oxygen, pH, and historical pollutant sampling alone cannot establish current drinking or recreational safety. Consult local health advisories and official beach or waterbody notices.</p></details>
+
+      <details><summary>Why does a station on the map have data while a river search shows none?</summary><p>The station map includes individual USGS stations. The waterbody view shows readings only where stations have been confidently associated with a particular waterbody. Some nearby stations are not yet matched, to ensure valid data for each waterbody.</p></details>
+
+      <details><summary>Why are some station measurements missing?</summary><p>Most USGS stations do not record all supported values, and AquaNY only provides values it can determine are reliable.</p></details>
+
+      <details><summary>Where can I find the latest information about my tap water?</summary><p>Confirm your supplier using your water bill or local utility website, read its latest annual Consumer Confidence Report (water quality report), and check official advisories from your water supplier or health department.</p></details>
+
+    </div>
+
+  </section>
+
+  <!-- REFERENCES -->
+
+  <section id="references">
+
+    <h2>Sources</h2>
+
+    <p class="section-intro">While AquaNY helps make publicly reported measurements easier to discover, government agencies and water suppliers are still the authoritative sources for standards and health information.</p>
+
+    <div class="sources">
+
+      <ul>
+
+        <li><a target="_blank" rel="noopener noreferrer" href="https://www.usgs.gov/water-science-school/science/how-does-usgs-collect-streamflow-data">USGS — How streamflow data are collected</a></li>
+        <li><a target="_blank" rel="noopener noreferrer" href="https://api.waterdata.usgs.gov/ogcapi/v0/collections/parameter-codes">USGS — Parameter code metadata</a></li>
+        <li><a target="_blank" rel="noopener noreferrer" href="https://www.health.ny.gov/statistics/environmental/public_health_tracking/about_pages/drinking_water/about_data">NYSDOH — About drinking water contaminant data</a></li>
+        <li><a target="_blank" rel="noopener noreferrer" href="https://www.health.ny.gov/environmental/water/drinking/emerging_pfas_publicwater">NYSDOH — PFAS and drinking water standards</a></li>
+        <li><a target="_blank" rel="noopener noreferrer" href="https://www.epa.gov/ccr/ccr-information-consumers">EPA — Understanding your annual drinking water quality report</a></li>
+        <li><a target="_blank" rel="noopener noreferrer" href="https://dec.ny.gov/environmental-protection/per-and-polyfluoroalkyl-substances-pfas">NYSDEC — PFAS in the environment</a></li>
+
+      </ul>
+
+    </div>
+
+  </section>
+
+</main>
+<script type="module" src="/js/sidebar.js?v=3"></script>
+
+<script type="module" src="/js/info.js"></script>
+
+</body>
+
+</html>

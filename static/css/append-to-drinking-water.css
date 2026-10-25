@@ -1,0 +1,8 @@
+/* ZIP search matches AquaNY waterbody search styles. */
+.dw-panel .dw-zip-label { display:block; font-size:12px; font-weight:650; color:#526779; margin:12px 0 6px; }
+.dw-panel .dw-zip-input { box-sizing:border-box; width:100%; padding:11px 12px; border:1px solid #d6e4ed; border-radius:9px; background:#f8fbfd; color:#18314a; font:400 13px/normal Inter,sans-serif; }
+.dw-panel .dw-zip-input:focus { outline:none; border-color:#1976d2; box-shadow:0 0 0 3px rgba(25,118,210,.12); }
+.dw-panel .dw-zip-status { font-size:11px; line-height:1.5; color:#64748b; margin:8px 0; }
+.dw-panel .dw-zip-matches { margin:8px 0; }
+.dw-panel .dw-search-divider { display:flex; align-items:center; gap:14px; margin:18px 0; font-size:11px; font-weight:700; letter-spacing:.1em; color:#8193a3; }
+.dw-panel .dw-search-divider::before, .dw-panel .dw-search-divider::after { content:""; flex:1; height:1px; background:#dce7ed; }

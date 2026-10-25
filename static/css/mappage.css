@@ -53,7 +53,7 @@ body {
 }
 
 .map-title {
-  font-family: "Manrope", sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: clamp(48px, 4.5vw, 76px);
   font-weight: 800;
   line-height: 1.05;
@@ -184,7 +184,7 @@ body {
 }
 
 #nearbyStationResults h3 {
-  font-family: "Manrope", sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 17px;
   font-weight: 700;
   color: #142f46;
@@ -507,7 +507,7 @@ body {
 
   color: #142f46;
 
-  font-family: "Manrope", sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 17px;
   font-weight: 750;
   line-height: 1.4;
@@ -931,23 +931,30 @@ body {
     padding: 11px;
   }
 }
+
+/* Waterbody search card: roomy, consistently padded, internally scrollable. */
 .waterbody-search {
   width: 100%;
-  max-width: 440px;
-  padding: 18px;
-
-  background: #fff;
+  max-width: 600px;
+  min-width: 0;
+  height: min(650px, 75vh);
+  max-height: 75vh;
+  padding: 22px 24px;
+  background: #ffffff;
   border: 1px solid #dce7ed;
-  border-radius: 14px;
-
+  border-radius: 16px;
   box-shadow: 0 7px 24px rgba(13, 34, 95, 0.08);
-
   text-align: left;
   font-family: "Inter", sans-serif;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
 }
 
+
 .waterbody-search h3 {
-  font-family: "Manrope", sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 17px;
   font-weight: 750;
   line-height: 1.3;
@@ -1058,7 +1065,7 @@ body {
 }
 
 .waterbody-detail h4 {
-  font-family: "Manrope", sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 15px;
   font-weight: 750;
   line-height: 1.4;
@@ -1142,5 +1149,1146 @@ body {
     padding: 14px;
   }
 }
+/* ==========================================
+   PAST INCIDENTS
+========================================== */
+
+.waterbody-incidents {
+  margin-top: 20px;
+  padding-top: 18px;
+
+  border-top: 1px solid #e2e8f0;
+
+  font-family: "Inter", sans-serif;
+  text-align: left;
+}
+
+.waterbody-incidents-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  margin-bottom: 9px;
+}
+
+.waterbody-incidents-header h5 {
+  margin: 0;
+
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
+  font-weight: 750;
+  line-height: 1.4;
+
+  color: #142f46;
+}
+
+.waterbody-incidents-badge {
+  flex-shrink: 0;
+
+  padding: 5px 9px;
+
+  background: #edf5fa;
+  border: 1px solid #d9eaf5;
+  border-radius: 999px;
+
+  color: #356987;
+  font-size: 10px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.waterbody-incidents-description {
+  margin: 0 0 8px;
+
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.waterbody-incidents-coverage {
+  margin: 0 0 14px;
+
+  color: #8090a0;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.waterbody-incidents-list {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+
+  max-height: 420px;
+  padding-right: 5px;
+
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.waterbody-incidents-count {
+  margin: 0 0 2px;
+
+  color: #526779;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ==========================================
+   INDIVIDUAL INCIDENT CARDS
+========================================== */
+
+.waterbody-incident-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  padding: 14px;
+
+  background: #f8fbfd;
+  border: 1px solid #dfeaf1;
+  border-left: 3px solid #1976d2;
+  border-radius: 11px;
+
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
+}
+
+.waterbody-incident-card:hover {
+  background: #f1f8fc;
+  border-color: #c9e0ef;
+  border-left-color: #1976d2;
+  transform: translateY(-1px);
+}
+
+.waterbody-incident-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.waterbody-incident-card h6 {
+  margin: 0;
+
+  color: #18314a;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.waterbody-incident-date {
+  color: #8090a0;
+  font-size: 10px;
+  font-weight: 550;
+}
+
+.waterbody-incident-beach {
+  margin: 0;
+
+  color: #356987;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.waterbody-incident-reason {
+  margin: 0;
+
+  color: #526779;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.waterbody-incident-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  padding-top: 9px;
+
+  border-top: 1px solid #e4edf3;
+}
+
+.waterbody-incident-status {
+  display: inline-block;
+  padding: 4px 8px;
+
+  background: #eef4f8;
+  border: 1px solid #dce8ef;
+  border-radius: 6px;
+
+  color: #45647a;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.waterbody-incident-source {
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+/* ==========================================
+   LOADING / EMPTY / ERROR STATES
+========================================== */
+
+.waterbody-incidents-loading,
+.waterbody-incidents-empty,
+.waterbody-incidents-error {
+  padding: 14px;
+
+  background: #f8fafc;
+  border: 1px solid #e9eef3;
+  border-radius: 10px;
+
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.waterbody-incidents-error {
+  background: #fff7f4;
+  border-color: #f3e1dc;
+  color: #936457;
+}
+
+.waterbody-incidents-note {
+  padding: 10px 0 2px;
+
+  color: #8796a5;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media (max-width: 600px) {
+  .waterbody-incidents {
+    margin-top: 16px;
+    padding-top: 15px;
+  }
+  
+
+  .waterbody-incidents-header {
+    flex-wrap: wrap;
+  }
+
+  .waterbody-incident-card {
+    padding: 12px;
+  }
+
+  .waterbody-incidents-list {
+    max-height: 340px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .waterbody-incident-card {
+    transition: none;
+  }
+
+  .waterbody-incident-card:hover {
+    transform: none;
+  }
+}
+
+/* ==========================================
+   GROUPED WATERBODY ASSESSMENTS
+========================================== */
+
+.waterbody-group-segments {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 14px 0 20px;
+}
+
+.waterbody-group-segment {
+  padding: 13px 14px;
+  background: #f8fbfd;
+  border: 1px solid #dfeaf1;
+  border-left: 3px solid #1976d2;
+  border-radius: 11px;
+}
+
+.waterbody-group-segment h5 {
+  margin: 0 0 10px;
+  color: #142f46;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+.waterbody-group-segment .waterbody-detail-row {
+  margin: 6px 0;
+}
+
+.waterbody-group-segment .waterbody-detail-row:last-child {
+  margin-bottom: 0;
+}
+/* Limit name-search results; detailed profile scrolls with its panel. */
+.waterbody-results {
+  max-height: 180px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.waterbody-detail {
+  max-height: none;
+  overflow: visible;
+}
+
+.waterbody-detail[hidden] {
+  display: none !important;
+}
+
+/* ========================================
+   AquaNY — PFAS monitoring
+   ======================================== */
+
+.waterbody-pfas {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #d8e4e9;
+}
+
+.waterbody-pfas-heading,
+.waterbody-pfas-site-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.waterbody-pfas-heading h5,
+.waterbody-pfas-site-heading h6 {
+  margin: 0;
+}
+
+.waterbody-pfas-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #176b9a;
+  background: #e7f2fb;
+  border-radius: 20px;
+  padding: 4px 9px;
+}
+
+.waterbody-pfas-description,
+.waterbody-pfas-note,
+.waterbody-pfas-table-note {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.waterbody-pfas-summary {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 10px 0;
+}
+
+.waterbody-pfas-list {
+  display: grid;
+  gap: 10px;
+}
+
+.waterbody-pfas-site {
+  padding: 12px;
+  border: 1px solid #dde6eb;
+  border-radius: 10px;
+  background: #fff;
+  min-width: 0;
+}
+
+.waterbody-pfas-site-heading h6 {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.waterbody-pfas-site-count,
+.waterbody-pfas-site-date {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.waterbody-pfas-key-results {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.waterbody-pfas-key-result {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 9px;
+  background: #f7fafc;
+  border: 1px solid #e5edf1;
+  border-radius: 7px;
+  font-size: 12px;
+}
+
+.waterbody-pfas-key-result strong {
+  color: #244d61;
+}
+
+.waterbody-pfas-key-result span {
+  font-weight: 600;
+}
+
+.waterbody-pfas-key-result small {
+  color: #64748b;
+}
+
+/* Shared Locate button styling: USGS station and PFAS monitoring site. */
+.wb-condition-locate,
+.waterbody-pfas-locate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 5px 7px;
+  background: #ffffff;
+  color: #176c95;
+  border: 1px solid #bad8e9;
+  border-radius: 7px;
+  font-family: "Inter", sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: normal;
+  cursor: pointer;
+}
+
+.wb-condition-locate:hover,
+.waterbody-pfas-locate:hover {
+  background: #e9f5fb;
+}
+.waterbody-pfas-site-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.waterbody-pfas-measurements {
+  margin-top: 12px;
+  min-width: 0;
+}
+.waterbody-pfas-site-heading .waterbody-pfas-locate {
+  margin: 0;
+  align-self: flex-start;
+}
+
+.waterbody-pfas-measurements summary {
+  cursor: pointer;
+  color: #087b9f;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 0;
+}
+
+.waterbody-pfas-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  margin-top: 9px;
+}
+
+.waterbody-pfas-table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 440px;
+  font-size: 11px;
+}
+
+.waterbody-pfas-table th,
+.waterbody-pfas-table td {
+  padding: 7px;
+  text-align: left;
+  border-bottom: 1px solid #e9eef2;
+  vertical-align: top;
+}
+
+.waterbody-pfas-table th {
+  background: #f4f8fa;
+  color: #334155;
+  font-weight: 600;
+}
+
+.waterbody-pfas-nondetect {
+  color: #64748b;
+}
+
+.waterbody-pfas-popup {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.waterbody-pfas-popup p {
+  margin: 3px 0;
+}
+
+/* Historical USGS measurement cards */
+
+.wb-history-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.wb-history-record {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid #dbe5ef;
+  border-radius: 14px;
+  background: #f8fafc;
+  overflow-wrap: anywhere;
+}
+
+.wb-history-parameter {
+  color: #193650;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.wb-history-value {
+  color: #176998;
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.wb-history-station {
+  color: #536a7d;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.wb-history-time {
+  color: #718397;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+@media (max-width: 480px) {
+  .wb-history-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.wb-condition-value small,
+.wb-history-value small {
+  font-size: 0.65em;
+  font-weight: 400;
+  color: #718397;
+  white-space: nowrap;
+}
+
+/* Allow the map page to accommodate a taller search panel */
+.map-page {
+  min-height: 100vh;
+  height: auto;
+  align-items: flex-start;
+}
+
+/* Keep the introduction and map aligned */
+.map-intro {
+  align-self: flex-start;
+}
+
+.map-wrapper {
+  align-self: flex-start;
+}
+
+/* Mobile and tablet adjustments */
+@media (max-width: 1100px) {
+  .map-page {
+    align-items: center;
+  }
+
+  .map-intro,
+  .map-wrapper {
+    align-self: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .waterbody-search {
+    padding: 18px;
+    height: min(650px, 75vh);
+    max-height: 75vh;
+  }
+}
+/* ===== Layer 1 waterbody current conditions ===== */
+/* Current conditions: fits inside the existing 420px scrolling search panel. */
+.wb-conditions { margin: 14px 0 18px; padding: 14px 0 16px; border-top: 1px solid #dce7ed; border-bottom: 1px solid #dce7ed; text-align: left; font-family: Inter, sans-serif; }
+.wb-conditions-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.wb-conditions-heading h5 { margin: 0; color: #142f46; font: 750 15px/1.4 Manrope, sans-serif; }
+.wb-conditions-badge { padding: 4px 7px; border-radius: 7px; color: #176186; background: #e9f5fb; font-size: 10px; font-weight: 650; }
+.wb-conditions-summary, .wb-conditions-message, .wb-condition-disclaimer { margin: 7px 0 10px; color: #64748b; font-size: 11px; line-height: 1.55; }
+.wb-condition-station { margin: 10px 0; padding: 11px; border: 1px solid #e2e8f0; border-radius: 10px; background: #fbfdff; }
+.wb-condition-station-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 7px; margin-bottom: 9px; }
+.wb-condition-station-heading h6 { margin: 0; color: #1e293b; font-size: 12px; font-weight: 700; line-height: 1.45; overflow-wrap: anywhere; }
+.wb-condition-metrics { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 6px; }
+.wb-condition-metric { min-width: 0; padding: 8px 7px; border-radius: 8px; border: 1px solid #e2edf4; background: #f0f8fc; display: flex; flex-direction: column; gap: 5px; }
+.wb-condition-label { color: #526779; font-size: 10px; font-weight: 650; line-height: 1.35; }
+.wb-condition-value { color: #146c9c; font-size: 18px; font-weight: 750; overflow-wrap: anywhere; }
+.wb-condition-value small { color: #527e97; font-size: 10px; font-weight: 500; }
+.wb-condition-missing { color: #8b98a7; font-size: 11px; font-weight: 600; }
+.wb-condition-time, .wb-condition-approval { color: #718096; font-size: 9px; line-height: 1.4; }
+.wb-condition-source { margin: 9px 0 0; color: #64748b; font-size: 10px; overflow-wrap: anywhere; }
+@media (max-width: 430px) { .wb-condition-metrics { grid-template-columns: 1fr; } }
+
+/* Layer 1 historical observations, separated from current measurements */
+.wb-history { margin-top: 13px; border-top: 1px solid #dce7ed; padding-top: 12px; }
+.wb-history-summary { cursor: pointer; font-size: 12px; font-weight: 700; color: #17678c; }
+.wb-history-notice { margin: 10px 0; font-size: 11px; color: #176186; line-height: 1.5; }
+.wb-history-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.wb-history-record { min-width: 0; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 9px; padding: 10px; display: flex; flex-direction: column; gap: 3px; }
+.wb-history-record strong { font-size: 11px; color: #18314a; }
+.wb-history-record span { font-size: 15px; font-weight: 700; color: #526779; }
+.wb-history-record small, .wb-history-record time { font-size: 10px; color: #66788a; overflow-wrap: anywhere; }
+@media (max-width: 450px) { .wb-history-list { grid-template-columns: 1fr; } }
+
+/* Subtle contextual links on measurement values */
+a.aquany-reading-link { display: inline-block; color: inherit; text-decoration: none; cursor: pointer; border-radius: 3px; }
+a.aquany-reading-link:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a.aquany-reading-link:focus-visible { outline: 2px solid #168bad; outline-offset: 3px; }
+
+/* ==========================================
+   ZIP-CODE WATERBODY SEARCH
+   Scoped to the waterbody search panel.
+========================================== */
+.waterbody-search .waterbody-zip-search {
+  margin: 16px 0 20px;
+  width: 100%;
+  font-family: "Inter", sans-serif;
+  text-align: left;
+}
+.waterbody-search .waterbody-zip-search label {
+  display: block;
+  margin: 0 0 8px;
+  color: #193650;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.waterbody-search .waterbody-zip-controls {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 4px;
+  align-items: stretch;
+}
+.waterbody-search .waterbody-zip-controls input,
+.waterbody-search .waterbody-zip-controls select,
+.waterbody-search .waterbody-zip-controls button {
+  box-sizing: border-box;
+  height: 42px;
+  margin: 0;
+  padding: 9px 11px;
+  border: 1px solid #d6e4ed;
+  border-radius: 9px;
+  font: 500 12px/1.3 "Inter", sans-serif;
+  color: #18314a;
+  background: #f8fbfd;
+}
+.waterbody-search .waterbody-zip-controls input {
+  flex: 1 1 auto;
+  width: 0;
+  min-width: 0;
+}
+.waterbody-search .waterbody-zip-controls select {
+  flex: 0 0 86px;
+  cursor: pointer;
+}
+.waterbody-search .waterbody-zip-controls button {
+  flex: 0 0 64px;
+  background: #e8f5fb;
+  color: #176c95;
+  border-color: #a4cede;
+  font-weight: 700;
+  cursor: pointer;
+}
+.waterbody-search .waterbody-zip-controls button:hover:not(:disabled) {
+  background: #d9eff9;
+}
+.waterbody-search .waterbody-zip-controls button:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+.waterbody-search .waterbody-zip-controls :is(input, select, button):focus-visible {
+  outline: 2px solid #168bad;
+  outline-offset: 2px;
+}
+.waterbody-search .waterbody-zip-status {
+  margin: 9px 0;
+  color: #657d91;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.waterbody-search .waterbody-zip-disclosure {
+  margin: 12px 0 0;
+  padding: 8px 0 0;
+  border-top: 1px solid #e2e8f0;
+}
+.waterbody-search .waterbody-zip-disclosure[hidden] { display: none; }
+.waterbody-search .waterbody-zip-disclosure > summary {
+  padding: 8px 0;
+  color: #176c95;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.waterbody-search .waterbody-zip-disclosure > summary:hover { color: #0b4e70; }
+.waterbody-search .waterbody-zip-results {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 100%;
+  max-height: 220px;
+  overflow-y: auto;
+  margin-top: 7px;
+  padding-right: 4px;
+  overscroll-behavior: contain;
+}
+.waterbody-search .waterbody-zip-results:empty { display: none; }
+.waterbody-search .waterbody-zip-results .waterbody-result {
+  width: 100%;
+  padding: 10px 12px;
+  background: #f8fbfd;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  font-family: "Inter", sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+.waterbody-search .waterbody-zip-results .waterbody-result:hover {
+  background: #eff7fd;
+  border-color: #168bad;
+}
+.waterbody-detail { scroll-margin-top: 24px; }
+@media (max-width: 420px) {
+  .waterbody-search .waterbody-zip-controls { flex-wrap: wrap; }
+  .waterbody-search .waterbody-zip-controls input { flex: 1 1 100%; width: 100%; }
+  .waterbody-search .waterbody-zip-controls select,
+  .waterbody-search .waterbody-zip-controls button { flex: 1 1 0; }
+}
+/* Divider between the two waterbody search methods */
+.waterbody-search-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 8px 0 22px;
+  color: #8193a3;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.waterbody-search-divider::before,
+.waterbody-search-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #dce7ed;
+}
+
+.waterbody-search .waterbody-zip-search {
+  margin-bottom: 8px;
+}
+
+.waterbody-search .waterbody-search-label {
+  margin-bottom: 10px;
+}
+
+/* Compact Earlier USGS Observations section */
+
+.wb-history {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #dce7ef;
+}
+
+.wb-history-summary {
+  font-size: 15px;
+  font-weight: 700;
+  color: #176d96;
+  cursor: pointer;
+  padding: 4px 0 10px;
+}
+
+.wb-history-notice {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #718096;
+  margin: 0 0 12px;
+}
+
+/* Two-column compact measurement grid */
+.wb-history-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* Individual historical reading */
+.wb-history-record {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #dce8f0;
+  border-radius: 12px;
+  background: #f0f7fb;
+  box-shadow: none;
+}
+
+/* Measurement name */
+.wb-history-parameter {
+  font-size: 12px;
+  font-weight: 600;
+  color: #587085;
+  line-height: 1.35;
+}
+
+/* Measurement value */
+.wb-history-value {
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #1676a5;
+  overflow-wrap: anywhere;
+}
+
+.wb-history-value small {
+  font-size: 12px;
+  font-weight: 400;
+  color: #718096;
+}
+
+/* Station name: secondary information */
+.wb-history-station {
+  font-size: 11px;
+  line-height: 1.4;
+  font-weight: 500;
+  color: #64748b;
+  overflow-wrap: anywhere;
+}
+
+/* Observation date */
+.wb-history-time {
+  font-size: 11px;
+  color: #718096;
+  line-height: 1.4;
+  margin-top: auto;
+}
+
+@media (max-width: 480px) {
+  .wb-history-list {
+    grid-template-columns: 1fr;
+  }
+}
 
 
+/* =========================================
+   AquaNY PFAS Map Popup
+   ========================================= */
+
+/* Popup container */
+.aquany-pfas-map-popup .maplibregl-popup-content {
+  padding: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 12px 35px rgba(13, 34, 95, 0.18);
+}
+
+/* Close button */
+.aquany-pfas-map-popup .maplibregl-popup-close-button {
+  top: 10px;
+  right: 12px;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  color: #64748b;
+  font-size: 20px;
+  line-height: 26px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.aquany-pfas-map-popup .maplibregl-popup-close-button:hover {
+  background: #edf5fa;
+  color: #0d225f;
+}
+
+/* Main popup content */
+.waterbody-pfas-popup {
+  padding: 20px;
+  font-family: "Inter", sans-serif;
+  color: #24384a;
+}
+
+/* NYSDEC label */
+.waterbody-pfas-popup-eyebrow {
+  margin-bottom: 10px;
+  padding-right: 25px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #176b9a;
+}
+
+/* Site code */
+.waterbody-pfas-popup-title {
+  margin: 0 25px 5px 0;
+  font-size: 19px;
+  font-weight: 750;
+  line-height: 1.3;
+  color: #0d225f;
+  overflow-wrap: anywhere;
+}
+
+/* Associated waterbody */
+.waterbody-pfas-popup-location {
+  margin: 0 0 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+/* PFOA and PFOS measurement grid */
+.waterbody-pfas-popup-measurements {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* Individual measurement card */
+.waterbody-pfas-popup-measurement {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+
+  min-width: 0;
+  padding: 13px 12px;
+
+  background: #edf6fb;
+  border: 1px solid #d9e8f2;
+  border-radius: 10px;
+}
+
+/* Parameter name */
+.waterbody-pfas-popup-measurement span {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #456579;
+}
+
+/* Measurement value / Nondetect */
+.waterbody-pfas-popup-measurement strong {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #176b9a;
+  overflow-wrap: anywhere;
+}
+
+/* Sampling date */
+.waterbody-pfas-popup-measurement small {
+  margin-top: auto;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #718096;
+}
+
+/* Historical-data disclaimer */
+.waterbody-pfas-popup-note {
+  margin: 13px 0 0;
+  font-size: 11px;
+  line-height: 1.55;
+  color: #718096;
+}
+
+/* Popup tip */
+.aquany-pfas-map-popup .maplibregl-popup-tip {
+  border-top-color: #ffffff;
+}
+
+/* Narrow screens */
+@media (max-width: 420px) {
+  .waterbody-pfas-popup {
+    padding: 16px;
+  }
+
+  .waterbody-pfas-popup-title {
+    font-size: 18px;
+  }
+
+  .waterbody-pfas-popup-measurements {
+    gap: 8px;
+  }
+
+  .waterbody-pfas-popup-measurement {
+    padding: 11px 9px;
+  }
+
+  .waterbody-pfas-popup-measurement strong {
+    font-size: 15px;
+  }
+}
+/* ==========================================
+   DRINKING WATER SEARCH
+   Match Rivers & Lakes search styling
+========================================== */
+
+.dw-panel {
+  width: 100%;
+  min-width: 0;
+  text-align: left;
+  font-family: "Inter", sans-serif;
+}
+
+/* Section heading */
+.dw-panel > h3 {
+  margin: 0 0 5px;
+  color: #142f46;
+  font-size: 17px;
+  font-weight: 750;
+  line-height: 1.3;
+}
+
+/* Description */
+.dw-panel .dw-search-description {
+  margin: 0 0 12px;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Search input — matches waterbodyQuery */
+.dw-panel > input[type="search"] {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 11px 12px;
+
+  border: 1px solid #d6e4ed;
+  border-radius: 9px;
+
+  background: #f8fbfd;
+  color: #18314a;
+
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: normal;
+
+  outline: none;
+}
+
+.dw-panel > input[type="search"]:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.12);
+}
+
+/* Matching search results */
+.dw-panel .dw-matches {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  margin-top: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+/* Individual result — matches waterbody-result */
+.dw-panel .dw-match {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: auto;
+  margin: 0;
+  padding: 10px 11px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+
+  background: #f8fbfd;
+  color: #1e293b;
+
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.4;
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.dw-panel .dw-match:hover,
+.dw-panel .dw-match:focus-visible {
+  border-color: #1976d2;
+  background: #eff7fd;
+  outline: none;
+}
+.waterbody-contaminant-link {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.waterbody-contaminant-link:hover {
+  color: #087b9a;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.waterbody-contaminant-link:focus-visible {
+  outline: 2px solid #176b9a;
+  outline-offset: 3px;
+}
+/* PFAS monitoring label links */
+.waterbody-pfas-key-result .waterbody-contaminant-link {
+  color: #214e68;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.waterbody-pfas-key-result .waterbody-contaminant-link:hover {
+  color: #087b9a;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -58,6 +59,7 @@ func MeasurementAvailability(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
+	log.Println("Serving measurement availability API.")
 	coverage := r.URL.Query().Get("coverage")
 	recency := r.URL.Query().Get("recency")
 

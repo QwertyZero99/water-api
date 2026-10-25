@@ -62,10 +62,6 @@ func (b BoundingBox) String() string {
 }
 
 // Station represents a USGS monitoring location.
-//
-// Feature contains the original GeoJSON feature. Keeping the original
-// feature means we don't lose properties or GeoJSON foreign/extra members
-// that aren't explicitly represented by this struct.
 type Station struct {
 	ID string
 
@@ -88,9 +84,6 @@ type Station struct {
 }
 
 // StationStore provides access to stations stored in PostgreSQL.
-//
-// There is deliberately no in-memory station cache. PostgreSQL is the
-// source of truth for both reads and writes.
 type StationStore struct {
 	db        *sql.DB
 	saveMutex sync.Mutex
@@ -120,6 +113,37 @@ func (s *StationStore) Add(station Station) error {
 
 	if err != nil {
 		return fmt.Errorf("save station %q: %w", station.ID, err)
+	}
+
+	return nil
+}
+
+// Delete removes a station by ID.
+func (s *StationStore) Delete(id string) error {
+	result, err := s.db.Exec(`
+		DELETE FROM stations
+		WHERE station_id = $1
+	`, id)
+
+	if err != nil {
+		return fmt.Errorf(
+			"delete station %q: %w",
+			id,
+			err,
+		)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf(
+			"get delete result for station %q: %w",
+			id,
+			err,
+		)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("station %q not found", id)
 	}
 
 	return nil
@@ -348,37 +372,6 @@ func (s *StationStore) Save(stations []Station) error {
 	return s.saveSnapshot(stations)
 }
 
-// Delete removes a station by ID.
-func (s *StationStore) Delete(id string) error {
-	result, err := s.db.Exec(`
-		DELETE FROM stations
-		WHERE station_id = $1
-	`, id)
-
-	if err != nil {
-		return fmt.Errorf(
-			"delete station %q: %w",
-			id,
-			err,
-		)
-	}
-
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf(
-			"get delete result for station %q: %w",
-			id,
-			err,
-		)
-	}
-
-	if rowsAffected == 0 {
-		return fmt.Errorf("station %q not found", id)
-	}
-
-	return nil
-}
-
 // initStationDatabase opens PostgreSQL and creates the required tables.
 func initStationDatabase() (*sql.DB, error) {
 	db, err := sql.Open(
@@ -411,10 +404,11 @@ func initStationDatabase() (*sql.DB, error) {
 
 func postgresConnectionString() string {
 	password := cfg.DataBasePassword
+	user := cfg.DataBaseUsername
 
 	return fmt.Sprintf(
-		"postgres://postgres:%s@localhost:5432/postgres?sslmode=disable",
-		url.QueryEscape(password),
+		"postgres://%s:%s@localhost:5432/postgres?sslmode=disable",
+		url.QueryEscape(user), url.QueryEscape(password),
 	)
 }
 

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -12,9 +13,9 @@ import (
 	"github.com/paulmach/orb"
 )
 
-// StationHandlers provides HTTP handlers backed directly by PostgreSQL.
+// StationHandlers provides http handlers backed directly by postgres
 //
-// PostgreSQL is the source of truth. No station data is cached in memory
+// postgres is the source of truth. No station data is cached in memory
 // by these handlers.
 type StationHandlers struct {
 	store *StationStore
@@ -54,6 +55,7 @@ func (h *StationHandlers) StationsInBoundingBox(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
+	log.Println("Serving stations in bounding box API.")
 	bbox, err := parseBoundingBox(
 		r.URL.Query().Get("bbox"),
 	)
