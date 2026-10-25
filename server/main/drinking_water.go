@@ -16,7 +16,7 @@ func NewDrinkingWaterHandler(db *sql.DB) *drinkingWaterHandler { return &drinkin
 
 func (h *drinkingWaterHandler) Search(w http.ResponseWriter, r *http.Request) {
 	log.Println("Serving drinking water search API.")
-	q := strings.TrimSpace(r.URL.Query().Get("q"))
+	q := strings.TrimSpace(strings.TrimSuffix(r.URL.Query().Get("q"), "County"))
 	if len(q) < 2 {
 		drinkingJSON(w, http.StatusOK, []any{})
 		return
