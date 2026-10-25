@@ -657,10 +657,34 @@ export function initDrinkingWater(intro, ambientRoot) {
   zipSearch.setAttribute('aria-label', 'New York ZIP code');
   const zipStatus = el('p', '', 'dw-zip-status');
   zipStatus.setAttribute('role', 'status');
+  // Link to help users find their public water system ID.
+const pwsidHelp = document.createElement('a');
+pwsidHelp.className = 'dw-pwsid-help';
+pwsidHelp.target = '_blank';
+pwsidHelp.rel = 'noopener noreferrer';
+pwsidHelp.hidden = true;
+
+function updatePWSIDHelp() {
+  const zip = zipSearch.value.trim();
+
+  if (!/^\d{5}$/.test(zip)) {
+    pwsidHelp.hidden = true;
+    pwsidHelp.removeAttribute('href');
+    return;
+  }
+
+  const query = `PWSID for ${zip}`;
+
+  pwsidHelp.href =
+    `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+
+  pwsidHelp.textContent = `Find your public water system ID (PWSID) ↗`;
+  pwsidHelp.hidden = false;
+}
   const zipMatches = el('div', null, 'dw-matches dw-zip-matches');
   const divider = el('div', 'OR', 'dw-search-divider');
 
-  section.append(zipLabel, zipSearch, zipMatches, zipStatus, divider, zipLabel2,search, matches, detail);
+  section.append(zipLabel, zipSearch, zipMatches, zipStatus, pwsidHelp, divider, zipLabel2,search, matches, detail);
 
 
   ambientRoot.before(wrapper);
@@ -718,6 +742,7 @@ export function initDrinkingWater(intro, ambientRoot) {
     const version = ++zipSeq;
     clearTimeout(zipTimer);
     zipSearch.value = zipSearch.value.replace(/\D/g, '').slice(0, 5);
+    updatePWSIDHelp();
     zipMatches.replaceChildren();
     zipStatus.textContent = zipSearch.value.length < 5
       ? 'Enter a five-digit New York ZIP code.'

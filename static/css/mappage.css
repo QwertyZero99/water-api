@@ -2292,3 +2292,146 @@ a.aquany-reading-link:focus-visible { outline: 2px solid #168bad; outline-offset
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+/* Draggable map popup headers */
+
+.aquany-popup-drag-handle {
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+.aquany-popup-dragging .aquany-popup-drag-handle {
+  cursor: grabbing;
+}
+
+/* Subtle indication of interactivity */
+.aquany-popup-drag-handle:hover {
+  color: #087b9a;
+}
+
+/* ==========================================
+   EPA HISTORICAL PFAS SAMPLE CARDS
+   ========================================== */
+
+.wb-epa-pfas .waterbody-pfas-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+/* Individual sample card */
+.wb-epa-pfas .wb-epa-pfas-card {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  min-width: 0;
+  margin: 0;
+  padding: 13px 14px;
+
+  background: #f8fbfd;
+  border: 1px solid #dce7ed;
+  border-radius: 12px;
+
+  font-family: "Inter", sans-serif;
+  text-align: left;
+}
+
+/* Compound and monitoring location */
+.wb-epa-pfas .wb-epa-pfas-title {
+  margin: 0;
+
+  color: #1d3b50;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+
+  overflow-wrap: anywhere;
+}
+
+/* Concentration or nondetect */
+.wb-epa-pfas .wb-epa-pfas-value {
+  color: #156f99;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+
+  overflow-wrap: anywhere;
+}
+
+/* Sampling date */
+.wb-epa-pfas .wb-epa-pfas-date {
+  color: #718294;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* Reporting qualifier */
+.wb-epa-pfas .wb-epa-pfas-extra {
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.5;
+
+  overflow-wrap: anywhere;
+}
+
+/* EPA activity ID */
+.wb-epa-pfas .wb-epa-pfas-activity {
+  margin-top: 4px;
+  padding-top: 8px;
+
+  border-top: 1px solid #e4ebf1;
+
+  color: #8a98a5;
+  font-size: 10px;
+  line-height: 1.5;
+
+  overflow-wrap: anywhere;
+}
+
+/* Keep section description compact */
+.wb-epa-pfas .waterbody-pfas-summary {
+  margin: 10px 0 12px;
+
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+/* Fullscreen map */
+
+.map-wrapper:fullscreen {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  background: #fff;
+}
+
+.map-wrapper:fullscreen #map {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+}
+
+#fullscreenMap {
+  padding: 8px 13px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #333;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 7px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.22);
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#fullscreenMap:hover {
+  background: #eef6fb;
+  color: #176c95;
+}

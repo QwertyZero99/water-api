@@ -7,6 +7,39 @@ const resetButton = document.getElementById("resetZoom");
 const button2D = document.getElementById("view2D");
 
 const button3D = document.getElementById("view3D");
+const fullscreenButton = document.getElementById("fullscreenMap");
+const mapWrapper = document.querySelector(".map-wrapper");
+// this handles the fullscreen stuff
+if (fullscreenButton && mapWrapper) {
+  fullscreenButton.addEventListener("click", async () => {
+    try {
+      if (document.fullscreenElement === mapWrapper) {
+        await document.exitFullscreen();
+      } else if (!document.fullscreenElement) {
+        await mapWrapper.requestFullscreen();
+      }
+    } catch (error) {
+      console.error("Unable to toggle fullscreen:", error);
+    }
+  });
+
+  document.addEventListener("fullscreenchange", () => {
+    const isFullscreen = document.fullscreenElement === mapWrapper;
+
+    fullscreenButton.textContent = isFullscreen
+      ? "⛶ Exit fullscreen"
+      : "⛶ Fullscreen";
+
+    fullscreenButton.setAttribute(
+      "aria-label",
+      isFullscreen ? "Exit fullscreen map" : "Enter fullscreen map"
+    );
+
+    fullscreenButton.setAttribute("aria-pressed", String(isFullscreen));
+
+    window.dispatchEvent(new Event("resize"));
+  });
+}
 
 if (resetButton) {
   resetButton.addEventListener("click", () => {

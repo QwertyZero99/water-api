@@ -409,7 +409,33 @@ a.aquany-reading-link:focus-visible { outline: 2px solid #168bad; outline-offset
   color: #64748b;
   margin: 0 0 12px;
 }
+/* Link to help users find their PWSID */
 
+.dw-pwsid-help {
+  display: inline-block;
+  margin: 2px 0 12px;
+  color: #168bad;
+  font-size: 0.82rem;
+  font-weight: 650;
+  line-height: 1.5;
+  text-decoration: none;
+}
+
+.dw-pwsid-help:hover {
+  color: #087b9a;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.dw-pwsid-help:focus-visible {
+  outline: 2px solid #168bad;
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+.dw-pwsid-help[hidden] {
+  display: none;
+}
 .dw-card-grid .dw-detected-card { border-left: 1px solid #dce7ed; }
 .dw-card-grid .dw-stat-value { color: #156f99; font-weight: 700; }
 .dw-card-grid .dw-stat-label, .dw-card-grid .dw-clean-footer { color: #7b90a1; }

@@ -1,6 +1,7 @@
 import { appendWaterbodyEPAPFAS } from "./waterbodyEPAPFAS.js";
 import { appendWaterbodyConditions } from "./waterbodyConditions.js";
 import { initDrinkingWater } from "./drinkingWater.js";
+import { makePopupDraggable } from "./draggablePopup.js";
 
 
 /*
@@ -1507,7 +1508,7 @@ function showPFASPopup(map, properties, coordinates) {
 
   popupBody.append(eyebrow, title, location, results, note);
 
-  new maplibregl.Popup({
+    const popup = new maplibregl.Popup({
     offset: 18,
     closeButton: true,
     closeOnClick: false,
@@ -1517,6 +1518,12 @@ function showPFASPopup(map, properties, coordinates) {
     .setLngLat(coordinates)
     .setDOMContent(popupBody)
     .addTo(map);
+
+  makePopupDraggable(
+    map,
+    popup,
+    ".waterbody-pfas-popup-title"
+  );
 }
 
 

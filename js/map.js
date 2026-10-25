@@ -1,5 +1,6 @@
 
 import { initWaterbodySearch } from "./waterbodySearch.js?20261025-2";
+import { makePopupDraggable } from "./draggablePopup.js";
 const NY_BBOX = [-79.8, 40.4, -71.8, 45.1];
 
 const INITIAL_CENTER = [-75, 43];
@@ -768,7 +769,14 @@ function createPopupController(map) {
         createStationPopupContent(details, id);
 
       popup.setDOMContent(container);
-      void loadPopupMeasurements(id, measurementsDiv);
+
+      makePopupDraggable(
+        map,
+        popup,
+        ".station-popup-header"
+      );
+
+void loadPopupMeasurements(id, measurementsDiv);
     } catch (error) {
       console.error("Station popup failed:", error);
 
