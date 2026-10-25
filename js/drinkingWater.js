@@ -244,37 +244,7 @@ function aquanyInfoLink(valueNode, sectionId) {
   return anchor;
 }
 const AQUANY_CONTAMINANT_GUIDE = {"PFOA":"pfoa","PFOS":"pfos","Nitrate":"nitrate","Arsenic":"arsenic"};
-function contaminantGuideSection(label) {
-  const name = String(label || "").trim();
 
-  // Recognize HAA5 and TTHM under common contaminant names.
-  if (/\bHAA\s*5\b|haloacetic\s+acids?(?:\s*\(?(?:5|five)\)?)?/i.test(name)) {
-    return 'haa5';
-  }
-
-  if (/\bTTHM\b|total\s+trihalomethanes?/i.test(name)) {
-    return 'tthm';
-  }
-
-  return AQUANY_CONTAMINANT_GUIDE[name] || 'other-contaminants';
-}
-function contaminantUnit(record) {
-  if (record.unit) {
-    return record.unit;
-  }
-
-  const name = String(record.contaminant || "").toLowerCase();
-
-  if (
-    /\barsenic\b/.test(name) ||
-    /\bhaa\s*5\b|haloacetic\s+acids?/.test(name) ||
-    /\btthm\b|trihalomethanes?/.test(name)
-  ) {
-    return "µg/L";
-  }
-
-  return "";
-}
 function recordCard(record, label, emphasized = false) {
   const card = el(
     'article',
@@ -318,14 +288,14 @@ function recordCard(record, label, emphasized = false) {
     row.append(
       el(
         'span',
-        displayValue(rawValue, contaminantUnit(record)),
+        displayValue(rawValue, record.unit),
         'dw-stat-value'
       )
     );
 
 
     const valueElement = row.lastElementChild;
-    const guideSection = contaminantGuideSection(label);
+    const guideSection = AQUANY_CONTAMINANT_GUIDE[label] || 'other-contaminants';
 
     if (valueElement) {
       const link = aquanyInfoLink(valueElement, guideSection);
@@ -398,8 +368,8 @@ function summaryTable(records) {
     const values = [
       record.period,
       contaminantName(record),
-      displayValue(record.mean, contaminantUnit(record)),
-      displayValue(record.max, contaminantUnit(record)),
+      displayValue(record.mean, record.unit),
+      displayValue(record.max, record.unit),
       String(record.numSamples ?? '—'),
       String(record.numNonDetects ?? '—')
     ];
@@ -664,15 +634,9 @@ export function initDrinkingWater(intro, ambientRoot) {
     el('h3', 'Find your public water system')
   );
 
-  section.append(
-    el(
-      'p',
-      'Search by utility name, county, or system ID.',
-      'dw-search-description'
-    )
-  );
 
   const search = el('input');
+  const zipLabel2 = el('label', 'Search by Utility name, county, or system ID.', 'dw-zip-label');
   search.type = 'search';
   search.placeholder = 'e.g. Albany City';
   search.setAttribute(
@@ -683,7 +647,21 @@ export function initDrinkingWater(intro, ambientRoot) {
   const matches = el('div', null, 'dw-matches');
   const detail = el('div', null, 'dw-detail');
 
-  section.append(search, matches, detail);
+  // Optional ZIP lookup using EPA's approximate service-area geography.
+  const zipLabel = el('label', 'Search by ZIP code', 'dw-zip-label');
+  const zipSearch = el('input', null, 'dw-zip-input');
+  zipSearch.type = 'text';
+  zipSearch.inputMode = 'numeric';
+  zipSearch.maxLength = 5;
+  zipSearch.placeholder = 'e.g. 12054';
+  zipSearch.setAttribute('aria-label', 'New York ZIP code');
+  const zipStatus = el('p', '', 'dw-zip-status');
+  zipStatus.setAttribute('role', 'status');
+  const zipMatches = el('div', null, 'dw-matches dw-zip-matches');
+  const divider = el('div', 'OR', 'dw-search-divider');
+
+  section.append(zipLabel, zipSearch, zipMatches, zipStatus, divider, zipLabel2,search, matches, detail);
+
 
   ambientRoot.before(wrapper);
   ambientRoot.after(section);
@@ -713,6 +691,63 @@ export function initDrinkingWater(intro, ambientRoot) {
     'click',
     () => mode(true)
   );
+
+  // Both search methods open the same existing contaminant details.
+  let detailRequest = 0;
+  async function openDrinkingSystem(system) {
+    const version = ++detailRequest;
+    search.value = formatWaterSystemName(system.name);
+    matches.replaceChildren();
+    zipMatches.replaceChildren();
+    detail.replaceChildren(el('p', 'Loading system records…'));
+    try {
+      const records = await getJSON(
+        `/api/drinking-water/systems/${encodeURIComponent(system.id)}/contaminants`
+      );
+      if (version === detailRequest) renderSystem(detail, system, records);
+    } catch (error) {
+      if (version === detailRequest) {
+        detail.replaceChildren(el('p', `Unable to load records (${error.message}).`));
+      }
+    }
+  }
+
+  let zipSeq = 0;
+  let zipTimer;
+  zipSearch.addEventListener('input', () => {
+    const version = ++zipSeq;
+    clearTimeout(zipTimer);
+    zipSearch.value = zipSearch.value.replace(/\D/g, '').slice(0, 5);
+    zipMatches.replaceChildren();
+    zipStatus.textContent = zipSearch.value.length < 5
+      ? 'Enter a five-digit New York ZIP code.'
+      : 'Finding possible public water systems…';
+    if (zipSearch.value.length !== 5) return;
+    zipTimer = setTimeout(async () => {
+      try {
+        const data = await getJSON(
+          `/api/drinking-water/by-zip?zip=${encodeURIComponent(zipSearch.value)}`
+        );
+        if (version !== zipSeq) return;
+        zipStatus.textContent = data.note || 'Possible systems near this ZIP code.';
+        for (const system of data.systems || []) {
+          const button = el('button',
+            `${formatWaterSystemName(system.name)} · ${system.county || 'NY'} · ${system.id}`,
+            'dw-match');
+          button.type = 'button';
+          button.addEventListener('click', () => void openDrinkingSystem(system));
+          zipMatches.append(button);
+        }
+        if (!(data.systems || []).length) {
+          zipMatches.append(el('p',
+            'No matching systems found at the approximate ZIP center. Try searching by provider name or county.'));
+        }
+      } catch (error) {
+        if (version === zipSeq) zipStatus.textContent =
+          `Unable to look up this ZIP code (${error.message}).`;
+      }
+    }, 350);
+  });
 
   // Search for public water systems.
   let seq = 0;
@@ -751,37 +786,9 @@ export function initDrinkingWater(intro, ambientRoot) {
 
           button.type = 'button';
 
-          button.addEventListener('click', async () => {
-            const selected = ++seq;
-
-            // Use a readable name in the search field.
-            search.value = formatWaterSystemName(system.name);
-
-            matches.replaceChildren();
-
-            detail.replaceChildren(
-              el('p', 'Loading system records…')
-            );
-
-            try {
-              const records = await getJSON(
-                `/api/drinking-water/systems/` +
-                  `${encodeURIComponent(system.id)}/contaminants`
-              );
-
-              if (selected === seq) {
-                renderSystem(detail, system, records);
-              }
-            } catch (error) {
-              if (selected === seq) {
-                detail.replaceChildren(
-                  el(
-                    'p',
-                    `Unable to load records (${error.message}).`
-                  )
-                );
-              }
-            }
+          button.addEventListener('click', () => {
+            ++seq;
+            void openDrinkingSystem(system);
           });
 
           matches.append(button);
@@ -791,7 +798,8 @@ export function initDrinkingWater(intro, ambientRoot) {
           matches.append(
             el(
               'p',
-              'No matching public water systems found.'
+              'No matching public water systems found.',
+              'dw-search-empty'
             )
           );
         }

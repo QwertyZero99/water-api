@@ -2263,3 +2263,32 @@ a.aquany-reading-link:focus-visible { outline: 2px solid #168bad; outline-offset
   background: #eff7fd;
   outline: none;
 }
+.waterbody-contaminant-link {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.waterbody-contaminant-link:hover {
+  color: #087b9a;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.waterbody-contaminant-link:focus-visible {
+  outline: 2px solid #176b9a;
+  outline-offset: 3px;
+}
+/* PFAS monitoring label links */
+.waterbody-pfas-key-result .waterbody-contaminant-link {
+  color: #214e68;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.waterbody-pfas-key-result .waterbody-contaminant-link:hover {
+  color: #087b9a;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

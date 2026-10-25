@@ -923,7 +923,29 @@ function latestMeasurement(measurements, analyte) {
 }
 
 
+function ambientContaminantLink(analyte) {
+  const name = String(analyte || "").trim();
+  const upper = name.toUpperCase();
 
+  const targets = {
+    PFOA: "pfoa",
+    PFOS: "pfos"
+  };
+
+  const anchor = targets[upper];
+
+  if (!anchor) {
+    return node("span", name);
+  }
+
+  const link = document.createElement("a");
+  link.href = `/info#${anchor}`;
+  link.textContent = name;
+  link.className = "waterbody-contaminant-link";
+  link.title = `Learn more about ${name}`;
+
+  return link;
+}
 function createMeasurementTable(measurements) {
 
   const table = document.createElement("table");
@@ -1056,7 +1078,11 @@ function createMeasurementTable(measurements) {
 
       node("td", formatDate(measurement.sampledAt)),
 
-      node("td", measurement.analyte),
+      (() => {
+        const cell = document.createElement("td");
+        cell.append(ambientContaminantLink(measurement.analyte));
+        return cell;
+      })(),
 
       result,
 
@@ -1176,14 +1202,13 @@ function createPFASSiteCard(site, map) {
 
 
 
+    const label = document.createElement("strong");
+    label.append(ambientContaminantLink(analyte));
+
     item.append(
-
-      node("strong", analyte),
-
+      label,
       node("span", measurementText(latest)),
-
       node("small", formatDate(latest.sampledAt))
-
     );
 
 

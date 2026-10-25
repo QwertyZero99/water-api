@@ -321,3 +321,28 @@ footer {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+/* Official NYSDOH reference links */
+
+.info-page .info-official-link {
+  display: block;
+  width: fit-content;
+  margin-top: 12px;
+
+  color: #087b9a;
+  font-family: "Inter", sans-serif;
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1.5;
+  text-decoration: none;
+}
+
+.info-page .info-official-link:hover {
+  color: #075a78;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.info-page .info-official-link:focus-visible {
+  outline: 2px solid #168bad;
+  outline-offset: 3px;
+}

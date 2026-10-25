@@ -118,6 +118,7 @@ func main() {
 		"GET /api/drinking-water/search",
 		drinking.Search,
 	)
+	http.HandleFunc("GET /api/drinking-water/by-zip", drinking.SearchByZIP)
 
 	http.HandleFunc(
 		"GET /api/drinking-water/systems/{id}",
