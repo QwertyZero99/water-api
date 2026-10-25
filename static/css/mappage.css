@@ -1478,8 +1478,8 @@ body {
 .waterbody-pfas-badge {
   font-size: 11px;
   font-weight: 600;
-  color: #a65c06;
-  background: #fff2d7;
+  color: #176b9a;
+  background: #e7f2fb;
   border-radius: 20px;
   padding: 4px 9px;
 }
@@ -1553,9 +1553,9 @@ body {
 }
 
 .waterbody-pfas-locate {
-  background: #fff7e9;
-  color: #925406;
-  border: 1px solid #ebca90;
+  background: #e7f2fb;
+  color: #176b9a;
+  border: 1px solid #b9d8ea;
   border-radius: 6px;
   cursor: pointer;
   padding: 7px 10px;
@@ -1563,7 +1563,7 @@ body {
 }
 
 .waterbody-pfas-locate:hover {
-  background: #ffedcc;
+  background: #dceef9;
 }
 
 .waterbody-pfas-measurements {
@@ -1741,7 +1741,7 @@ body {
 /* Layer 1 historical observations, separated from current measurements */
 .wb-history { margin-top: 13px; border-top: 1px solid #dce7ed; padding-top: 12px; }
 .wb-history-summary { cursor: pointer; font-size: 12px; font-weight: 700; color: #17678c; }
-.wb-history-notice { margin: 10px 0; font-size: 11px; color: #6b4e26; line-height: 1.5; }
+.wb-history-notice { margin: 10px 0; font-size: 11px; color: #176186; line-height: 1.5; }
 .wb-history-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .wb-history-record { min-width: 0; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 9px; padding: 10px; display: flex; flex-direction: column; gap: 3px; }
 .wb-history-record strong { font-size: 11px; color: #18314a; }
@@ -1989,5 +1989,156 @@ a.aquany-reading-link:focus-visible { outline: 2px solid #168bad; outline-offset
 @media (max-width: 480px) {
   .wb-history-list {
     grid-template-columns: 1fr;
+  }
+}
+
+
+/* =========================================
+   AquaNY PFAS Map Popup
+   ========================================= */
+
+/* Popup container */
+.aquany-pfas-map-popup .maplibregl-popup-content {
+  padding: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 12px 35px rgba(13, 34, 95, 0.18);
+}
+
+/* Close button */
+.aquany-pfas-map-popup .maplibregl-popup-close-button {
+  top: 10px;
+  right: 12px;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  color: #64748b;
+  font-size: 20px;
+  line-height: 26px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.aquany-pfas-map-popup .maplibregl-popup-close-button:hover {
+  background: #edf5fa;
+  color: #0d225f;
+}
+
+/* Main popup content */
+.waterbody-pfas-popup {
+  padding: 20px;
+  font-family: "Inter", sans-serif;
+  color: #24384a;
+}
+
+/* NYSDEC label */
+.waterbody-pfas-popup-eyebrow {
+  margin-bottom: 10px;
+  padding-right: 25px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #176b9a;
+}
+
+/* Site code */
+.waterbody-pfas-popup-title {
+  margin: 0 25px 5px 0;
+  font-size: 19px;
+  font-weight: 750;
+  line-height: 1.3;
+  color: #0d225f;
+  overflow-wrap: anywhere;
+}
+
+/* Associated waterbody */
+.waterbody-pfas-popup-location {
+  margin: 0 0 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+/* PFOA and PFOS measurement grid */
+.waterbody-pfas-popup-measurements {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* Individual measurement card */
+.waterbody-pfas-popup-measurement {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+
+  min-width: 0;
+  padding: 13px 12px;
+
+  background: #edf6fb;
+  border: 1px solid #d9e8f2;
+  border-radius: 10px;
+}
+
+/* Parameter name */
+.waterbody-pfas-popup-measurement span {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #456579;
+}
+
+/* Measurement value / Nondetect */
+.waterbody-pfas-popup-measurement strong {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #176b9a;
+  overflow-wrap: anywhere;
+}
+
+/* Sampling date */
+.waterbody-pfas-popup-measurement small {
+  margin-top: auto;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #718096;
+}
+
+/* Historical-data disclaimer */
+.waterbody-pfas-popup-note {
+  margin: 13px 0 0;
+  font-size: 11px;
+  line-height: 1.55;
+  color: #718096;
+}
+
+/* Popup tip */
+.aquany-pfas-map-popup .maplibregl-popup-tip {
+  border-top-color: #ffffff;
+}
+
+/* Narrow screens */
+@media (max-width: 420px) {
+  .waterbody-pfas-popup {
+    padding: 16px;
+  }
+
+  .waterbody-pfas-popup-title {
+    font-size: 18px;
+  }
+
+  .waterbody-pfas-popup-measurements {
+    gap: 8px;
+  }
+
+  .waterbody-pfas-popup-measurement {
+    padding: 11px 9px;
+  }
+
+  .waterbody-pfas-popup-measurement strong {
+    font-size: 15px;
   }
 }

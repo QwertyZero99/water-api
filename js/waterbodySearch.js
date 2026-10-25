@@ -307,17 +307,12 @@ function showPFASMarkers(map, sites) {
 
       },
 
+      
       properties: {
-
         siteId: site.id,
-
-        siteCode: site.siteCode,
-
-        waterbodyName: site.waterbodyName,
-
-        measurementCount: site.measurements?.length || 0
-
+        ...getPFASPopupProperties(site)
       }
+
 
     }));
 
@@ -1257,15 +1252,25 @@ function createPFASSiteCard(site, map) {
 
 
 
-    map.flyTo({
+    
+    const coordinates = [lon, lat];
 
-      center: [lon, lat],
-
-      zoom: 13,
-
-      duration: 750
+    map.once("moveend", () => {
+      
+      showPFASPopup(
+        map,
+        getPFASPopupProperties(site),
+        coordinates
+      );
 
     });
+
+    map.flyTo({
+      center: coordinates,
+      zoom: 13,
+      duration: 750
+    });
+
 
   });
 
@@ -1455,6 +1460,85 @@ function renderPFAS(ui, data, map) {
 
 
 
+
+function getPFASPopupProperties(site) {
+  const measurements = Array.isArray(site.measurements)
+    ? site.measurements
+    : [];
+
+  const pfoa = latestMeasurement(measurements, "PFOA");
+  const pfos = latestMeasurement(measurements, "PFOS");
+
+  return {
+    siteCode: site.siteCode,
+    waterbodyName: site.waterbodyName,
+
+    pfoaValue: pfoa ? measurementText(pfoa) : "No data",
+    pfoaDate: pfoa ? formatDate(pfoa.sampledAt) : "",
+
+    pfosValue: pfos ? measurementText(pfos) : "No data",
+    pfosDate: pfos ? formatDate(pfos.sampledAt) : ""
+  };
+}
+
+function showPFASPopup(map, properties, coordinates) {
+  const popupBody = document.createElement("div");
+  popupBody.className = "waterbody-pfas-popup";
+
+  const eyebrow = document.createElement("div");
+  eyebrow.className = "waterbody-pfas-popup-eyebrow";
+  eyebrow.textContent = "NYSDEC AMBIENT MONITORING";
+
+  const title = document.createElement("h3");
+  title.className = "waterbody-pfas-popup-title";
+  title.textContent = properties.siteCode || "PFAS Monitoring Site";
+
+  const location = document.createElement("p");
+  location.className = "waterbody-pfas-popup-location";
+  location.textContent = properties.waterbodyName || "New York waterway";
+
+  const results = document.createElement("div");
+  results.className = "waterbody-pfas-popup-measurements";
+
+  for (const analyte of ["PFOA", "PFOS"]) {
+    const card = document.createElement("div");
+    card.className = "waterbody-pfas-popup-measurement";
+
+    const label = document.createElement("span");
+    label.textContent = analyte;
+
+    const value = document.createElement("strong");
+    value.textContent =
+      properties[`${analyte.toLowerCase()}Value`] || "No data";
+
+    const date = document.createElement("small");
+    date.textContent =
+      properties[`${analyte.toLowerCase()}Date`] || "No sampling date";
+
+    card.append(label, value, date);
+    results.append(card);
+  }
+
+  const note = document.createElement("p");
+  note.className = "waterbody-pfas-popup-note";
+  note.textContent =
+    "Latest available historical samples at this site. Nondetect does not mean zero.";
+
+  popupBody.append(eyebrow, title, location, results, note);
+
+  new maplibregl.Popup({
+    offset: 18,
+    closeButton: true,
+    closeOnClick: false,
+    maxWidth: "360px",
+    className: "aquany-pfas-map-popup"
+  })
+    .setLngLat(coordinates)
+    .setDOMContent(popupBody)
+    .addTo(map);
+}
+
+
 export function initWaterbodySearch(map) {
 
   const intro = document.querySelector(".map-intro");
@@ -1483,47 +1567,17 @@ export function initWaterbodySearch(map) {
 
   // MapLibre handlers are registered only once.
 
+  
   map.on("click", "waterbody-pfas-points", event => {
-
     const feature = event.features?.[0];
-
     if (!feature) return;
 
-
-
     const properties = feature.properties || {};
-
     const coordinates = feature.geometry.coordinates.slice();
 
-
-
-    const popupBody = document.createElement("div");
-
-    popupBody.className = "waterbody-pfas-popup";
-
-
-
-    popupBody.append(
-
-      node("strong", properties.siteCode),
-
-      message(properties.waterbodyName || "Ambient monitoring"),
-
-      message(`${properties.measurementCount || 0} laboratory results`)
-
-    );
-
-
-
-    new maplibregl.Popup({ offset: 12 })
-
-      .setLngLat(coordinates)
-
-      .setDOMContent(popupBody)
-
-      .addTo(map);
-
+    showPFASPopup(map, properties, coordinates);
   });
+
 
 
 
@@ -2162,10 +2216,7 @@ label.textContent = "Search by waterbody name";
 
           "span",
 
-          `${item.type || "Waterbody"} · ` +
-
-          `${count} DEC assessment segment${count === 1 ? "" : "s"}`
-
+          `${item.type || "Waterbody"} `  
         ));
 
 
