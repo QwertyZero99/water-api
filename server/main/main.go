@@ -149,6 +149,16 @@ func main() {
 	)
 	http.HandleFunc("/api/stations/", stationHandlers.StationByID)
 
+	// Water quality forecast API (backed by the internal Python service).
+	forecastHandlers := NewForecastHandlers(
+		os.Getenv("WQ_API_URL"),
+	)
+
+	http.HandleFunc(
+		"GET /api/stations/{id}/forecast",
+		forecastHandlers.ForecastByStation,
+	)
+
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/map", mapHandler)
 	http.HandleFunc("/info", infoHandler)
