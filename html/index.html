@@ -1,109 +1,270 @@
+
 <!doctype html>
 <html lang="en">
 <head>
-  <title>AquaNY</title>
+  <title>AquaNY | Know Your Water</title>
   <link rel="icon" type="image/png" href="/images/favicon.png">
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <meta
+    name="description"
+    content="Explore New York rivers, lakes, monitoring stations, drinking-water information, and water-quality measurements with AquaNY."
+  />
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap"
     rel="stylesheet"
   >
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="/static/css/style.css?v=5" />
   <link rel="stylesheet" href="/static/css/sidebar.css?v=3" />
 </head>
 
 <body>
+  <div class="bgImage" aria-hidden="true"></div>
 
-  <div class="bgImage"></div>
+  <!-- Navigation -->
+  <nav class="aquany-navigation" aria-label="Main navigation">
+    <button
+      id="aquany-menu-button"
+      class="aquany-menu-button"
+      type="button"
+      aria-label="Open navigation menu"
+      aria-controls="aquany-dropdown"
+      aria-expanded="false"
+    >☰</button>
 
+    <div id="aquany-dropdown" class="aquany-dropdown" hidden>
+      <a href="/">Home</a>
+      <a href="/map">Interactive Map</a>
+      <a href="/info">Info</a>
+    </div>
+  </nav>
 
-<nav class="aquany-navigation" aria-label="Main navigation">
-  <button
-    id="aquany-menu-button"
-    class="aquany-menu-button"
-    type="button"
-    aria-label="Open navigation menu"
-    aria-controls="aquany-dropdown"
-    aria-expanded="false"
-  >☰</button>
+  <!-- Hero -->
+  <header id="bgtbox" class="homepage-hero">
+    <div class="hero-content">
+      <h1 class="child">AquaNY</h1>
+      <p class="child2">Know Your Water</p>
 
-  <div id="aquany-dropdown" class="aquany-dropdown" hidden>
-    <a href="/">Home</a>
-    <a href="/map">Interactive Map</a>
-    <a href="/info">Info</a>
-  </div>
-</nav>
+      <p class="hero-description">
+        Explore New York's rivers,
+        lakes, monitoring stations, and drinking-water information
+        in one interactive map.
+      </p>
 
+      <div class="hero-actions">
+        <a
+          class="homepage-button homepage-button-primary"
+          href="/map"
+        >
+          Start Exploring the Map
+        </a>
 
-  <div id="bgtbox">
-    <h1 class="child">AquaNY</h1>
-    <p class="child2">Know Your Water</p>
-  </div>
+        <a
+          class="homepage-button homepage-button-outline"
+          href="/info"
+        >
+          Learn About Water Quality
+          
+        </a>
+      </div>
+    </div>
+  </header>
 
-  <div class="page-content">
+  <main class="page-content" id="explore">
 
-    <section class="reveal info-row">
+    <!-- How to use AquaNY -->
+    <section
+      class="reveal homepage-how"
+      aria-labelledby="how-title"
+    >
 
+      <h2 id="how-title">
+        Explore Your Water in Three Steps
+      </h2>
+
+      <div class="homepage-steps">
+
+        <div class="homepage-step">
+
+          <h3>Open the Map</h3>
+
+          <p>
+            Explore waterways and monitoring stations
+            across New York.
+          </p>
+        </div>
+
+        <div class="homepage-step">
+
+          <h3>Search Your Area</h3>
+
+          <p>
+            Enter a ZIP code or search for a river,
+            lake, or stream by name.
+          </p>
+        </div>
+
+        <div class="homepage-step">
+
+          <h3>Discover the Data</h3>
+
+          <p>
+            Select a waterbody to explore available
+            monitoring observations and historical records.
+          </p>
+        </div>
+
+      </div>
+
+      <a class="homepage-how-link" href="/map">
+        Go to Interactive Map
+        <span aria-hidden="true">↗</span>
+      </a>
+    </section>
+
+    <!-- Explore nearby water -->
+    <section
+      class="reveal info-row"
+      aria-labelledby="section-water-near-you"
+    >
       <div class="info-text">
-        <h2 class="section-title">Did You Know?</h2>
+
+        <h2
+          class="section-title"
+          id="section-water-near-you"
+        >
+          <a href="/map" class="section-title-link">
+            Explore Water Near You
+            <span aria-hidden="true">↗</span>
+          </a>
+        </h2>
 
         <p class="bodytext">
-          The Safe Drinking Water Act was enacted in 1974. Since then, strict
-          regulations have been put in place to ensure that America’s drinking
-          water remains safe. While these laws still generally ensure safety,
-          contaminants may still pose major problems for recreational bodies
-          of water and potentially drinking water supplies.
+          Search for rivers, lakes, and streams by name or ZIP code.
+          See nearby waterways, explore their available records,
+          and find monitoring stations on the interactive New York map.
+        </p>
+
+      </div>
+
+      <div
+        id="tapWaterImage"
+        class="info-image"
+        role="img"
+        aria-label="Tap water and water resources"
+      ></div>
+    </section>
+
+    <!-- Monitoring data -->
+    <section
+      class="reveal info-row reverse"
+      aria-labelledby="section-monitoring"
+    >
+      <div class="info-text">
+
+        <h2
+          class="section-title"
+          id="section-monitoring"
+        >
+          <a href="/map" class="section-title-link">
+            See What Stations Measure
+            <span aria-hidden="true">↗</span>
+          </a>
+        </h2>
+
+        <p class="bodytext">
+          Explore available USGS observations such as streamflow,
+          water temperature, and gage height. Check observation dates,
+          compare recent readings, and view older records separately
+          when available.
         </p>
       </div>
 
-      <div id="tapWaterImage" class="info-image"></div>
-
+      <div
+        id="waterDataImage"
+        class="info-image"
+        role="img"
+        aria-label="Visualization of water monitoring data"
+      ></div>
     </section>
 
-    <section class="reveal info-row reverse">
-
+    <!-- Water quality education -->
+    <section
+      class="reveal info-row"
+      aria-labelledby="section-understanding"
+    >
       <div class="info-text">
-        <h2 class="section-title">Explore Water Data</h2>
+
+        <h2
+          class="section-title"
+          id="section-understanding"
+        >
+          <a href="/info" class="section-title-link">
+            Know Your Water
+            <span aria-hidden="true">↗</span>
+          </a>
+        </h2>
 
         <p class="bodytext">
-          Explore water quality information from monitoring stations across
-          New York and visualize current environmental conditions.
+          Learn what common water-quality measurements mean,
+          explore available drinking-water information, and
+          understand the difference between current monitoring
+          results and historical records.
         </p>
+        </a>
       </div>
 
-      <div id="waterDataImage" class="info-image"></div>
-
+      <div
+        id="knowWaterImage"
+        class="info-image"
+        role="img"
+        aria-label="New York waterway and water resources"
+      ></div>
     </section>
 
-    <section class="reveal info-row">
+    <!-- Final call to action -->
+    <section
+      class="reveal homepage-cta"
+      aria-labelledby="homepage-cta-title"
+    >
+      <p class="section-eyebrow">READY TO EXPLORE?</p>
 
-      <div class="info-text">
-        <h2 class="section-title">Know Your Water</h2>
+      <h2 id="homepage-cta-title">
+        Your water, in context.
+      </h2>
 
-        <p class="bodytext">
-          Understand what water quality measurements mean and learn more about
-          the health of water resources throughout New York.
-        </p>
-      </div>
+      <p>
+        Start with a ZIP code or waterbody name and explore
+        the information available for your area.
+      </p>
 
-      <div id="knowWaterImage" class="info-image"></div>
+      <a
+        class="homepage-button homepage-button-primary"
+        href="/map"
+      >
+        Open Interactive Map
+        <span aria-hidden="true">↗</span>
+      </a>
 
+      <p class="homepage-data-note">
+        Monitoring values can be provisional or historical.
+        AquaNY does not determine whether water is safe to
+        drink or swim in.
+      </p>
     </section>
 
-  </div>
+  </main>
 
   <div id="sidePanel"></div>
 
-  <script type="module" src="/js/main.js"></script>
+  <script type="module" src="/js/main.js?v=5"></script>
   <script type="module" src="/js/sidebar.js?v=3"></script>
-
 </body>
 </html>

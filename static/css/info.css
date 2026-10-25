@@ -291,34 +291,26 @@ footer {
     transition: none;
   }
 }
-/* Back to Map navigation */
 .info-back-button {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
   width: fit-content;
-  margin-bottom: 24px;
-  padding: 11px 17px;
-
-  background: #e8f5fb;
-  border: 1px solid #b7dbea;
-  border-radius: 10px;
+  margin: 0 0 22px;
+  padding: 8px 0;
 
   color: #176c95;
   font-family: "Inter", sans-serif;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 650;
   text-decoration: none;
 
-  transition: background-color 0.2s, transform 0.2s;
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 
 .info-back-button:hover {
-  background: #d8eef9;
-  transform: translateX(-2px);
-}
-
-.info-back-button:focus-visible {
-  outline: 2px solid #168bad;
-  outline-offset: 3px;
+  color: #0b4e70;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
