@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -17,8 +18,9 @@ import (
 // ForecastHandlers exposes public forecast endpoints while treating
 // the Python forecasting service as an internal implementation detail.
 type ForecastHandlers struct {
-	baseURL    string
-	client     *http.Client
+	baseURL string
+	client  *http.Client
+	logger  *log.Logger
 }
 
 // NewForecastHandlers creates forecast handlers.
@@ -35,6 +37,7 @@ func NewForecastHandlers(baseURL string) *ForecastHandlers {
 		client: &http.Client{
 			Timeout: 30 * time.Second,
 		},
+		logger: log.Default(),
 	}
 }
 
@@ -42,26 +45,26 @@ func NewForecastHandlers(baseURL string) *ForecastHandlers {
 // independent of the internal Python response models.
 
 type ForecastResponse struct {
-	StationID string             `json:"stationId"`
-	AsOf      string             `json:"asOf"`
-	DataAgeDays *int             `json:"dataAgeDays,omitempty"`
-	Stale     bool               `json:"stale"`
-	Forecasts []Prediction       `json:"forecasts"`
+	StationID   string       `json:"stationId"`
+	AsOf        string       `json:"asOf"`
+	DataAgeDays *int         `json:"dataAgeDays,omitempty"`
+	Stale       bool         `json:"stale"`
+	Forecasts   []Prediction `json:"forecasts"`
 }
 
 type Prediction struct {
-	Parameter      string           `json:"parameter"`
-	Unit           string           `json:"unit,omitempty"`
-	HorizonDays    int              `json:"horizonDays"`
-	Date           string           `json:"date"`
-	Value          *float64         `json:"value"`
-	Interval       *PredictionRange `json:"interval,omitempty"`
-	Exceedance     *float64         `json:"exceedanceProbability,omitempty"`
-	Threshold      *float64         `json:"screeningThreshold,omitempty"`
-	ExceedsThreshold *bool          `json:"exceedsThreshold,omitempty"`
-	Status         string           `json:"status"`
-	DataAgeDays    *float64         `json:"dataAgeDays,omitempty"`
-	Reliability    ForecastReliability `json:"reliability"`
+	Parameter        string              `json:"parameter"`
+	Unit             string              `json:"unit,omitempty"`
+	HorizonDays      int                 `json:"horizonDays"`
+	Date             string              `json:"date"`
+	Value            *float64            `json:"value"`
+	Interval         *PredictionRange    `json:"interval,omitempty"`
+	Exceedance       *float64            `json:"exceedanceProbability,omitempty"`
+	Threshold        *float64            `json:"screeningThreshold,omitempty"`
+	ExceedsThreshold *bool               `json:"exceedsThreshold,omitempty"`
+	Status           string              `json:"status"`
+	DataAgeDays      *float64            `json:"dataAgeDays,omitempty"`
+	Reliability      ForecastReliability `json:"reliability"`
 }
 
 type PredictionRange struct {
@@ -77,28 +80,28 @@ type ForecastReliability struct {
 // Internal-only Python response types.
 
 type pythonForecastResponse struct {
-	SiteNo     string                  `json:"site_no"`
-	DataDate   string                  `json:"data_date"`
-	DataAgeDays *int                   `json:"data_age_days"`
-	Stale      bool                    `json:"stale"`
-	Forecasts  []pythonForecastItem    `json:"forecasts"`
+	SiteNo      string               `json:"site_no"`
+	DataDate    string               `json:"data_date"`
+	DataAgeDays *int                 `json:"data_age_days"`
+	Stale       bool                 `json:"stale"`
+	Forecasts   []pythonForecastItem `json:"forecasts"`
 }
 
 type pythonForecastItem struct {
-	Parameter       string              `json:"parameter"`
-	Unit            *string             `json:"unit"`
-	HorizonDays     int                 `json:"horizon_days"`
-	ForecastDate    string              `json:"forecast_date"`
-	Prediction      *float64            `json:"prediction"`
-	Lower           *float64             `json:"lower"`
-	Upper           *float64             `json:"upper"`
-	Probability     *float64             `json:"probability_exceedance"`
-	Basis           string               `json:"basis"`
-	DataAgeDays     *float64             `json:"data_age_days"`
-	ExceedsThreshold *bool               `json:"exceeds_screening_threshold"`
-	Threshold       *pythonThreshold     `json:"threshold"`
-	Model           string               `json:"model"`
-	Reliability     pythonReliability    `json:"reliability"`
+	Parameter        string           `json:"parameter"`
+	Unit             *string          `json:"unit"`
+	HorizonDays      int              `json:"horizon_days"`
+	ForecastDate     string           `json:"forecast_date"`
+	Prediction       *float64         `json:"prediction"`
+	Lower            *float64         `json:"lower"`
+	Upper            *float64         `json:"upper"`
+	Probability      *float64         `json:"probability_exceedance"`
+	Basis            string           `json:"basis"`
+	DataAgeDays      *float64         `json:"data_age_days"`
+	ExceedsThreshold *bool            `json:"exceeds_screening_threshold"`
+	Threshold        *pythonThreshold `json:"threshold"`
+	Model            string           `json:"model"`
+	Reliability      pythonReliability `json:"reliability"`
 }
 
 type pythonThreshold struct {
@@ -123,8 +126,18 @@ func (h *ForecastHandlers) ForecastByStation(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
+	start := time.Now()
 	id := strings.TrimSpace(r.PathValue("id"))
+
+	log.Printf(
+		"INFO forecast request received method=%s station_id=%q",
+		r.Method,
+		id,
+	)
+
 	if id == "" {
+		log.Printf("WARN forecast request rejected reason=missing_station_id")
+
 		writeJSONError(
 			w,
 			http.StatusBadRequest,
@@ -139,9 +152,16 @@ func (h *ForecastHandlers) ForecastByStation(
 	if raw := r.URL.Query().Get("horizons"); raw != "" {
 		horizons, err := parseHorizons(raw)
 		if err != nil {
+			log.Printf(
+				"WARN forecast request rejected station_id=%q reason=invalid_horizons error=%q",
+				id,
+				err,
+			)
+
 			writeJSONError(w, http.StatusBadRequest, err)
 			return
 		}
+
 		query.Set("horizons", horizons)
 	}
 
@@ -150,14 +170,20 @@ func (h *ForecastHandlers) ForecastByStation(
 		for i := range parameters {
 			parameters[i] = strings.TrimSpace(parameters[i])
 			if parameters[i] == "" {
-				writeJSONError(
-					w,
-					http.StatusBadRequest,
-					errors.New("parameters must be a comma-separated list"),
+				err := errors.New(
+					"parameters must be a comma-separated list",
 				)
+
+				log.Printf(
+					"WARN forecast request rejected station_id=%q reason=invalid_parameters",
+					id,
+				)
+
+				writeJSONError(w, http.StatusBadRequest, err)
 				return
 			}
 		}
+
 		query.Set("parameters", strings.Join(parameters, ","))
 	}
 
@@ -169,6 +195,14 @@ func (h *ForecastHandlers) ForecastByStation(
 	var result pythonForecastResponse
 	status, err := h.getJSON(r.Context(), path, &result)
 	if err != nil {
+		log.Printf(
+			"ERROR forecast retrieval failed station_id=%q upstream_status=%d duration_ms=%d error=%q",
+			id,
+			status,
+			time.Since(start).Milliseconds(),
+			err,
+		)
+
 		if status == http.StatusNotFound {
 			writeJSONError(
 				w,
@@ -206,22 +240,22 @@ func (h *ForecastHandlers) ForecastByStation(
 	}
 
 	response := ForecastResponse{
-		StationID: id,
-		AsOf:      result.DataDate,
+		StationID:   id,
+		AsOf:        result.DataDate,
 		DataAgeDays: result.DataAgeDays,
-		Stale:     result.Stale,
-		Forecasts: make([]Prediction, 0, len(result.Forecasts)),
+		Stale:       result.Stale,
+		Forecasts:   make([]Prediction, 0, len(result.Forecasts)),
 	}
 
 	for _, f := range result.Forecasts {
 		prediction := Prediction{
-			Parameter:   f.Parameter,
-			HorizonDays: f.HorizonDays,
-			Date:        f.ForecastDate,
-			Value:       f.Prediction,
-			Exceedance:  f.Probability,
+			Parameter:        f.Parameter,
+			HorizonDays:      f.HorizonDays,
+			Date:             f.ForecastDate,
+			Value:            f.Prediction,
+			Exceedance:       f.Probability,
 			ExceedsThreshold: f.ExceedsThreshold,
-			DataAgeDays: f.DataAgeDays,
+			DataAgeDays:      f.DataAgeDays,
 			Reliability: ForecastReliability{
 				Confidence: f.Reliability.Confidence,
 				Caveats:    f.Reliability.Caveats,
@@ -247,6 +281,14 @@ func (h *ForecastHandlers) ForecastByStation(
 		response.Forecasts = append(response.Forecasts, prediction)
 	}
 
+	log.Printf(
+		"INFO forecast request completed station_id=%q forecast_count=%d stale=%t duration_ms=%d",
+		id,
+		len(response.Forecasts),
+		response.Stale,
+		time.Since(start).Milliseconds(),
+	)
+
 	writeJSON(w, http.StatusOK, response)
 }
 
@@ -259,6 +301,8 @@ func (h *ForecastHandlers) getJSON(
 	path string,
 	dst any,
 ) (int, error) {
+	start := time.Now()
+
 	req, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodGet,
@@ -266,6 +310,10 @@ func (h *ForecastHandlers) getJSON(
 		nil,
 	)
 	if err != nil {
+		log.Printf(
+			"ERROR failed to create forecast service request error=%q",
+			err,
+		)
 		return 0, fmt.Errorf("create forecast request: %w", err)
 	}
 
@@ -273,6 +321,11 @@ func (h *ForecastHandlers) getJSON(
 
 	resp, err := h.client.Do(req)
 	if err != nil {
+		log.Printf(
+			"ERROR forecast service request failed duration_ms=%d error=%q",
+			time.Since(start).Milliseconds(),
+			err,
+		)
 		return 0, fmt.Errorf("call forecast service: %w", err)
 	}
 	defer resp.Body.Close()
@@ -280,6 +333,13 @@ func (h *ForecastHandlers) getJSON(
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		// Do not expose internal Python error details to the website.
 		_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 4096))
+
+		log.Printf(
+			"WARN forecast service returned non-success status=%d duration_ms=%d",
+			resp.StatusCode,
+			time.Since(start).Milliseconds(),
+		)
+
 		return resp.StatusCode, fmt.Errorf(
 			"forecast service returned status %d",
 			resp.StatusCode,
@@ -288,8 +348,24 @@ func (h *ForecastHandlers) getJSON(
 
 	decoder := json.NewDecoder(io.LimitReader(resp.Body, 10<<20))
 	if err := decoder.Decode(dst); err != nil {
-		return resp.StatusCode, fmt.Errorf("decode forecast response: %w", err)
+		log.Printf(
+			"ERROR failed to decode forecast service response status=%d duration_ms=%d error=%q",
+			resp.StatusCode,
+			time.Since(start).Milliseconds(),
+			err,
+		)
+
+		return resp.StatusCode, fmt.Errorf(
+			"decode forecast response: %w",
+			err,
+		)
 	}
+
+	log.Printf(
+		"INFO forecast service request completed status=%d duration_ms=%d",
+		resp.StatusCode,
+		time.Since(start).Milliseconds(),
+	)
 
 	return resp.StatusCode, nil
 }
@@ -307,9 +383,11 @@ func parseHorizons(raw string) (string, error) {
 				"horizons must contain integers between 1 and 365",
 			)
 		}
+
 		if seen[n] {
 			continue
 		}
+
 		seen[n] = true
 		values = append(values, strconv.Itoa(n))
 	}
