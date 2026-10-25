@@ -1226,7 +1226,7 @@ function createPFASSiteCard(site, map) {
 
     "button",
 
-    "Show on map",
+    "Locate",
 
     "waterbody-pfas-locate"
 

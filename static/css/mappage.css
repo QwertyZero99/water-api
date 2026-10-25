@@ -1553,17 +1553,35 @@ body {
 }
 
 .waterbody-pfas-locate {
-  background: #e7f2fb;
-  color: #176b9a;
-  border: 1px solid #b9d8ea;
-  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 8px 11px;
+
+  background: #ffffff;
+  color: #176c95;
+
+  border: 1px solid #b7d8ee;
+  border-radius: 10px;
+
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+
   cursor: pointer;
-  padding: 7px 10px;
-  font-size: 12px;
+  transition: background-color 0.2s, border-color 0.2s;
 }
 
 .waterbody-pfas-locate:hover {
-  background: #dceef9;
+  background: #f0f8fc;
+  border-color: #87bfe0;
+}
+
+.waterbody-pfas-locate:focus-visible {
+  outline: 2px solid #168bad;
+  outline-offset: 2px;
 }
 
 .waterbody-pfas-measurements {
