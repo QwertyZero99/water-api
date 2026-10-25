@@ -41,7 +41,7 @@ func WaterbodySearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	q := strings.TrimSpace(strings.TrimSuffix(r.URL.Query().Get("q"), "County"))
+	q := strings.TrimSpace(r.URL.Query().Get("q"))
 
 	if len(q) < 2 {
 		// Empty or short searches are expected; no error to log.
