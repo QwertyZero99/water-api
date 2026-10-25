@@ -244,7 +244,36 @@ function aquanyInfoLink(valueNode, sectionId) {
   return anchor;
 }
 const AQUANY_CONTAMINANT_GUIDE = {"PFOA":"pfoa","PFOS":"pfos","Nitrate":"nitrate","Arsenic":"arsenic"};
+function contaminantGuideSection(label) {
+  const name = String(label || "").trim();
 
+  // Recognize HAA5 and TTHM under common contaminant names.
+  if (/\bHAA\s*5\b|haloacetic\s+acids?(?:\s*\(?(?:5|five)\)?)?/i.test(name)) {
+    return 'haa5';
+  }
+
+  if (/\bTTHM\b|total\s+trihalomethanes?/i.test(name)) {
+    return 'tthm';
+  }
+
+  return AQUANY_CONTAMINANT_GUIDE[name] || 'other-contaminants';
+}
+function contaminantUnit(record) {
+  if (record.unit) {
+    return record.unit;
+  }
+
+  const name = String(record.contaminant || "").toLowerCase();
+
+  if (
+    /\bhaa\s*5\b|haloacetic\s+acids?/.test(name) ||
+    /\btthm\b|trihalomethanes?/.test(name)
+  ) {
+    return "µg/L";
+  }
+
+  return "";
+}
 function recordCard(record, label, emphasized = false) {
   const card = el(
     'article',
@@ -288,14 +317,14 @@ function recordCard(record, label, emphasized = false) {
     row.append(
       el(
         'span',
-        displayValue(rawValue, record.unit),
+        displayValue(rawValue, contaminantUnit(record)),
         'dw-stat-value'
       )
     );
 
 
     const valueElement = row.lastElementChild;
-    const guideSection = AQUANY_CONTAMINANT_GUIDE[label] || 'other-contaminants';
+    const guideSection = contaminantGuideSection(label);
 
     if (valueElement) {
       const link = aquanyInfoLink(valueElement, guideSection);
@@ -368,8 +397,8 @@ function summaryTable(records) {
     const values = [
       record.period,
       contaminantName(record),
-      displayValue(record.mean, record.unit),
-      displayValue(record.max, record.unit),
+      displayValue(record.mean, contaminantUnit(record)),
+      displayValue(record.max, contaminantUnit(record)),
       String(record.numSamples ?? '—'),
       String(record.numNonDetects ?? '—')
     ];

@@ -1689,7 +1689,6 @@ export function initWaterbodySearch(map) {
         <option value="5">5 mi</option><option value="10" selected>10 mi</option>
         <option value="25">25 mi</option>
       </select>
-      <button type="button" class="waterbody-zip-button">Find</button>
     </div>
     <p class="waterbody-zip-status" role="status" aria-live="polite"></p>
     <details class="waterbody-zip-disclosure" hidden>
@@ -1705,7 +1704,6 @@ export function initWaterbodySearch(map) {
 label.textContent = "Search by waterbody name";
   const zipInput = zipBox.querySelector('#aquanyZip');
   const zipRadius = zipBox.querySelector('#aquanyRadius');
-  const zipButton = zipBox.querySelector('.waterbody-zip-button');
   const zipStatus = zipBox.querySelector('.waterbody-zip-status');
   const zipResults = zipBox.querySelector('.waterbody-zip-results');
   const zipDisclosure = zipBox.querySelector('.waterbody-zip-disclosure');
@@ -1721,7 +1719,6 @@ label.textContent = "Search by waterbody name";
     zipDisclosure.hidden = true;
     zipDisclosure.open = false;
     zipStatus.textContent = 'Finding nearby waterbodies…';
-    zipButton.disabled = true;
     try {
       const placeResponse = await fetch(`https://api.zippopotam.us/us/${zipValue}`);
       if (!placeResponse.ok) throw new Error('ZIP code not found');
@@ -1767,12 +1764,53 @@ label.textContent = "Search by waterbody name";
     } catch (error) {
       if (current === zipRequest) zipStatus.textContent = error.message || 'ZIP search unavailable';
     } finally {
-      if (current === zipRequest) zipButton.disabled = false;
     }
   }
-  zipButton.addEventListener('click', searchByZip);
+    let zipDebounce;
+
+  function scheduleZipSearch() {
+    clearTimeout(zipDebounce);
+
+    const zip = zipInput.value.trim();
+
+    // Invalidate any previous ZIP search.
+    ++zipRequest;
+
+    if (!/^\d{5}$/.test(zip)) {
+      zipResults.replaceChildren();
+      zipDisclosure.hidden = true;
+      zipDisclosure.open = false;
+
+      zipStatus.textContent = zip.length
+        ? 'Enter a five-digit ZIP code.'
+        : '';
+
+      return;
+    }
+
+    zipStatus.textContent = 'Finding nearby waterbodies…';
+
+    zipDebounce = setTimeout(() => {
+      void searchByZip();
+    }, 350);
+  }
+
+  // Automatically search when a valid ZIP code is entered.
+  zipInput.addEventListener('input', scheduleZipSearch);
+
+  // Search again when the user changes the radius.
+  zipRadius.addEventListener('change', scheduleZipSearch);
+
+  // Still support Enter.
   zipInput.addEventListener('keydown', event => {
-    if (event.key === 'Enter') { event.preventDefault(); void searchByZip(); }
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      clearTimeout(zipDebounce);
+
+      if (/^\d{5}$/.test(zipInput.value.trim())) {
+        void searchByZip();
+      }
+    }
   });
 
 
