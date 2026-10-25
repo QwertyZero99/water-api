@@ -13,9 +13,9 @@ import (
 	"github.com/paulmach/orb"
 )
 
-// StationHandlers provides HTTP handlers backed directly by PostgreSQL.
+// StationHandlers provides http handlers backed directly by postgres
 //
-// PostgreSQL is the source of truth. No station data is cached in memory
+// postgres is the source of truth. No station data is cached in memory
 // by these handlers.
 type StationHandlers struct {
 	store *StationStore

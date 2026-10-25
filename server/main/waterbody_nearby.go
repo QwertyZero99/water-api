@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -479,6 +480,71 @@ func nearbyItemLess(a, b nearbyItem) bool {
 	}
 	return a.DistanceMiles < b.DistanceMiles
 }
+
+// Resolve nearby segments to their existing consolidated display groups.
+// The nearby index intentionally stores only physical segment geometries;
+// display groups have no independent geometry in waterbodies_v2.
+func groupNearbyWaterbodies(ctx context.Context, items []nearbyItem) ([]nearbyItem, error) {
+	if len(items) == 0 {
+		return items, nil
+	}
+	placeholders := make([]string, len(items))
+	args := make([]any, len(items))
+	for i, item := range items {
+		placeholders[i] = fmt.Sprintf("$%d", i+1)
+		args[i] = item.ID
+	}
+	query := `
+        SELECT m.waterbody_id, g.id, g.name,
+               (SELECT COALESCE(SUM(w.segment_count), 0)::integer
+                  FROM waterbody_display_members gm
+                  JOIN waterbodies_v2 w ON w.id = gm.waterbody_id
+                 WHERE gm.group_id = g.id) AS segment_count
+          FROM waterbody_display_members m
+          JOIN waterbody_display_groups g ON g.id = m.group_id
+         WHERE m.waterbody_id IN (` + strings.Join(placeholders, ",") + `)
+         ORDER BY m.waterbody_id, g.name, g.id`
+	rows, err := stationStore.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("lookup nearby waterbody display groups: %w", err)
+	}
+	defer rows.Close()
+	groups := make(map[string]nearbyItem)
+	for rows.Next() {
+		var memberID string
+		var group nearbyItem
+		if err := rows.Scan(&memberID, &group.ID, &group.Name, &group.SegmentCount); err != nil {
+			return nil, err
+		}
+		group.Type = "river"
+		group.Grouped = true
+		// If a segment belongs to multiple groups, choose the first
+		// deterministically, matching the sorted query above.
+		if _, exists := groups[memberID]; !exists {
+			groups[memberID] = group
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	unique := make(map[string]nearbyItem, len(items))
+	for _, item := range items {
+		if group, ok := groups[item.ID]; ok {
+			group.DistanceMiles = item.DistanceMiles
+			item = group
+		}
+		if previous, exists := unique[item.ID]; !exists || item.DistanceMiles < previous.DistanceMiles {
+			unique[item.ID] = item
+		}
+	}
+	output := make([]nearbyItem, 0, len(unique))
+	for _, item := range unique {
+		output = append(output, item)
+	}
+	sort.Slice(output, func(i, j int) bool { return nearbyItemLess(output[i], output[j]) })
+	return output, nil
+}
+
 func queryNearby(ctx context.Context, lat, lon, radius float64) ([]nearbyItem, error) {
 	idx, err := loadNearbyIndex(ctx)
 	if err != nil {
@@ -542,7 +608,7 @@ func queryNearby(ctx context.Context, lat, lon, radius float64) ([]nearbyItem, e
 		found = append(found, heap.Pop(&results).(nearbyResult).item)
 	}
 	sort.Slice(found, func(i, j int) bool { return nearbyItemLess(found[i], found[j]) })
-	return found, nil
+	return groupNearbyWaterbodies(ctx, found)
 }
 func WaterbodiesNearby(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()

@@ -63,14 +63,12 @@ func loadConfig() (Config, error) {
 }
 
 func main() {
-	/* CONFIG */
 	var err error
 	cfg, err = loadConfig()
 	if err != nil {
 		log.Fatalf("unable to load config: %v", err)
 	}
 
-	/* ROUTINES */
 	db, err := initStationDatabase()
 	if err != nil {
 		log.Fatalf("failed to initialize station database: %v", err)
@@ -90,8 +88,7 @@ func main() {
 		log.Println("UPDATE_STATIONS not set to \"YES\", will NOT periodically update stations.")
 	}
 
-	/* HANDLERS */
-	// Static filesystems
+	/* HANDLERS  Everytime you add go file or api add handler here*/
 	fs := http.FileServer(http.Dir("../static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
@@ -100,8 +97,6 @@ func main() {
 
 	jsFs := http.FileServer(http.Dir("../js"))
 	http.Handle("/js/", http.StripPrefix("/js/", jsFs))
-
-	// API handlers
 	http.HandleFunc(
 		"GET /api/waterbodies/{id}",
 		WaterbodyByID,
@@ -154,29 +149,28 @@ func main() {
 	)
 	http.HandleFunc("/api/stations/", stationHandlers.StationByID)
 
-	// Web page endpoints
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/map", mapHandler)
 	http.HandleFunc("/info", infoHandler)
 
-	// Run server
+	// This runs server, I added running confirmation message
 	fmt.Printf("Server running at http://localhost:%s\n", cfg.Port)
 	log.Fatal(http.ListenAndServe(":"+cfg.Port, nil))
 }
 
-// homeHandler handles the homepage
+// this is for homepage (index.html)
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Served /")
 	http.ServeFile(w, r, "../html/index.html")
 }
 
-// mapHandler handles the map page
+// mappage(map.html)
 func mapHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Served /map")
 	http.ServeFile(w, r, "../html/map.html")
 }
 
-// infoHandler handles the info page
+// info page(info.html)
 func infoHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Served /info")
 	http.ServeFile(w, r, "../html/info.html")

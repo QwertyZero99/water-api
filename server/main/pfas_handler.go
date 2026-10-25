@@ -85,17 +85,6 @@ func (h *PFASHandler) WaterbodyPFAS(
 		http.Error(w, "Invalid waterbody ID", http.StatusBadRequest)
 		return
 	}
-
-	// Support two independent ways of linking monitoring sites:
-	//
-	// 1. Ordinary waterbody:
-	//    pfas_sites.waterbody_id with an accepted automated match.
-	//
-	// 2. Consolidated display group:
-	//    waterbody_display_pfas_sites.group_id.
-	//
-	// The LEFT JOIN keeps ordinary waterbody queries working.
-	// The group's primary key prevents duplicate site associations.
 	const query = `
 		SELECT
 			s.id,
@@ -249,7 +238,6 @@ func (h *PFASHandler) WaterbodyPFAS(
 			response.Sites = append(response.Sites, site)
 		}
 
-		// Some monitoring sites may have no associated lab results.
 		if !objectID.Valid {
 			continue
 		}
