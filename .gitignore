@@ -241,13 +241,13 @@ __marimo__/
 .streamlit/secrets.toml
 
 #joblib models
-models/
+ML/models/
 
-**/venv/
-**/.venv/
-**/env/
+ML/venv/
+ML/.venv/
+ML/env/
 
-**/.vscode/
+ML/.vscode/
 
-**/ML_DATA/
-**/reports/
+ML/data/
+ML/reports/
