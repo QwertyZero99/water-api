@@ -95,7 +95,13 @@ class ForecastService:
         if not force and mtime == self._mtime:
             return
         with self._lock:
-            df = utils.load_features()
+            try:
+                df = utils.load_features()
+            except Exception as exc:                  # e.g. a refresh job is mid-write
+                if self.latest is not None and len(self.latest):
+                    log.warning("Could not reload features (%s); continuing with previous data", exc)
+                    return
+                raise
             self.history = df
             self.latest = (df.sort_values("date").groupby("station_id").tail(1)
                            .set_index("station_id", drop=False))
