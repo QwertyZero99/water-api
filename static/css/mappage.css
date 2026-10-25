@@ -1552,41 +1552,46 @@ body {
   color: #64748b;
 }
 
+/* Shared Locate button styling: USGS station and PFAS monitoring site. */
+.wb-condition-locate,
 .waterbody-pfas-locate {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
-  padding: 8px 11px;
-
+  flex-shrink: 0;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 5px 7px;
   background: #ffffff;
   color: #176c95;
-
-  border: 1px solid #b7d8ee;
-  border-radius: 10px;
-
+  border: 1px solid #bad8e9;
+  border-radius: 7px;
   font-family: "Inter", sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.4;
-
+  font-size: 11px;
+  font-weight: 400;
+  line-height: normal;
   cursor: pointer;
-  transition: background-color 0.2s, border-color 0.2s;
 }
 
+.wb-condition-locate:hover,
 .waterbody-pfas-locate:hover {
-  background: #f0f8fc;
-  border-color: #87bfe0;
+  background: #e9f5fb;
 }
-
-.waterbody-pfas-locate:focus-visible {
-  outline: 2px solid #168bad;
-  outline-offset: 2px;
+.waterbody-pfas-site-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .waterbody-pfas-measurements {
   margin-top: 12px;
   min-width: 0;
+}
+.waterbody-pfas-site-heading .waterbody-pfas-locate {
+  margin: 0;
+  align-self: flex-start;
 }
 
 .waterbody-pfas-measurements summary {
@@ -1744,8 +1749,6 @@ body {
 .wb-condition-station { margin: 10px 0; padding: 11px; border: 1px solid #e2e8f0; border-radius: 10px; background: #fbfdff; }
 .wb-condition-station-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 7px; margin-bottom: 9px; }
 .wb-condition-station-heading h6 { margin: 0; color: #1e293b; font-size: 12px; font-weight: 700; line-height: 1.45; overflow-wrap: anywhere; }
-.wb-condition-locate { flex-shrink: 0; background: white; color: #176c95; border: 1px solid #bad8e9; border-radius: 7px; padding: 5px 7px; cursor: pointer; font-size: 11px; }
-.wb-condition-locate:hover { background: #e9f5fb; }
 .wb-condition-metrics { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 6px; }
 .wb-condition-metric { min-width: 0; padding: 8px 7px; border-radius: 8px; border: 1px solid #e2edf4; background: #f0f8fc; display: flex; flex-direction: column; gap: 5px; }
 .wb-condition-label { color: #526779; font-size: 10px; font-weight: 650; line-height: 1.35; }
@@ -2159,4 +2162,104 @@ a.aquany-reading-link:focus-visible { outline: 2px solid #168bad; outline-offset
   .waterbody-pfas-popup-measurement strong {
     font-size: 15px;
   }
+}
+/* ==========================================
+   DRINKING WATER SEARCH
+   Match Rivers & Lakes search styling
+========================================== */
+
+.dw-panel {
+  width: 100%;
+  min-width: 0;
+  text-align: left;
+  font-family: "Inter", sans-serif;
+}
+
+/* Section heading */
+.dw-panel > h3 {
+  margin: 0 0 5px;
+  color: #142f46;
+  font-size: 17px;
+  font-weight: 750;
+  line-height: 1.3;
+}
+
+/* Description */
+.dw-panel .dw-search-description {
+  margin: 0 0 12px;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Search input — matches waterbodyQuery */
+.dw-panel > input[type="search"] {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 11px 12px;
+
+  border: 1px solid #d6e4ed;
+  border-radius: 9px;
+
+  background: #f8fbfd;
+  color: #18314a;
+
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: normal;
+
+  outline: none;
+}
+
+.dw-panel > input[type="search"]:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.12);
+}
+
+/* Matching search results */
+.dw-panel .dw-matches {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  margin-top: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+/* Individual result — matches waterbody-result */
+.dw-panel .dw-match {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: auto;
+  margin: 0;
+  padding: 10px 11px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+
+  background: #f8fbfd;
+  color: #1e293b;
+
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.4;
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.dw-panel .dw-match:hover,
+.dw-panel .dw-match:focus-visible {
+  border-color: #1976d2;
+  background: #eff7fd;
+  outline: none;
 }

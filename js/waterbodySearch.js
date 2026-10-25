@@ -836,9 +836,7 @@ function createPFASSection() {
 
   heading.append(
 
-    node("h5", "PFAS Monitoring"),
-
-    node("span", "NYSDEC ambient samples", "waterbody-pfas-badge")
+    node("h5", "PFAS Monitoring")
 
   );
 
@@ -1115,19 +1113,7 @@ function createPFASSiteCard(site, map) {
 
 
   heading.append(
-
-    node("h6", site.siteCode || "Monitoring site"),
-
-    node(
-
-      "span",
-
-      `${measurements.length} lab result${measurements.length === 1 ? "" : "s"}`,
-
-      "waterbody-pfas-site-count"
-
-    )
-
+  node("h6", site.siteCode || "Monitoring site")
   );
 
 
@@ -1216,12 +1202,6 @@ function createPFASSiteCard(site, map) {
 
 
 
-  const controls = document.createElement("div");
-
-  controls.className = "waterbody-pfas-controls";
-
-
-
   const locate = node(
 
     "button",
@@ -1276,11 +1256,7 @@ function createPFASSiteCard(site, map) {
 
 
 
-  controls.append(locate);
-
-
-
-  card.append(controls);
+  heading.append(locate);
 
 
 

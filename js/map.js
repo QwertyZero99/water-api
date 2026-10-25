@@ -1284,17 +1284,17 @@ function createViewControls(map) {
 
     // Fit all of New York State within the map.
     map.fitBounds(
-      [
-        [-79.8, 40.4],
-        [-71.8, 45.1]
-      ],
-      {
-        padding: 30,
-        pitch: 0,
-        bearing: 0,
-        duration: 900
-      }
-    );
+  [
+    [-79.9, 40.3],
+    [-71.7, 45.2]
+  ],
+  {
+    padding: 50,
+    pitch: 0,
+    bearing: 0,
+    duration: 900
+  }
+);
   }
 
 
