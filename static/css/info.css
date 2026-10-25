@@ -87,6 +87,12 @@ p { margin: .4rem 0 1rem; }
   scroll-margin-top: 28px;
   margin: 0 0 57px;
 }
+.info-page #pfoa,
+.info-page #pfos,
+.info-page #nitrate {
+  scroll-margin-top: 100px;
+}
+
 .section-intro {
   color: var(--muted);
   max-width: 790px;
@@ -209,8 +215,9 @@ footer {
   font-size: .85rem;
 }
 
-.info-target { scroll-margin-top: 22px; }
-.info-target:target {
+.info-target:target,
+.info-target:has(#pfoa:target),
+.info-target:has(#pfos:target) {
   outline: 3px solid #1285a2;
   outline-offset: 3px;
   background: #effaff;

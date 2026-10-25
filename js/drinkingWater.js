@@ -266,6 +266,7 @@ function contaminantUnit(record) {
   const name = String(record.contaminant || "").toLowerCase();
 
   if (
+    /\barsenic\b/.test(name) ||
     /\bhaa\s*5\b|haloacetic\s+acids?/.test(name) ||
     /\btthm\b|trihalomethanes?/.test(name)
   ) {

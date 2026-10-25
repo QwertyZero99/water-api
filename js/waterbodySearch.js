@@ -1362,19 +1362,7 @@ function renderPFAS(ui, data, map) {
 
   if (!sites.length) {
 
-    ui.summary.textContent = "No linked ambient monitoring sites.";
-
-
-
-    ui.list.append(message(
-
-      "No spatially matched NYSDEC monitoring sites are available " +
-
-      "for this waterbody. This does not mean PFAS are absent.",
-
-      "waterbody-pfas-empty"
-
-    ));
+    ui.summary.textContent = "No linked ambient monitoring sites found(not neccesarily indicitave of an absence of PFAS).";
 
 
 
@@ -1408,15 +1396,7 @@ function renderPFAS(ui, data, map) {
 
   ui.list.append(message(
 
-    "Source: NYSDEC. Sites are associated with waterbodies using " +
-
-    "automated name and geographic matching, not individual manual " +
-
-    "verification. Results are historical and do not establish " +
-
-    "current drinking-water or recreational safety.",
-
-    "waterbody-pfas-note"
+    "Source: NYSDEC."
 
   ));
 
@@ -1824,32 +1804,6 @@ label.textContent = "Search by waterbody name";
 
 
 
-  function createClearButton() {
-
-    const button = node(
-
-      "button",
-
-      "Clear highlight",
-
-      "waterbody-clear"
-
-    );
-
-
-
-    button.type = "button";
-
-    button.addEventListener("click", clearSelection);
-
-
-
-    return button;
-
-  }
-
-
-
   function appendIncidents(id, version) {
 
     const ui = createPastIncidentsSection();
@@ -2102,7 +2056,7 @@ label.textContent = "Search by waterbody name";
 
 
 
-      detail.append(createClearButton());
+
 
 
 
