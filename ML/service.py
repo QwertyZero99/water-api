@@ -91,18 +91,29 @@ class ForecastService:
 
     def refresh_data(self, force=False):
         """Reload features only if the file changed on disk (cheap to call per request)."""
-        mtime = self._features_path().stat().st_mtime
-        if not force and mtime == self._mtime:
-            return
-        with self._lock:
-            df = utils.load_features()
-            self.history = df
-            self.latest = (df.sort_values("date").groupby("station_id").tail(1)
-                           .set_index("station_id", drop=False))
-            if utils.table_exists(config.RAW_DIR, "stations"):
-                self.stations = utils.read_table(config.RAW_DIR, "stations").set_index("station_id")
-            self._mtime = mtime
-            log.info("Data refreshed: %d stations, latest date %s", len(self.latest), df["date"].max().date())
+        have_data = self._mtime is not None
+        try:
+            mtime = self._features_path().stat().st_mtime
+            if not force and mtime == self._mtime:
+                return
+            with self._lock:
+                if not force and mtime == self._mtime:        # another thread already reloaded
+                    return
+                df = utils.load_features()
+                latest = (df.sort_values("date").groupby("station_id").tail(1)
+                          .set_index("station_id", drop=False))
+                stations = self.stations
+                if utils.table_exists(config.RAW_DIR, "stations"):
+                    stations = utils.read_table(config.RAW_DIR, "stations").set_index("station_id")
+                # swap in only after everything loaded, so readers never see a half-updated service
+                self.history, self.latest, self.stations, self._mtime = df, latest, stations, mtime
+                log.info("Data refreshed: %d stations, latest date %s", len(latest), df["date"].max().date())
+        except Exception:
+            if not have_data:
+                raise                                  # nothing to serve yet: fail loudly at startup
+            # The pipeline may be mid-write, or a file may be bad. Keep serving the last good
+            # data instead of turning EVERY endpoint (even /health) into a 500; retry next request.
+            log.exception("Data refresh failed; continuing with previously loaded data")
 
     # ---- helpers ----------------------------------------------------------
     @staticmethod

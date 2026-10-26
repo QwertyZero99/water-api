@@ -55,7 +55,11 @@ def run(source="usgs", state="NY", start="2015-01-01", end=None, max_sites=50, m
         obs = pd.concat([utils.read_table(config.RAW_DIR, "observations"), obs], ignore_index=True)
         stations = pd.concat([utils.read_table(config.RAW_DIR, "stations"), stations]
                              ).drop_duplicates("station_id", keep="last")
-    obs = obs.drop_duplicates().sort_values(["station_id", "parameter", "timestamp"])
+    # USGS revises provisional values, so a re-download can return the same station/parameter/
+    # timestamp with a NEW value. A full-row drop_duplicates() keeps both and the daily mean then
+    # averages old and revised numbers; keep only the newest (appended rows come last).
+    obs = (obs.drop_duplicates(["station_id", "parameter", "timestamp"], keep="last")
+              .sort_values(["station_id", "parameter", "timestamp"]))
     utils.write_table(obs, config.RAW_DIR, "observations")
     utils.write_table(stations, config.RAW_DIR, "stations")
     log.info("Wrote %d observations, %d stations", len(obs), len(stations))
