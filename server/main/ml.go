@@ -44,25 +44,25 @@ logger: log.Default(),
 // ---------- Public API response types ----------
 
 type ForecastResponse struct {
-StationID   string                `json:"stationId"`
-AsOf        string                `json:"asOf"`
-DataAgeDays *int                  `json:"dataAgeDays,omitempty"`
-Stale       bool                  `json:"stale"`
-Forecasts   []Prediction          `json:"forecasts"`
+StationID   string       `json:"stationId"`
+AsOf        string       `json:"asOf"`
+DataAgeDays *int         `json:"dataAgeDays,omitempty"`
+Stale       bool         `json:"stale"`
+Forecasts   []Prediction `json:"forecasts"`
 }
 
 type Prediction struct {
-Parameter        string             `json:"parameter"`
-Unit             *string            `json:"unit,omitempty"`
-HorizonDays      int                `json:"horizonDays"`
-Date             string             `json:"date"`
-Value            *float64           `json:"value"`
-Interval         *PredictionRange   `json:"interval,omitempty"`
-Exceedance       *float64           `json:"exceedanceProbability,omitempty"`
-Threshold        *float64           `json:"screeningThreshold,omitempty"`
-ExceedsThreshold *bool              `json:"exceedsThreshold,omitempty"`
-Status           string             `json:"status"`
-DataAgeDays      *float64           `json:"dataAgeDays,omitempty"`
+Parameter        string              `json:"parameter"`
+Unit             *string             `json:"unit,omitempty"`
+HorizonDays      int                 `json:"horizonDays"`
+Date             string              `json:"date"`
+Value            *float64            `json:"value"`
+Interval         *PredictionRange    `json:"interval,omitempty"`
+Exceedance       *float64            `json:"exceedanceProbability,omitempty"`
+Threshold        *float64            `json:"screeningThreshold,omitempty"`
+ExceedsThreshold *bool               `json:"exceedsThreshold,omitempty"`
+Status           string              `json:"status"`
+DataAgeDays      *float64            `json:"dataAgeDays,omitempty"`
 Reliability      ForecastReliability `json:"reliability"`
 }
 
@@ -103,27 +103,27 @@ Reliability      pythonReliability `json:"reliability"`
 }
 
 type pythonReliability struct {
-Confidence          string   `json:"confidence"`
-Caveats             []string `json:"caveats"`
-MAEKnownStations    *float64 `json:"mae_known_stations"`
-MAENewStations      *float64 `json:"mae_new_stations"`
-SkillVsPersistence  *float64 `json:"skill_vs_persistence"`
-SkillVsClimatology  *float64 `json:"skill_vs_climatology"`
-IntervalCoverage    *float64 `json:"interval_coverage"`
-AUC                 *float64 `json:"auc"`
+Confidence         string   `json:"confidence"`
+Caveats            []string `json:"caveats"`
+MAEKnownStations   *float64 `json:"mae_known_stations"`
+MAENewStations     *float64 `json:"mae_new_stations"`
+SkillVsPersistence *float64 `json:"skill_vs_persistence"`
+SkillVsClimatology *float64 `json:"skill_vs_climatology"`
+IntervalCoverage   *float64 `json:"interval_coverage"`
+AUC                *float64 `json:"auc"`
 }
 
 // ---------- Python request types ----------
 
 // Matches Python NewStationIn.
 type NewStationRequest struct {
-Latitude          float64           `json:"latitude"`
-Longitude         float64           `json:"longitude"`
-SiteType          string            `json:"site_type,omitempty"`
-HUC               *string           `json:"huc,omitempty"`
-ElevationM        *float64          `json:"elevation_m,omitempty"`
-DrainageAreaKM2   *float64          `json:"drainage_area_km2,omitempty"`
-Observations      []Observation     `json:"observations"`
+Latitude        float64       `json:"latitude"`
+Longitude       float64       `json:"longitude"`
+SiteType        string        `json:"site_type,omitempty"`
+HUC             *string       `json:"huc,omitempty"`
+ElevationM      *float64      `json:"elevation_m,omitempty"`
+DrainageAreaKM2 *float64      `json:"drainage_area_km2,omitempty"`
+Observations    []Observation `json:"observations"`
 }
 
 type Observation struct {
@@ -145,8 +145,8 @@ Stations []BatchStation `json:"stations"`
 }
 
 type BatchStation struct {
-ID         string              `json:"id"`
-NewStation *NewStationRequest  `json:"new_station,omitempty"`
+ID         string             `json:"id"`
+NewStation *NewStationRequest `json:"new_station,omitempty"`
 }
 
 type pythonBatchResponse struct {
@@ -169,7 +169,7 @@ Forecasts []pythonForecastItem `json:"forecasts"`
 
 // ---------- Common HTTP utilities ----------
 
-func writeJSON(w http.ResponseWriter, status int, value any) {
+func sendJSONResponse(w http.ResponseWriter, status int, value any) {
 w.Header().Set("Content-Type", "application/json")
 w.WriteHeader(status)
 
@@ -178,8 +178,8 @@ log.Printf("ERROR encoding public JSON response: %v", err)
 }
 }
 
-func writeJSONError(w http.ResponseWriter, status int, err error) {
-writeJSON(w, status, map[string]string{
+func sendErrorResponse(w http.ResponseWriter, status int, err error) {
+sendJSONResponse(w, status, map[string]string{
 "error": err.Error(),
 })
 }
@@ -219,7 +219,6 @@ if err != nil {
 return 0, fmt.Errorf("encode request: %w", err)
 }
 
-// Log the request size and endpoint, not the observation data.
 h.logger.Printf(
 "DEBUG upstream request payload_bytes=%d method=%s path=%s",
 len(data), method, path,
@@ -260,7 +259,6 @@ time.Since(start).Milliseconds(),
 )
 
 if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-// Read a bounded amount for diagnostic logging.
 snippet, _ := io.ReadAll(io.LimitReader(resp.Body, 2048))
 h.logger.Printf(
 "WARN upstream HTTP error method=%s path=%s status=%d body_preview=%q",
@@ -416,16 +414,16 @@ out := make([]Prediction, 0, len(items))
 
 for _, f := range items {
 p := Prediction{
-Parameter:        f.Parameter,
-Unit:             f.Unit,
-HorizonDays:      f.HorizonDays,
-Date:              f.ForecastDate,
-Value:             f.Prediction,
-Exceedance:        f.Probability,
-Threshold:         floatFromThreshold(f.Threshold),
-ExceedsThreshold:  f.ExceedsThreshold,
-DataAgeDays:       f.DataAgeDays,
-Status:            publicForecastStatus(f.Basis),
+Parameter:       f.Parameter,
+Unit:            f.Unit,
+HorizonDays:     f.HorizonDays,
+Date:            f.ForecastDate,
+Value:           f.Prediction,
+Exceedance:      f.Probability,
+Threshold:       floatFromThreshold(f.Threshold),
+ExceedsThreshold: f.ExceedsThreshold,
+DataAgeDays:     f.DataAgeDays,
+Status:          publicForecastStatus(f.Basis),
 Reliability: ForecastReliability{
 Confidence: f.Reliability.Confidence,
 Caveats:    f.Reliability.Caveats,
@@ -458,13 +456,13 @@ Forecasts:   mapPredictions(r.Forecasts),
 func upstreamError(w http.ResponseWriter, status int, err error) {
 switch status {
 case http.StatusNotFound:
-writeJSONError(w, http.StatusNotFound, errors.New("station not found"))
+sendErrorResponse(w, http.StatusNotFound, errors.New("station not found"))
 case http.StatusBadRequest, http.StatusUnprocessableEntity:
-writeJSONError(w, http.StatusBadRequest, errors.New("invalid forecast request"))
+sendErrorResponse(w, http.StatusBadRequest, errors.New("invalid forecast request"))
 case http.StatusTooManyRequests:
-writeJSONError(w, http.StatusServiceUnavailable, errors.New("forecast service is busy"))
+sendErrorResponse(w, http.StatusServiceUnavailable, errors.New("forecast service is busy"))
 default:
-writeJSONError(w, http.StatusBadGateway, errors.New(
+sendErrorResponse(w, http.StatusBadGateway, errors.New(
 "forecast service unavailable or returned an invalid response",
 ))
 }
@@ -482,17 +480,17 @@ r.Method, r.URL.Path, id)
 
 if r.Method != http.MethodGet {
 w.Header().Set("Allow", http.MethodGet)
-writeJSONError(w, http.StatusMethodNotAllowed, errors.New("method not allowed"))
+sendErrorResponse(w, http.StatusMethodNotAllowed, errors.New("method not allowed"))
 return
 }
 if id == "" {
-writeJSONError(w, http.StatusBadRequest, errors.New("station ID is required"))
+sendErrorResponse(w, http.StatusBadRequest, errors.New("station ID is required"))
 return
 }
 
 query, err := forecastQuery(r)
 if err != nil {
-writeJSONError(w, http.StatusBadRequest, err)
+sendErrorResponse(w, http.StatusBadRequest, err)
 return
 }
 
@@ -515,7 +513,7 @@ h.logger.Printf(
 id, len(response.Forecasts), response.Stale,
 time.Since(start).Milliseconds(),
 )
-writeJSON(w, http.StatusOK, response)
+sendJSONResponse(w, http.StatusOK, response)
 }
 
 // ---------- POST: new station forecast ----------
@@ -529,13 +527,13 @@ r.Method, r.URL.Path, r.RemoteAddr)
 
 if r.Method != http.MethodPost {
 w.Header().Set("Allow", http.MethodPost)
-writeJSONError(w, http.StatusMethodNotAllowed, errors.New("method not allowed"))
+sendErrorResponse(w, http.StatusMethodNotAllowed, errors.New("method not allowed"))
 return
 }
 
 query, err := forecastQuery(r)
 if err != nil {
-writeJSONError(w, http.StatusBadRequest, err)
+sendErrorResponse(w, http.StatusBadRequest, err)
 return
 }
 
@@ -544,13 +542,13 @@ decoder := json.NewDecoder(http.MaxBytesReader(w, r.Body, 2<<20))
 decoder.DisallowUnknownFields()
 
 if err := decoder.Decode(&body); err != nil {
-writeJSONError(w, http.StatusBadRequest, errors.New("invalid JSON request body"))
+sendErrorResponse(w, http.StatusBadRequest, errors.New("invalid JSON request body"))
 return
 }
 
 if body.Latitude < -90 || body.Latitude > 90 ||
 body.Longitude < -180 || body.Longitude > 180 {
-writeJSONError(w, http.StatusBadRequest, errors.New("invalid latitude or longitude"))
+sendErrorResponse(w, http.StatusBadRequest, errors.New("invalid latitude or longitude"))
 return
 }
 
@@ -586,7 +584,7 @@ h.logger.Printf(
 "INFO new station forecast success forecasts=%d elapsed_ms=%d",
 len(result.Forecasts), time.Since(start).Milliseconds(),
 )
-writeJSON(w, http.StatusOK, response)
+sendJSONResponse(w, http.StatusOK, response)
 }
 
 // ---------- POST: batch forecasts ----------
@@ -600,13 +598,13 @@ r.Method, r.URL.Path, r.RemoteAddr)
 
 if r.Method != http.MethodPost {
 w.Header().Set("Allow", http.MethodPost)
-writeJSONError(w, http.StatusMethodNotAllowed, errors.New("method not allowed"))
+sendErrorResponse(w, http.StatusMethodNotAllowed, errors.New("method not allowed"))
 return
 }
 
 query, err := forecastQuery(r)
 if err != nil {
-writeJSONError(w, http.StatusBadRequest, err)
+sendErrorResponse(w, http.StatusBadRequest, err)
 return
 }
 
@@ -615,12 +613,12 @@ decoder := json.NewDecoder(http.MaxBytesReader(w, r.Body, 5<<20))
 decoder.DisallowUnknownFields()
 
 if err := decoder.Decode(&body); err != nil {
-writeJSONError(w, http.StatusBadRequest, errors.New("invalid batch JSON body"))
+sendErrorResponse(w, http.StatusBadRequest, errors.New("invalid batch JSON body"))
 return
 }
 
 if len(body.Stations) < 1 || len(body.Stations) > 200 {
-writeJSONError(w, http.StatusBadRequest, errors.New(
+sendErrorResponse(w, http.StatusBadRequest, errors.New(
 "stations must contain between 1 and 200 items",
 ))
 return
@@ -628,7 +626,7 @@ return
 
 for i, station := range body.Stations {
 if strings.TrimSpace(station.ID) == "" {
-writeJSONError(w, http.StatusBadRequest, fmt.Errorf(
+sendErrorResponse(w, http.StatusBadRequest, fmt.Errorf(
 "stations[%d].id is required", i,
 ))
 return
@@ -645,7 +643,6 @@ upstreamError(w, status, err)
 return
 }
 
-// Keep Python's per-station errors; one failure should not fail the entire batch.
 publicResults := make([]map[string]any, 0, len(result.Results))
 for _, item := range result.Results {
 row := map[string]any{
@@ -678,9 +675,9 @@ h.logger.Printf(
 "INFO batch forecast success n_ok=%d n_error=%d elapsed_ms=%d",
 result.NOK, result.NError, time.Since(start).Milliseconds(),
 )
-writeJSON(w, http.StatusOK, map[string]any{
-"nOk":      result.NOK,
-"nError":   result.NError,
-"results":  publicResults,
+sendJSONResponse(w, http.StatusOK, map[string]any{
+"nOk":     result.NOK,
+"nError":  result.NError,
+"results": publicResults,
 })
 }
