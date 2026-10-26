@@ -19,7 +19,7 @@ import (
 	"time"
 )
 
-// EPA Water Quality Portal: sampled PFAS results, not continuous/current readings.
+// EPA Water Quality Portal: sampled pfas results, not continuous/current readings.
 // Cache the statewide dataset so each waterbody click does NOT trigger six EPA downloads.
 const epaPFASCacheTTL = 12 * time.Hour
 const epaPFASMaxBytes = 32 << 20 // 32 MB per CSV response
