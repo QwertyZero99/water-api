@@ -15,9 +15,10 @@ import threading
 from contextlib import asynccontextmanager
 from typing import Optional
 
-from fastapi import BackgroundTasks, Depends, FastAPI, Header, HTTPException, Query
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import BackgroundTasks, Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi import Response
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 import build_features
@@ -45,10 +46,27 @@ app.add_middleware(CORSMiddleware, allow_origins=origins, allow_methods=["GET", 
                    allow_headers=["*"])
 
 
+@app.exception_handler(Exception)
+async def unhandled(request: Request, exc: Exception):
+    """A bare 500 tells the caller nothing. Log the full traceback (journalctl -u aquany-api)
+    and return the exception type so a client developer can see what failed."""
+    log.error("Unhandled error on %s %s", request.method, request.url.path, exc_info=exc)
+    return JSONResponse(status_code=500, content={
+        "detail": "Internal server error", "error_type": type(exc).__name__,
+        "error": str(exc)[:300], "path": request.url.path})
+
+
 def svc() -> ForecastService:
     s = state["svc"]
     s.refresh_data()                          # picks up a rebuilt features table automatically
     return s
+
+
+def _station_inputs(ns: "NewStationIn"):
+    meta = ns.model_dump(exclude={"observations"})
+    meta["site_type"] = meta.get("site_type") or "stream"
+    obs = [{**o.model_dump(), "unit": o.unit or ""} for o in (ns.observations or [])]
+    return meta, obs
 
 
 def _csv(value: Optional[str], cast=str):
@@ -110,17 +128,19 @@ class ObservationIn(BaseModel):
     date: str
     parameter: str
     value: float
-    unit: str = ""
+    unit: Optional[str] = ""          # Go sends null for an unset *string; treat as blank
+
+
 
 
 class NewStationIn(BaseModel):
     latitude: float
     longitude: float
-    site_type: str = "stream"
-    huc: Optional[str] = None
+    site_type: Optional[str] = "stream"
+    huc: Optional[str] = None          # string, WITH its leading zero, e.g. "02020006"
     elevation_m: Optional[float] = None
     drainage_area_km2: Optional[float] = None
-    observations: list[ObservationIn] = []
+    observations: Optional[list[ObservationIn]] = None   # Go marshals a nil slice as null
 
 
 class NewStationForecast(BaseModel):
@@ -154,10 +174,10 @@ def favicon():
 def site_forecast(site_no: str,
                   horizons: Optional[str] = Query(None, description="comma list, e.g. 1,7"),
                   parameters: Optional[str] = Query(None, description="comma list, e.g. ph,lead")):
-    try:
-        return svc().forecast(site_no, _csv(horizons, int), _csv(parameters))
-    except KeyError:
-        raise HTTPException(404, f"Unknown site {site_no}")
+    s = svc()
+    if site_no not in s.latest.index:                 # only THIS lookup is a 404; a KeyError raised
+        raise HTTPException(404, f"Unknown site {site_no}")   # inside a model is a real bug, not "unknown site"
+    return s.forecast(site_no, _csv(horizons, int), _csv(parameters))
 
 
 @app.post("/forecast/new-station", response_model=NewStationForecast)
@@ -166,12 +186,11 @@ def new_station_forecast(body: NewStationIn,
                          parameters: Optional[str] = Query(None)):
     """Forecast for a station that has no history in the system. Send static metadata and,
     optionally, recent readings (long format) to anchor the forecast on the station's level."""
-    meta = body.model_dump(exclude={"observations"})
-    try:
-        return svc().forecast_new_station(meta, [o.model_dump() for o in body.observations],
-                                          _csv(horizons, int), _csv(parameters))
-    except ValueError as exc:
-        raise HTTPException(422, str(exc))
+    meta, obs = _station_inputs(body)
+    # No blanket `except ValueError -> 422`: a ValueError raised deep inside sklearn/pandas is a
+    # server bug, and reporting it as 'your request is invalid' sends the caller hunting for
+    # a problem in a payload that is fine. Pydantic already returns 422 for bad input.
+    return svc().forecast_new_station(meta, obs, _csv(horizons, int), _csv(parameters))
 
 class BatchItemIn(BaseModel):
     id: str                                   # your own station ID, echoed back
@@ -219,10 +238,8 @@ def forecast_batch(body: BatchIn,
                     data_date=r["data_date"], data_age_days=r.get("data_age_days"),
                     stale=r.get("stale"), forecasts=r["forecasts"]))
             elif item.new_station is not None:
-                ns = item.new_station
-                r = s.forecast_new_station(
-                    ns.model_dump(exclude={"observations"}),
-                    [o.model_dump() for o in ns.observations], hz, pr)
+                meta, obs = _station_inputs(item.new_station)
+                r = s.forecast_new_station(meta, obs, hz, pr)
                 results.append(BatchResult(
                     id=item.id, status="ok", source="new_station",
                     data_date=r["data_date"], data_basis=r["data_basis"],
@@ -231,11 +248,10 @@ def forecast_batch(body: BatchIn,
                 results.append(BatchResult(
                     id=item.id, status="error",
                     error="Not a covered station and no new_station metadata supplied"))
-        except (KeyError, ValueError) as exc:
-            results.append(BatchResult(id=item.id, status="error", error=str(exc)))
-        except Exception:
+        except Exception as exc:
             log.exception("Batch item %s failed", item.id)
-            results.append(BatchResult(id=item.id, status="error", error="Internal error"))
+            results.append(BatchResult(id=item.id, status="error",
+                                       error=f"{type(exc).__name__}: {str(exc)[:200]}"))
     n_ok = sum(r.status == "ok" for r in results)
     return BatchOut(n_ok=n_ok, n_error=len(results) - n_ok, results=results)
 
@@ -244,10 +260,10 @@ def forecast_batch(body: BatchIn,
 def site_history(site_no: str, parameter: str = Query(...), days: int = Query(180, ge=1, le=3650)):
     if parameter not in config.ALL_PARAMS:
         raise HTTPException(422, f"parameter must be one of {config.ALL_PARAMS}")
-    try:
-        return svc().history_series(site_no, parameter, days)
-    except KeyError:
+    s = svc()
+    if site_no not in s.latest.index:
         raise HTTPException(404, f"Unknown site {site_no}")
+    return s.history_series(site_no, parameter, days)
 
 
 @app.get("/models")
@@ -277,7 +293,10 @@ def _refresh_job(state_code: str, start: str):
         log.warning("Refresh already running; skipping")
         return
     try:
-        ingest.run(source="usgs", state=state_code, start=start, append=True)
+        # with_weather + max_sites must match the nightly job, or the refresh drops rainfall
+        # and silently narrows the station set to ingest's default of 50.
+        ingest.run(source="usgs", state=state_code, start=start, append=True,
+                   with_weather=True, max_sites=100)
         build_features.run()
         state["svc"].refresh_data(force=True)
         log.info("Refresh complete")
