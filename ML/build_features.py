@@ -163,13 +163,22 @@ def features_for_observations(obs, stations, horizons=None, as_of=None) -> pd.Da
     """Latest feature row per station from raw observations. Used for brand-new stations
     (a few recent readings, or none at all, plus static metadata)."""
     horizons = horizons or config.HORIZONS
+    day = pd.Timestamp(as_of or pd.Timestamp.today()).normalize()
     if obs is None or len(obs) == 0:
-        day = pd.Timestamp(as_of or pd.Timestamp.today()).normalize()
         sid = stations["station_id"].iloc[0]
         daily = pd.DataFrame(np.nan, columns=DAILY_COLS,
                              index=pd.MultiIndex.from_tuples([(sid, day)], names=["station_id", "date"]))
     else:
         daily = daily_observations(obs)
+        # Pad each station's timeline out to "today". Without this the newest row IS the last
+        # reading, so *_days_since is 0 even if that reading is a year old and a stale station
+        # is served as a real "recent_data" forecast.
+        last = daily.reset_index().groupby("station_id")["date"].max()
+        pads = [(s, day) for s, d in last.items() if d < day]
+        if pads:
+            pad = pd.DataFrame(np.nan, columns=daily.columns,
+                               index=pd.MultiIndex.from_tuples(pads, names=daily.index.names))
+            daily = pd.concat([daily, pad]).sort_index()
     feats = build_feature_table(daily, stations, horizons, drop_empty=False)
     return feats.sort_values("date").groupby("station_id").tail(1).reset_index(drop=True)
 

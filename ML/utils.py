@@ -1,5 +1,6 @@
 """Shared helpers: table I/O (Parquet if available, else CSV), splits, metrics, transforms."""
 import json
+import os
 
 import numpy as np
 import pandas as pd
@@ -15,14 +16,22 @@ _DATE_COLS = ("date", "timestamp")
 
 # ------------------------------------------------------------------ table I/O ---
 def write_table(df, directory, stem):
+    """Write atomically: build the file under a temp name, then os.replace() it into place.
+    The API re-reads these files while the nightly job rewrites them; a plain to_parquet()
+    leaves a half-written file on disk for a moment and every API request that lands in that
+    window fails with a 500 (pyarrow: 'Parquet magic bytes not found')."""
     directory.mkdir(parents=True, exist_ok=True)
     pq, csv = directory / f"{stem}.parquet", directory / f"{stem}.csv"
+    tmp_pq, tmp_csv = directory / f".{stem}.parquet.tmp", directory / f".{stem}.csv.tmp"
     try:
-        df.to_parquet(pq, index=False)
+        df.to_parquet(tmp_pq, index=False)
+        os.replace(tmp_pq, pq)
         csv.unlink(missing_ok=True)
         return pq
     except (ImportError, ValueError):          # pyarrow not installed -> CSV
-        df.to_csv(csv, index=False)
+        tmp_pq.unlink(missing_ok=True)
+        df.to_csv(tmp_csv, index=False)
+        os.replace(tmp_csv, csv)
         pq.unlink(missing_ok=True)
         return csv
 
